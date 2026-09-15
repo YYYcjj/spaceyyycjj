@@ -4,6 +4,7 @@
 
 ## 线上地址
 
+- GitHub Pages：https://yyycjj.github.io/spaceyyycjj/
 - WorkBuddy 托管：https://reusable-rocket-report.app.workbuddy.host/
 
 ## 核心结论
@@ -31,6 +32,7 @@
 index.html          单页站点（含内联 SVG 图表）
 assets/site.css     设计系统
 assets/site.js      交互脚本（无依赖）
+.github/workflows/pages.yml   GitHub Pages 部署工作流
 ```
 
 ## 技术说明
@@ -39,6 +41,7 @@ assets/site.js      交互脚本（无依赖）
 - 桌面端：左侧粘性目录 + 滚动高亮 + 顶部阅读进度条
 - 移动端（<640px）：表格自动转为卡片式，导航切换为横向胶囊
 - 图表为手写内联 SVG，带 `@media print` 打印样式
+- 部署：推送 `main` 即由 GitHub Actions 发布到 GitHub Pages
 
 ## 数据来源
 
