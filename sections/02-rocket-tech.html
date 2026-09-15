@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>航天火箭技术 · 宇宙航行全景</title>
+<meta name="description" content="化学推进已经摸到理论天花板。可回收、复用、在轨加注——这些都在改变航天。但火箭本身的热力学极限没有变：化学推进的比冲已经接近理论值，剩下能压的只有结构质量和翻修成本。">
+<meta name="theme-color" content="#f5f5f2">
+<meta property="og:title" content="航天火箭技术 · 宇宙航行全景">
+<meta property="og:description" content="化学推进已经摸到理论天花板。可回收、复用、在轨加注——这些都在改变航天。但火箭本身的热力学极限没有变：化学推进的比冲已经接近理论值，剩下能压的只有结构质量和翻修成本。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav class="topnav" aria-label="板块导航">
+  <div class="inner">
+    <a href="../index.html">首页</a>
+    <a href="01-current.html">目前航天</a>
+    <a href="02-rocket-tech.html" class="active">火箭技术</a>
+    <a href="03-starship.html">星舰建造</a>
+    <a href="04-biosphere.html">飞船生态圈</a>
+    <a href="05-lightspeed.html">光速推进</a>
+    <a href="06-lifespan.html">寿命与冬眠</a>
+    <a href="07-contact.html">外星交流</a>
+    <a href="08-resources.html">宇宙资源</a>
+    <a href="09-ai-robots.html">AI 与机器人</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ================= 侧栏目录 ================= -->
+  <aside class="rail">
+    <a class="brand" href="../index.html">
+      宇宙航行全景
+      <small>从可回收火箭到星际航行</small>
+    </a>
+    <nav aria-label="目录">
+      <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
+      <a class="bo active" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
+      <a href="#r-ceiling" data-toc><span class="n">2.1</span>天花板在哪：三个数把话说死</a>
+      <a href="#r-cycle" data-toc><span class="n">2.2</span>发动机循环：三条路线各自放弃了什么</a>
+      <a href="#r-material" data-toc><span class="n">2.3</span>推进剂与箭体材料的取舍</a>
+      <a href="#r-check" data-toc><span class="n">2.4</span>现实检查</a>
+      <a class="bo" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
+      <a class="bo" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
+      <a class="bo" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
+      <a class="bo" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
+      <a class="bo" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
+      <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
+      <a class="bo" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
+    </nav>
+  </aside>
+
+  <!-- ================= 正文 ================= -->
+  <main class="main">
+
+    <header class="hero">
+      <div class="eyebrow">板块 02 / 09 · Rocket Engineering</div>
+      <h1>航天火箭技术</h1>
+      <p class="dek">可回收、复用、在轨加注——这些都在改变航天。但火箭本身的热力学极限没有变：化学推进的比冲已经接近理论值，剩下能压的只有结构质量和翻修成本。</p>
+      <div class="meta">公开口径参数 ｜ 不同批次与来源存在差异 ｜ 数据整理 2026-09</div>
+    </header>
+
+<section id="r-ceiling">
+    <h2>2.1 天花板在哪：三个数把话说死</h2>
+<p class="lead">火箭能跑多快、能拉多少，被三个量锁住。搞清这三个量，就能判断哪些改进是真突破，哪些只是优化。</p>
+
+<p><b>第一个是比冲。</b>齐奥尔科夫斯基公式里 Δv = I<sub>sp</sub>·g₀·ln(m₀/m₁)，比冲直接决定单位推进剂能换来多少速度增量。化学推进的理论值几乎完全由推进剂组合决定，改发动机循环只能逼近它，不能突破它。</p>
+
+<p><b>第二个是质量比。</b>公式里那个对数是最残酷的部分——要让 ln(m₀/m₁) 翻倍，推进剂质量得指数级增长。这也是为什么单级入轨在化学推进下极难：结构、发动机、贮箱都得算进干重，而干重每多一公斤，推进剂就要多好几公斤。</p>
+
+<p><b>第三个是结构系数。</b>干重除以起飞重量。猎鹰9 大致在 4% 这个量级。可回收设计反而会把它推高——着陆腿、栅格舵、剩余推进剂都是纯负担。这就是复用的代价：先牺牲一部分运力，换回来的是整支火箭的重复使用。</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>推进剂组合</th><th>理论真空比冲</th><th>混合密度</th><th>常温可贮存</th><th>典型用途</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="推进剂">液氧 / 液氢<small>LH2·LOX</small></td>
+        <td class="num" data-th="理论真空比冲">约 450 s</td>
+        <td class="num" data-th="混合密度">约 0.36 g/cm³</td>
+        <td data-th="常温可贮存"><span class="tag t-fail">否</span></td>
+        <td data-th="典型用途">上面级、氢氧末级；密度低是硬伤</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="推进剂">液氧 / 甲烷<small>CH4·LOX</small></td>
+        <td class="num" data-th="理论真空比冲">约 380 s</td>
+        <td class="num" data-th="混合密度">约 0.83 g/cm³</td>
+        <td data-th="常温可贮存"><span class="tag t-fail">否</span></td>
+        <td data-th="典型用途">复用箭一级；结焦温度约 978°C，积碳极少</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="推进剂">液氧 / 煤油<small>RP-1·LOX</small></td>
+        <td class="num" data-th="理论真空比冲">约 350 s</td>
+        <td class="num" data-th="混合密度">约 1.02 g/cm³</td>
+        <td data-th="常温可贮存"><span class="tag t-fail">否</span></td>
+        <td data-th="典型用途">猎鹰9、长征系列；积碳会拖长翻修时间</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="推进剂">四氧化二氮 / 偏二甲肼<small>N2O4·UDMH</small></td>
+        <td class="num" data-th="理论真空比冲">约 318 s</td>
+        <td class="num" data-th="混合密度">约 1.20 g/cm³</td>
+        <td data-th="常温可贮存"><span class="tag t-done">是</span></td>
+        <td data-th="典型用途">军事与深空探测器；剧毒，环保与操作成本高</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="note info">
+  <b>这里藏着一个容易被忽略的结论：</b>比冲更高的液氢液氧，在多数任务里并不是更优选择。密度只有甲烷的一半不到，贮箱体积、蒸发损失、绝热层质量全都要跟着涨。真正的工程选择是「比冲 × 密度 × 可操作性」的乘积，不是单项冠军。
+</div>
+</section>
+
+<section id="r-cycle">
+    <h2>2.2 发动机循环：三条路线各自放弃了什么</h2>
+<p class="lead">同样是把推进剂送进燃烧室，路径不同，代价不同。三条主流循环的分歧点只有一个：涡轮的驱动气体从哪里来，最后有没有被浪费掉。</p>
+
+<div class="routes">
+  <div class="route">
+    <div class="rh"><h4>燃气发生器循环</h4><span>Open Cycle</span></div>
+    <p>先烧一小部分推进剂去驱动涡轮，废气直接排掉。结构最简单、室压最低、成本最低。</p>
+    <p class="who">代表：Merlin 1D（猎鹰9）、天鹊 TQ-12（朱雀三号）</p>
+  </div>
+  <div class="route">
+    <div class="rh"><h4>分级燃烧循环</h4><span>Staged Combustion</span></div>
+    <p>涡轮废气回到主燃烧室继续烧，不浪费。可以做成富氧或富燃——富氧对材料与涂层要求极高。</p>
+    <p class="who">代表：RD-180（俄罗斯）、YF-100 系列（长征五/七/十）</p>
+  </div>
+  <div class="route">
+    <div class="rh"><h4>全流量分级燃烧</h4><span>Full-Flow Staged</span></div>
+    <p>两个预燃室分别驱动氧泵与甲烷泵，两股气流全部进主燃烧室。没有涡轮废气损失，室压可以推到最高。</p>
+    <p class="who">代表：Raptor（星舰）——目前唯一量产的甲烷全流量机型</p>
+  </div>
+</div>
+
+<p>这三条路线不是简单的「新旧替换」。燃气发生器循环在成本与可靠性上有真实优势，这也是猎鹰9 能跑出高频次的原因之一；分级燃烧适合大推力富氧煤油机；全流量分级燃烧则是在室压和复用寿命上领先，代价是系统复杂度和研制难度陡增。</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>发动机</th><th>厂商</th><th>循环</th><th>推进剂</th><th>海平面推力</th><th>真空比冲</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="发动机">Raptor 2<small>猛禽</small></td>
+        <td data-th="厂商">SpaceX</td>
+        <td data-th="循环">全流量分级燃烧</td>
+        <td data-th="推进剂">液氧 / 甲烷</td>
+        <td class="num" data-th="海平面推力">约 230 吨力</td>
+        <td class="num" data-th="真空比冲">约 347 s</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="发动机">BE-4</td>
+        <td data-th="厂商">Blue Origin</td>
+        <td data-th="循环">分级燃烧（富氧）</td>
+        <td data-th="推进剂">液氧 / 甲烷</td>
+        <td class="num" data-th="海平面推力">约 240 吨力</td>
+        <td class="num" data-th="真空比冲">约 340 s</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="发动机">Merlin 1D<small>梅林</small></td>
+        <td data-th="厂商">SpaceX</td>
+        <td data-th="循环">燃气发生器</td>
+        <td data-th="推进剂">液氧 / 煤油</td>
+        <td class="num" data-th="海平面推力">约 85 吨力</td>
+        <td class="num" data-th="真空比冲">约 311 s</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="发动机">RD-180</td>
+        <td data-th="厂商">NPO Energomash</td>
+        <td data-th="循环">分级燃烧（富氧）</td>
+        <td data-th="推进剂">液氧 / 煤油</td>
+        <td class="num" data-th="海平面推力">约 390 吨力</td>
+        <td class="num" data-th="真空比冲">约 338 s</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="发动机">YF-100<small>液发 100</small></td>
+        <td data-th="厂商">航天科技六院</td>
+        <td data-th="循环">分级燃烧（富氧）</td>
+        <td data-th="推进剂">液氧 / 煤油</td>
+        <td class="num" data-th="海平面推力">约 120 吨力</td>
+        <td class="num" data-th="真空比冲">约 335 s</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="lead" style="margin-top:10px;">表中为公开口径参数，不同批次、不同真空/海平面状态与来源之间会有差异，用来看量级和路线差异，不宜当作精确对比。</p>
+</section>
+
+<section id="r-material">
+    <h2>2.3 推进剂与箭体材料的取舍</h2>
+<p class="lead">推进剂和材料的选择会互相锁定。选了甲烷，就得接受深冷贮箱的全部麻烦；选了不锈钢，就得接受更重的结构。</p>
+
+<h3>推进剂：为什么甲烷赢了复用赛道</h3>
+<p>液氧甲烷的比冲不如液氢液氧，密度比冲不如煤油。它赢在两件事上——<b>几乎不产生积碳</b>，以及<b>可以原位制备</b>。</p>
+<p>积碳是复用最直接的敌人。煤油机烧完，涡轮泵和管路里会留下焦炭，必须拆洗；甲烷的结焦温度约 978°C，燃烧室温度通常不足以形成沉积，回收后简单吹除就能再用。这直接决定了两次飞行之间的周转时间。</p>
+<p>第二件事更长远：甲烷可以通过 Sabatier 反应在火星上制取——用大气里的 CO₂ 加上本地水。这意味着返程推进剂不必从地球运过去。对火星任务来说，这不是省钱，而是把任务从「不可行」变成「可行」。</p>
+
+<h3>材料：不锈钢回来的理由</h3>
+<div class="tiers">
+  <div class="tier first">
+    <div class="rank">不锈钢 <b>Starship / 朱雀三号</b></div>
+    <h4>成本与温度性能</h4>
+    <ul>
+      <li>原料与加工成本约为铝合金的五分之一</li>
+      <li>低温下强度反而提升，高温段耐受性也更好</li>
+      <li>焊接工艺成熟、成型快，适合大直径箭体</li>
+      <li>代价：密度大，结构更重</li>
+    </ul>
+  </div>
+  <div class="tier second">
+    <div class="rank">铝合金 <b>猎鹰9 / 新格伦 / 长十甲</b></div>
+    <h4>减重优先</h4>
+    <ul>
+      <li>强度高、密度低，在 5 米级直径内优势突出</li>
+      <li>铝锂合金可再减重 10–15%</li>
+      <li>代价：焊接与热处理工艺复杂，成本高</li>
+    </ul>
+  </div>
+  <div class="tier third">
+    <div class="rank">复合材料 <b>在研</b></div>
+    <h4>比强度最高</h4>
+    <ul>
+      <li>碳纤维缠绕成型，比强度最高</li>
+      <li>低温贮箱需要内衬防止渗漏，成本极高</li>
+      <li>目前主要用在整流罩与部分级间段</li>
+    </ul>
+  </div>
+</div>
+<p>分水岭大致在箭体直径：10 米级重型火箭用不锈钢的综合竞争力更强，因为结构强度需求把铝合金的重量优势吃掉了，而成本差距会被放大。</p>
+
+<h3>热防护：一次性的耗材，复用的关键</h3>
+<p>再入时箭体表面温度可达 1400°C 以上。星舰走的是「大量小块隔热瓦 + 不锈钢冷结构」的路线——靠瓦片隔热，让不锈钢本身保持低温强度。瓦片的难题不在耐温，而在<b>不会掉</b>：每次飞行的振动、气动载荷与热循环都会让粘接失效，而掉一片就可能在再入时烧穿。</p>
+</section>
+
+<section id="r-check">
+    <h2>2.4 现实检查</h2>
+<div class="note warn">
+  <b>化学火箭已经接近它的物理极限，这是本文最重要的一句话。</b>比冲被推进剂组合锁死，质量比被对数规律惩罚，结构系数在复用场景下还会变差。所以「下一代火箭更快更远」这个直觉是错的——化学推进下的速度增量不会有量级突破。
+</div>
+
+<p>那增量从哪里来？三个方向，都不在发动机本身：</p>
+<ol class="judge">
+  <li>
+    <b>复用把成本曲线压下来</b>
+    <span>同样的运力，翻修成本与周转时间决定了每公斤入轨价格。这是板块一讨论的核心，也是唯一已经被验证过的路径。</span>
+  </li>
+  <li>
+    <b>在轨加注把质量约束解开</b>
+    <span>不需要让一艘飞船独自完成全程。先在轨把推进剂加满，再出发——这等价于绕开了质量比的部分限制。这是板块三的重点，也是目前最大的未验证项。</span>
+  </li>
+  <li>
+    <b>非化学推进换赛道</b>
+    <span>核热、核聚变、光帆。这些不是「更好的化学火箭」，而是不同的物理机制，代价与成熟度见板块五。</span>
+  </li>
+</ol>
+</section>
+
+<nav class="pager">
+  <a class="pg prev" href="01-current.html"><span class="pg-d">上一板块 01</span><span class="pg-t">目前航天技术发展</span></a>
+  <a class="pg next" href="03-starship.html"><span class="pg-d">下一板块 03</span><span class="pg-t">星舰建造与技术</span></a>
+</nav>
+
+    <footer>
+      <b>宇宙航行全景</b> · 从可回收火箭到星际航行<br>
+      本页为公开信息整理，数据与判断均已标注来源与不确定性，不构成任何投资建议。<br>
+      <a href="../index.html">← 返回全部板块</a>
+    </footer>
+
+  </main>
+</div>
+
+<button id="totop" type="button" aria-label="回到顶部">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 13V3M8 3L3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>
