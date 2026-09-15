@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>飞船AI智能与机器人 · 宇宙航行全景</title>
+<meta name="description" content="越远的地方，遥控越不可能。火星与地球单程通信延迟最长约 20 分钟，比邻星是 4.37 年。这意味着深空任务的自主性不是加分项，而是前提——但今天的「自主」是窄任务自">
+<meta name="theme-color" content="#f5f5f2">
+<meta property="og:title" content="飞船AI智能与机器人 · 宇宙航行全景">
+<meta property="og:description" content="越远的地方，遥控越不可能。火星与地球单程通信延迟最长约 20 分钟，比邻星是 4.37 年。这意味着深空任务的自主性不是加分项，而是前提——但今天的「自主」是窄任务自">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav class="topnav" aria-label="板块导航">
+  <div class="inner">
+    <a href="../index.html">首页</a>
+    <a href="01-current.html">目前航天</a>
+    <a href="02-rocket-tech.html">火箭技术</a>
+    <a href="03-starship.html">星舰建造</a>
+    <a href="04-biosphere.html">飞船生态圈</a>
+    <a href="05-lightspeed.html">光速推进</a>
+    <a href="06-lifespan.html">寿命与冬眠</a>
+    <a href="07-contact.html">外星交流</a>
+    <a href="08-resources.html">宇宙资源</a>
+    <a href="09-ai-robots.html" class="active">AI 与机器人</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ================= 侧栏目录 ================= -->
+  <aside class="rail">
+    <a class="brand" href="../index.html">
+      宇宙航行全景
+      <small>从可回收火箭到星际航行</small>
+    </a>
+    <nav aria-label="目录">
+      <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
+      <a class="bo" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
+      <a class="bo" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
+      <a class="bo" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
+      <a class="bo" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
+      <a class="bo" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
+      <a class="bo" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
+      <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
+      <a class="bo active" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
+      <a href="#a-why" data-toc><span class="n">9.1</span>为什么太空必须自主</a>
+      <a href="#a-hardware" data-toc><span class="n">9.2</span>算力：抗辐射这道坎</a>
+      <a href="#a-robots" data-toc><span class="n">9.3</span>机器人：能替人把东西建起来吗</a>
+      <a href="#a-limit" data-toc><span class="n">9.4</span>AI 在太空的边界在哪</a>
+      <a href="#a-check" data-toc><span class="n">9.5</span>现实检查</a>
+    </nav>
+  </aside>
+
+  <!-- ================= 正文 ================= -->
+  <main class="main">
+
+    <header class="hero">
+      <div class="eyebrow">板块 09 / 09 · Autonomy &amp; Robotics</div>
+      <h1>飞船AI智能与机器人</h1>
+      <p class="dek">火星与地球单程通信延迟最长约 20 分钟，比邻星是 4.37 年。这意味着深空任务的自主性不是加分项，而是前提——但今天的「自主」是窄任务自主，不是通用智能。</p>
+      <div class="meta">数据来源：NASA JPL、NASA HPSC 项目公开资料、行业市场报告 ｜ 整理 2026-09</div>
+    </header>
+
+<section id="a-why">
+    <h2>9.1 为什么太空必须自主</h2>
+<p class="lead">地球上谈论自动化，讨论的是效率；在深空谈论自动化，讨论的是「有没有可能做到」。</p>
+
+<h3>通信延迟决定了遥控的上限</h3>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>目标</th><th>单程通信延迟</th><th>遥控可行吗</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="目标">近地轨道<small>ISS</small></td>
+        <td class="num" data-th="单程通信延迟">约 0.1 秒</td>
+        <td data-th="遥控可行吗"><span class="tag t-done">可行</span></td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="目标">月球</td>
+        <td class="num" data-th="单程通信延迟">约 1.3 秒</td>
+        <td data-th="遥控可行吗"><span class="tag t-run">勉强，但操作节奏明显变慢</span></td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="目标">火星</td>
+        <td class="num" data-th="单程通信延迟">3 到 22 分钟<small>随轨道位置变化</small></td>
+        <td data-th="遥控可行吗"><span class="tag t-hold">只能发指令，不能操纵</span></td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="目标">木星系<small>欧罗巴等</small></td>
+        <td class="num" data-th="单程通信延迟">约 35–55 分钟</td>
+        <td data-th="遥控可行吗"><span class="tag t-fail">必须自主</span></td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="目标">半人马座 α<small>最近的恒星系</small></td>
+        <td class="num" data-th="单程通信延迟">约 4.37 年</td>
+        <td data-th="遥控可行吗"><span class="tag t-fail">物理上不可能</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<p>「20 分钟延迟」意味着：火星车遇到一个需要即时反应的状况时，地球上的人还在看 20 分钟之前的画面。除了让机器自己判断，没有第二个选项。</p>
+
+<h3>已经落地的自主能力</h3>
+<ul>
+  <li><b>自主导航</b>——毅力号的 AutoNav 系统让它能够自行分析地形影像、识别岩石与陡坡等障碍、规划安全路径并行驶，不必等地球给出每一段路径。</li>
+  <li><b>自主选目标</b>——AEGIS 软件让巡视器自行识别值得观测的地质特征并执行测量，把有限的通信窗口留给真正有科学价值的数据。</li>
+  <li><b>自主飞行</b>——机智号直升机在另一颗行星上完成了动力飞行，地面介入极少。</li>
+  <li><b>2026 年的一个节点</b>——AI 模型规划了毅力号的首次自主行驶路线：路线在地面由模型从轨道影像生成，上传到 3.6 亿公里外由巡视器执行。这件事的意义不在「AI 开车」，而在验证「AI 生成的计划可以被信任到送进太空」。</li>
+</ul>
+</section>
+
+<section id="a-hardware">
+    <h2>9.2 算力：抗辐射这道坎</h2>
+<p class="lead">空间计算机长期落后于地面，原因不是不想用更好的芯片，而是辐射会让商用芯片出错。抗辐射设计要付出的代价，直接体现在性能上。</p>
+
+<p>高能粒子穿过芯片会导致位翻转甚至闩锁，深空环境的累积剂量远高于近地轨道。传统做法是选用专门加固的、工艺落后的处理器——可靠，但算力比同代消费级芯片差几个数量级。</p>
+
+<h3>HPSC：换一个量级</h3>
+<p>NASA 的高性能航天计算（HPSC）项目与 Microchip Technology 合作，目标是做一颗多核、容错、抗辐射的处理器，样品芯片已经产出。项目方的公开表述是：它既能用于行星巡视器，也能用于卫星与深空探测器。早期测试给出的性能对比是——<b>约为当前在轨芯片的 500 倍</b>。</p>
+
+<div class="note info">
+  <b>为什么算力对自主性这么关键：</b>深空探测器的下行带宽极其有限。如果算力足够，探测器可以在本地处理原始数据、只把结论传回来，而不是把海量原始影像排队下传；更重要的是，它能在本地实时识别危险、评估异常、在通信中断期间独立决策。算力在这里不是「跑得更快」，而是「能不能自己判断」的物理前提。
+</div>
+</section>
+
+<section id="a-robots">
+    <h2>9.3 机器人：能替人把东西建起来吗</h2>
+<p class="lead">这是所有「机器人在太空」叙事里最容易被高估的一环。JPL 首席机器人官 Issa Nesnas 的判断很直接：地球上连基础设施都还是人建的，不是机器人建的。</p>
+
+<p>他的完整表述值得完整引用其含义：现有的机器人技术可以建造太空基础设施的<b>一部分</b>，但要进入下一个阶段，需要机器人领域本身出现技术突破。也就是说，机器人已经能做一些事——巡视、采样、检测、搬运——但还不足以从零到一建起一座精细的设施，比如一座能长期运行的月球基地。</p>
+
+<h3>目前实际在岗的机器人</h3>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>类型</th><th>代表</th><th>当前任务</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="类型">在轨助手</td>
+        <td data-th="代表">Astrobee<small>ISS</small>、CIMON</td>
+        <td data-th="当前任务">自由飞行的立方体机器人，承担舱内巡检、库存盘点、状态监测等例行工作，把航天员的时间腾出来做实验。这是 AI 首次被用于控制空间站上的机器人。</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="类型">行星巡视器</td>
+        <td data-th="代表">毅力号、机智号</td>
+        <td data-th="当前任务">自主导航与自主目标选择已实用化（见上一节）。</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="类型">人形机器人</td>
+        <td data-th="代表">NASA Valkyrie<small>、Apptronik Apollo</small></td>
+        <td data-th="当前任务">面向舱外作业、栖息地建造与维护的测试。这一类的价值在于人形结构可以直接沿用为人类设计的工具与接口，而不必为机器人重新设计一套。</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="类型">采样机器人</td>
+        <td data-th="代表">Endurance 先导项目<small>JPL</small></td>
+        <td data-th="当前任务">目标是月球背面的南极-艾特肯盆地——一个面积与美国相当的撞击盆地。那里夜间温度低至约 −220°C，人类无法直接作业。方案是把基地建在阳光充足的月球南极，派机器人进入盆地采集岩石与土壤样品，再把样品运回南极基地，由航天员装载返航。</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="类型">分布式自主</td>
+        <td data-th="代表">NASA DSA</td>
+        <td data-th="当前任务">让多艘航天器像蜂群一样共享一个「大脑」，自行协同分配观测任务，减少对地面调度的依赖。</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h3>真正需要机器人顶上的地方</h3>
+<p>把上面这些场景抽象出来，共同点很清楚：<b>要么人在不了，要么人在会很贵很危险。</b>月球背面的极寒、火星表面的长时间无人阶段、小行星上的微重力作业（见板块八）、以及未来栖息地建成之前的准备工作——这些任务需要机器人先到、先建、先验证生保系统，然后人才到。</p>
+</section>
+
+<section id="a-limit">
+    <h2>9.4 AI 在太空的边界在哪</h2>
+<p class="lead">把「自主」这个词拆开，会发现今天的实际水平与公众想象之间有相当大的落差。</p>
+
+<h3>四条真实的限制</h3>
+<ol class="judge">
+  <li>
+    <b>安全关键系统不能建立在不可解释的模型上</b>
+    <span>飞船的姿态控制、发动机点火、返场着陆，这些环节一旦出错就没有第二次机会。逻辑必须可验证、行为必须可预测。语言模型在深空任务里的幻觉不是「体验问题」，而是任务级风险。因此在很长一段时间里，AI 会在感知、规划、异常初筛这些环节参与，而最终的执行逻辑仍由可验证的确定性系统承担。</span>
+  </li>
+  <li>
+    <b>训练数据天然稀缺</b>
+    <span>深空异常样本极少，而且每一种环境（月球极区、火星尘暴、木卫二辐射带）都与地球差异巨大。缺数据的环境里，模型最不擅长的恰好是最需要它可靠的地方。</span>
+  </li>
+  <li>
+    <b>「500 倍算力」不等于「500 倍能力」</b>
+    <span>硬件性能的数字对比是真实的，但自主能力是算法、传感、数据、验证共同决定的。把芯片的倍数直接读成智能的倍数，是最常见的误读。</span>
+  </li>
+  <li>
+    <b>验证成本可能超过开发成本</b>
+    <span>一个能在轨自主决策的系统，如何证明它在所有未预料的情况下都不会做出危险决定？这个问题目前没有令人满意的答案，而它恰好是深空任务最看重的那一条。</span>
+  </li>
+</ol>
+
+<h3>一条值得关注的分工线</h3>
+<p>行业里正在形成的共识不是「机器人取代航天员」，而是分工：机器承担最危险、最重复、最数据密集的任务；人保留科学判断、临场应变和需要承担责任的决策。这是一条务实的分界线——它承认了 AI 在感知与执行上的优势，也承认了它在判断与承担后果上的空缺。</p>
+
+<p>从市场规模看，这个方向的投资确实在加速：太空探索中的 AI 市场从 2025 年约 59 亿美元增长到 2026 年约 78 亿美元。但市场规模衡量的是预期，不是已实现的能力。</p>
+</section>
+
+<section id="a-check">
+    <h2>9.5 现实检查</h2>
+<div class="note warn">
+  <b>今天的「自主」是窄任务自主，不是通用智能。</b>自主导航、自主选目标、异常初筛——每一个都是在边界清晰的特定任务上跑通的能力，而不是「飞船自己会思考」。
+</div>
+
+<ul>
+  <li>火星与地球之间 20 分钟的延迟，确实把自主性从「优化项」变成了「前提」。这一点是真实且不可绕过的。</li>
+  <li>但「机器人先上去把基地建好」目前还做不到。JPL 自己的评估是：能建一部分，下一步需要机器人领域本身的技术突破。地球上至今没有一座设施是完全由机器人建造的，这个事实本身就是最好的参照。</li>
+  <li>算力会来得比智能快。HPSC 这类芯片把在轨算力提升几个量级是可以预期的；而「让机器在未知环境里做正确判断」这件事，进展要慢得多，也难验证得多。</li>
+  <li>把板块九和板块七放在一起看会更有意思：<b>星际航行对自主性的要求是最高的（几光年延迟），而对 AI 可靠性要求也是最高的（无法人工干预）。</b>这两个条件同时成立的地方，正是今天的 AI 最不能胜任的地方——这也是「AI 让星际航行变简单」这个说法需要谨慎的原因。</li>
+</ul>
+</section>
+
+<nav class="pager">
+  <a class="pg prev" href="08-resources.html"><span class="pg-d">上一板块 08</span><span class="pg-t">宇宙资源获取</span></a>
+  <a class="pg next" href="../index.html"><span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>
+</nav>
+
+    <footer>
+      <b>宇宙航行全景</b> · 从可回收火箭到星际航行<br>
+      本页为公开信息整理，数据与判断均已标注来源与不确定性，不构成任何投资建议。<br>
+      <a href="../index.html">← 返回全部板块</a>
+    </footer>
+
+  </main>
+</div>
+
+<button id="totop" type="button" aria-label="回到顶部">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 13V3M8 3L3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>
