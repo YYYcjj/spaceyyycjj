@@ -4,8 +4,7 @@
 
 ## 线上地址
 
-- GitHub Pages：https://yyycjj.github.io/spaceyyycjj/
-- WorkBuddy 托管：https://reusable-rocket-report.app.workbuddy.host/
+- https://yyycjj.github.io/spaceyyycjj/
 
 ## 核心结论
 
