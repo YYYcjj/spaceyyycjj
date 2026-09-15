@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>飞船生态圈 · 宇宙航行全景</title>
+<meta name="description" content="把地球的生物圈压缩进一个金属壳。一个人每天消耗 0.8 公斤氧、3 公斤水、1.5 公斤食物。任务越长，这些数字就越不是补给问题，而是闭环率问题——回收不到的水，只能用发射">
+<meta name="theme-color" content="#f5f5f2">
+<meta property="og:title" content="飞船生态圈 · 宇宙航行全景">
+<meta property="og:description" content="把地球的生物圈压缩进一个金属壳。一个人每天消耗 0.8 公斤氧、3 公斤水、1.5 公斤食物。任务越长，这些数字就越不是补给问题，而是闭环率问题——回收不到的水，只能用发射">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav class="topnav" aria-label="板块导航">
+  <div class="inner">
+    <a href="../index.html">首页</a>
+    <a href="01-current.html">目前航天</a>
+    <a href="02-rocket-tech.html">火箭技术</a>
+    <a href="03-starship.html">星舰建造</a>
+    <a href="04-biosphere.html" class="active">飞船生态圈</a>
+    <a href="05-lightspeed.html">光速推进</a>
+    <a href="06-lifespan.html">寿命与冬眠</a>
+    <a href="07-contact.html">外星交流</a>
+    <a href="08-resources.html">宇宙资源</a>
+    <a href="09-ai-robots.html">AI 与机器人</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ================= 侧栏目录 ================= -->
+  <aside class="rail">
+    <a class="brand" href="../index.html">
+      宇宙航行全景
+      <small>从可回收火箭到星际航行</small>
+    </a>
+    <nav aria-label="目录">
+      <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
+      <a class="bo" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
+      <a class="bo" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
+      <a class="bo active" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
+      <a href="#b-math" data-toc><span class="n">4.1</span>先把账算清：一个人一天要多少</a>
+      <a href="#b-eclss" data-toc><span class="n">4.2</span>闭环做到了什么程度</a>
+      <a href="#b-radiation" data-toc><span class="n">4.3</span>辐射：唯一还没有解法的问题</a>
+      <a href="#b-gravity" data-toc><span class="n">4.4</span>微重力的代价与人工重力</a>
+      <a href="#b-check" data-toc><span class="n">4.5</span>现实检查</a>
+      <a class="bo" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
+      <a class="bo" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
+      <a class="bo" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
+      <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
+      <a class="bo" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
+    </nav>
+  </aside>
+
+  <!-- ================= 正文 ================= -->
+  <main class="main">
+
+    <header class="hero">
+      <div class="eyebrow">板块 04 / 09 · Closed-Loop Habitat</div>
+      <h1>飞船生态圈</h1>
+      <p class="dek">一个人每天消耗 0.8 公斤氧、3 公斤水、1.5 公斤食物。任务越长，这些数字就越不是补给问题，而是闭环率问题——回收不到的水，只能用发射成本去买。</p>
+      <div class="meta">数据来源：NASA ECLSS 公开资料、ISS 在轨运行记录 ｜ 整理 2026-09</div>
+    </header>
+
+<section id="b-math">
+    <h2>4.1 先把账算清：一个人一天要多少</h2>
+<p class="lead">所有生命支持设计都可以归结为一道减法题：把「必须从地球带上去的质量」压到多低。</p>
+
+<div class="kpis">
+  <div class="kpi">
+    <div class="v">0.8<em>kg</em></div>
+    <div class="k"><b>氧</b><br>每人每天消耗</div>
+  </div>
+  <div class="kpi">
+    <div class="v">3<em>kg</em></div>
+    <div class="k"><b>水</b><br>每人每天消耗</div>
+  </div>
+  <div class="kpi">
+    <div class="v">1.5<em>kg</em></div>
+    <div class="k"><b>食物</b><br>每人每天消耗</div>
+  </div>
+  <div class="kpi zero">
+    <div class="v">20<em>t</em></div>
+    <div class="k"><b>4 人 1 年</b><br>完全不回收的总需求</div>
+  </div>
+</div>
+
+<p>换算成任务量级：4 名乘员、1 年，如果不做任何回收，需要约 4 吨氧、12 吨水、4 吨食物。而这 20 吨里，有一部分还要再乘以从近地轨道送到火星轨道的推进剂代价——那个系数是数倍。</p>
+<p>所以闭环率不是一个「环保指标」，它是任务可行性的直接变量。<b>每多回收一公斤水，就少发射一公斤。</b>这就是为什么 ISS 上那套看起来不起眼的尿液处理装置，重要程度不亚于任何一台发动机。</p>
+</section>
+
+<section id="b-eclss">
+    <h2>4.2 闭环做到了什么程度</h2>
+<p class="lead">ISS 的环境控制与生命保障系统（ECLSS）是人类目前最成熟的再生式生保系统。它由三大件组成，分别管水、空气和氧。</p>
+
+<h3>三大件与它们的相互关系</h3>
+<p><b>水回收系统（WRS）</b>负责把一切能回收的水捞回来：尿液、舱内湿气冷凝水、舱外活动服里的水。尿液先经过尿处理装置，在旋转鼓里做低压真空蒸馏——用离心模拟重力，让水蒸气与浓缩盐水分离；蒸馏水再和其他废水一起进入水处理装置，经过多层过滤床和高温催化氧化器，最后出来的水比多数城市的自来水更纯。</p>
+<p><b>空气再生系统</b>用沸石分子筛吸附舱内的二氧化碳，饱和后暴露在太空真空里加热再生、把 CO₂ 释放出去。</p>
+<p><b>制氧系统</b>用电解把水拆成氧和氢。氧进舱，氢原本直接排掉。</p>
+<p>后来加装的 <b>Sabatier 反应器</b>把两股「废物」接了起来：氢 + CO₂ 生成水和甲烷，水回到水回收系统，甲烷排掉。这一步把呼出二氧化碳里约一半的氧重新捞了回来，是闭环率提升的关键一跳。</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>阶段</th><th>水回收率</th><th>关键改动</th><th>意义</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="阶段">早期航天器<small>水星—航天飞机</small></td>
+        <td class="num" data-th="水回收率">不回收</td>
+        <td data-th="关键改动">开环，全部从地球携带</td>
+        <td data-th="意义">任务时长被补给质量直接限死</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="阶段">ISS 初代<small>2008 起</small></td>
+        <td class="num" data-th="水回收率">约 85%（尿处理）</td>
+        <td data-th="关键改动">真空蒸馏 + 多层过滤 + 催化氧化</td>
+        <td data-th="意义">证明微重力下回收尿液可行</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="阶段">ISS 现役</td>
+        <td class="num" data-th="水回收率">约 93–94%</td>
+        <td data-th="关键改动">系统整合与在轨维护经验积累</td>
+        <td data-th="意义">补给质量显著下降，但仍需定期补货</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="阶段">加装盐水处理装置后</td>
+        <td class="num" data-th="水回收率"><b>约 98%</b></td>
+        <td data-th="关键改动">从浓缩尿盐水里再榨一次水</td>
+        <td data-th="意义">接近火星任务所需的自给水平</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>氧的闭环做得没有水好，目前大约一半：靠电解回收水，再靠 Sabatier 把呼出二氧化碳里的一部分氧捞回来，剩下的靠补给与消耗品。食物则完全没有闭环——全部从地球运上去。</p>
+
+<div class="note info">
+  <b>ISS 长期运行给出的最重要一条工程教训，不是「要做到理论完美」，而是「在轨可维修性比理论性能更值钱」。</b>再充分的 ground test 也预测不到微重力下连续运行数年会长出什么问题。真正的保障是：系统降低效率也还能跑，乘员手上有零件和工具能修。<br><br>
+  这条教训在火星航段会被放大到残酷的程度——ISS 上最坏的情况是「几小时内可以撤离」；火星航段没有这条退路。
+</div>
+</section>
+
+<section id="b-radiation">
+    <h2>4.3 辐射：唯一还没有解法的问题</h2>
+<p class="lead">如果把所有深空医学问题排个序，辐射是唯一一个公认「目前无解」的。ESA 与 NASA 的研究者在这件事上的措辞几乎一致：我们还没有找到有效的屏蔽手段。</p>
+
+<p>地球有大气层和磁场两层庇护，ISS 还额外待在磁场保护范围内。一旦脱离近地轨道，威胁分成两类：</p>
+<ul>
+  <li><b>银河宇宙射线（GCR）</b>——高能重离子，能量极高、穿透力强，被动屏蔽几乎拦不住，反而会在屏蔽体内产生次级粒子。</li>
+  <li><b>太阳粒子事件（SPE）</b>——太阳耀斑抛出的高能质子流，强度大但可以被一定厚度的物质挡住，问题是需要提前预警并有一个「辐射避难所」。</li>
+</ul>
+
+<h3>屏蔽手段的现状</h3>
+<p>水墙、聚乙烯等富氢材料对 SPE 有效，对 GCR 效果有限；磁场屏蔽在理论上可行，但需要的磁场强度与线圈质量让它在工程上还没有落地。ISS 上有个很有说明性的先例：风险评估发现老旧俄制舱段的屏蔽能力较差、对整站构成不成比例的威胁，于是专门组织了一系列太空行走，在发射多年之后给这些舱段加装了附加屏蔽板。</p>
+<p>这件事的推论很直接：<b>未来长时程栖息地的外壳不能被当作一次定型的固定设计</b>。它必须允许在任务过程中被检测、被修复、被升级——因为威胁环境和我们对它的理解都会变。</p>
+
+<h3>一个反直觉的联系</h3>
+<p>冬眠可能提供部分辐射保护。冬眠动物代谢率极低、组织含氧量下降、DNA 紧密缠绕，同时具备强力的 DNA 修复机制。低氧本身会提升对辐射的耐受力。这是把板块六（冬眠）和板块四（栖息地）连起来的一条线：<b>降低代谢，可能同时降低辐射伤害</b>。</p>
+</section>
+
+<section id="b-gravity">
+    <h2>4.4 微重力的代价与人工重力</h2>
+<p class="lead">微重力不是「失重的浪漫」，它是一组持续累积的生理损耗。时间越长，这些损耗越难靠锻炼和药物对抗。</p>
+
+<h3>已经观测到的损耗</h3>
+<ul>
+  <li><b>骨密度</b>——承重骨每月流失约 1% 到 1.5%，量与绝经后骨质疏松的速率相当；返回地球后恢复缓慢且不完全。</li>
+  <li><b>肌肉</b>——不做对抗训练就快速萎缩，抗阻训练只能部分抵消。</li>
+  <li><b>视力</b>——体液向头部转移导致颅内压变化，部分航天员出现视神经盘水肿与视力改变（SANS），机制仍未完全清楚。</li>
+  <li><b>体液与心血管</b>——血液重新分布、心脏形态改变，返回后立位耐力下降。</li>
+  <li><b>免疫与微生物组</b>——免疫系统功能改变，同时封闭环境里的微生物群落结构发生变化。</li>
+</ul>
+
+<h3>人工重力：不是能不能做，是划不划算</h3>
+<p>靠旋转产生离心加速度，物理上很简单。工程上的取舍在两个参数上：半径越大、转速越慢，人越舒服；转速超过约每分钟 2 转，多数人会出现前庭不适与眩晕。而「慢转速 + 1g」意味着半径得有几百米量级——这对结构、对接、姿态控制都是巨大负担。</p>
+<p>折中方案是降低人工重力水平，比如 0.3g 到 0.5g 配合运动对抗，或者在航程中交替使用旋转与非旋转舱段。这些都还是方案阶段。</p>
+
+<div class="note good">
+  <b>把这一节和板块六连起来看：</b>如果冬眠把人体的代谢压在极低水平，那么骨流失、肌肉萎缩、体液转移这些「损耗型」问题在航行期间就被大幅减速了。这也是冬眠在深空航行中被高度重视的原因之一——它不只是省食物，它同时是对抗微重力与辐射的一种手段。
+</div>
+</section>
+
+<section id="b-check">
+    <h2>4.5 现实检查</h2>
+<div class="note warn">
+  <b>ISS 至今仍然依赖地球补给。真正自持的生态圈——包括食物生产在内——从未在轨完整验证过。</b>
+</div>
+
+<ul>
+  <li>水的闭环 98% 是真实成就，但它是在「可以随时补货、可以几小时内撤离」的前提下达成的。把这个系统搬到火星航段，可靠性要求会提高一个数量级。</li>
+  <li>氧的闭环只有一半左右，食物闭环为零。所谓「飞船生态圈」，目前最准确的说法是：<b>一个把水和空气部分闭环的维生系统，加上从地球带来的全部食物</b>。</li>
+  <li>闭环系统的失效模式往往是渐进的：蒸馏装置被矿物沉淀堵塞、分子筛阀门失灵、痕量污染物缓慢累积（症状是非特异的头痛与眼部刺激，溯源经常要几周）。在 ISS 上这些都不致命；在没有补给、没有撤退通道的航段上，任何一个都会变成任务级风险。</li>
+  <li>辐射没有解法，人工重力还在方案阶段。这两件事决定了「载人深空航行」目前仍是研究课题，不是工程排期。</li>
+</ul>
+</section>
+
+<nav class="pager">
+  <a class="pg prev" href="03-starship.html"><span class="pg-d">上一板块 03</span><span class="pg-t">星舰建造与技术</span></a>
+  <a class="pg next" href="05-lightspeed.html"><span class="pg-d">下一板块 05</span><span class="pg-t">飞船速度提升到光速发展</span></a>
+</nav>
+
+    <footer>
+      <b>宇宙航行全景</b> · 从可回收火箭到星际航行<br>
+      本页为公开信息整理，数据与判断均已标注来源与不确定性，不构成任何投资建议。<br>
+      <a href="../index.html">← 返回全部板块</a>
+    </footer>
+
+  </main>
+</div>
+
+<button id="totop" type="button" aria-label="回到顶部">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 13V3M8 3L3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>
