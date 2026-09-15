@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>星舰建造与技术 · 宇宙航行全景</title>
+<meta name="description" content="完全复用 + 在轨加注，去火星的两个前提。星舰的全部野心落在两件事上：把上一级也收回来重复使用，以及在地球轨道上把推进剂加满再出发。前者决定成本，后者决定能不能到。截至 2026 年">
+<meta name="theme-color" content="#f5f5f2">
+<meta property="og:title" content="星舰建造与技术 · 宇宙航行全景">
+<meta property="og:description" content="完全复用 + 在轨加注，去火星的两个前提。星舰的全部野心落在两件事上：把上一级也收回来重复使用，以及在地球轨道上把推进剂加满再出发。前者决定成本，后者决定能不能到。截至 2026 年">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:type" content="article">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="../assets/site.css">
+</head>
+<body>
+
+<div id="progress"></div>
+
+<nav class="topnav" aria-label="板块导航">
+  <div class="inner">
+    <a href="../index.html">首页</a>
+    <a href="01-current.html">目前航天</a>
+    <a href="02-rocket-tech.html">火箭技术</a>
+    <a href="03-starship.html" class="active">星舰建造</a>
+    <a href="04-biosphere.html">飞船生态圈</a>
+    <a href="05-lightspeed.html">光速推进</a>
+    <a href="06-lifespan.html">寿命与冬眠</a>
+    <a href="07-contact.html">外星交流</a>
+    <a href="08-resources.html">宇宙资源</a>
+    <a href="09-ai-robots.html">AI 与机器人</a>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ================= 侧栏目录 ================= -->
+  <aside class="rail">
+    <a class="brand" href="../index.html">
+      宇宙航行全景
+      <small>从可回收火箭到星际航行</small>
+    </a>
+    <nav aria-label="目录">
+      <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
+      <a class="bo" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
+      <a class="bo active" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
+      <a href="#st-v3" data-toc><span class="n">3.1</span>V3 构型：比前两代大了多少</a>
+      <a href="#st-flight14" data-toc><span class="n">3.2</span>第 14 飞：从「测试火箭」到「轨道运输系统」</a>
+      <a href="#st-refuel" data-toc><span class="n">3.3</span>在轨加注：去火星的真正瓶颈</a>
+      <a href="#st-check" data-toc><span class="n">3.4</span>现实检查</a>
+      <a class="bo" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
+      <a class="bo" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
+      <a class="bo" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
+      <a class="bo" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
+      <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
+      <a class="bo" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
+    </nav>
+  </aside>
+
+  <!-- ================= 正文 ================= -->
+  <main class="main">
+
+    <header class="hero">
+      <div class="eyebrow">板块 03 / 09 · Starship &amp; Deep Space Transport</div>
+      <h1>星舰建造与技术</h1>
+      <p class="dek">星舰的全部野心落在两件事上：把上一级也收回来重复使用，以及在地球轨道上把推进剂加满再出发。前者决定成本，后者决定能不能到。截至 2026 年 9 月，两件事都还没有完成。</p>
+      <div class="meta">数据截止 2026-09-15 ｜ 参数与节点来自 SpaceX 公开披露与飞行记录</div>
+    </header>
+
+<section id="st-v3">
+    <h2>3.1 V3 构型：比前两代大了多少</h2>
+<p class="lead">星舰的第三代构型不是小改。箭体加长、贮箱扩大、隔热瓦换工艺、发动机结构优化——这些改动叠加起来，才让它有可能承担真正的轨道任务。</p>
+
+<p>V3 的关键改动集中在四处：二级飞船较 V2 加长约 3.2 米，推进剂贮箱容量提升约 18%；隔热瓦采用新的烧结工艺，官方口径是耐温能力提升约 12%、重量降低约 5%；一级超重助推器保持 33 台猛禽的布局，但涡轮泵与燃烧室结构做了优化，海平面总推力提升、燃烧效率提高约 6%。</p>
+
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>维度</th><th>V3 的变化</th><th>为什么重要</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="nm" data-th="维度">二级箭体长度</td>
+        <td data-th="V3 的变化">较 V2 加长约 3.2 米</td>
+        <td data-th="为什么重要">直接换取推进剂容积，等价于更多 Δv 预算</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="维度">推进剂贮箱容量</td>
+        <td data-th="V3 的变化">提升约 18%</td>
+        <td data-th="为什么重要">是「入轨 + 返回 + 加注」三件事共同的余量来源</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="维度">隔热瓦</td>
+        <td data-th="V3 的变化">新烧结工艺，耐温 +12%、重量 −5%</td>
+        <td data-th="为什么重要">再入是复用链条上最容易一次性报废的环节</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="维度">一级发动机</td>
+        <td data-th="V3 的变化">仍为 33 台猛禽，涡轮泵与燃烧室优化</td>
+        <td data-th="为什么重要">推力与效率提升换来的运力，最终变成每公斤成本</td>
+      </tr>
+      <tr>
+        <td class="nm" data-th="维度">制造节奏</td>
+        <td data-th="V3 的变化">S41 总装到出厂约 27 天，B21 约 42 天</td>
+        <td data-th="为什么重要">产能是「高频次复用」的物理前提，不是配角</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>SpaceX 对 V3 的目标是近地轨道运力 250 吨（可复用构型）到 350 吨（一次性构型），每公斤入轨成本压到 100 美元以内。<b>这是目标，不是实测值</b>——截至本文整理时，V3 还没有完成过一次完整的、从发射到回收的全剖面任务。</p>
+</section>
+
+<section id="st-flight14">
+    <h2>3.2 第 14 飞：从「测试火箭」到「轨道运输系统」</h2>
+<p class="lead">前面 13 次综合飞行，验证的是结构强度、发动机、级间分离、热防护、回收技术。第 14 飞要验证的是另一件事：它能不能真的把东西送进轨道。</p>
+
+<p>第 14 飞使用 Booster 21 与 Ship 41，均为 V3 构型。发射窗口在 2026 年 9 月中下旬，官方没有给出确定日期。核心目标有三项：首次进入真正的近地轨道；部署 V3 版 Starlink 卫星；尝试用发射塔机械臂捕获返回的飞船。</p>
+
+<div class="timeline-wrap">
+<div class="tl">
+  <div class="ev key">
+    <div class="d">2026-07-24</div>
+    <div class="t">第 13 飞：飞船成功，助推器失败</div>
+    <div class="x">V3 第二次飞行。上级部署 20 颗 Starlink V3 卫星，在轨重启一台猛禽，完成受控再入并在印度洋软溅落、之后仍漂浮——拿到了隔热与返回的关键数据。一级 B20 完成高推力回推，但着陆点火时多台发动机未重启，硬溅落在墨西哥湾。</div>
+  </div>
+  <div class="ev">
+    <div class="d">2026-08-19 / 08-21</div>
+    <div class="t">Ship 41 单发与六发静态点火</div>
+    <div class="x">8 月 19 日单台点火，模拟轨道任务所需的离轨点火；两天后六台猛禽同时点火 60 秒。这一步验证的是上级在轨重启能力——加注与返回都依赖它。</div>
+  </div>
+  <div class="ev key">
+    <div class="d">2026-08-28</div>
+    <div class="t">Booster 21 全时长静态点火</div>
+    <div class="x">33 台猛禽同时点火，全时长。这是发射前最后一道推进系统关卡。</div>
+  </div>
+  <div class="ev key">
+    <div class="d">2026 年 9 月中下旬（窗口）</div>
+    <div class="t">第 14 飞：冲击首次入轨</div>
+    <div class="x">Booster 21 + Ship 41。若成功，星舰将从「能飞的验证机」变成「能运东西的运输系统」——包括部署 Starlink V3、为后续 HLS 与在轨加注飞行铺路。</div>
+  </div>
+</div>
+</div>
+
+<div class="note info">
+  <b>一个容易被忽视的信号：</b>第 13 飞的上级表现说明，热防护与再入控制已经基本可用；真正反复出问题的是<b>一级的着陆点火</b>。而塔架捕获又要求一级和上级都具备米级落点精度——所以「筷子夹箭」这一步的技术门槛，可能比公众印象里更高。
+</div>
+</section>
+
+<section id="st-refuel">
+    <h2>3.3 在轨加注：去火星的真正瓶颈</h2>
+<p class="lead">从地球直接飞火星，需要的推进剂量远超任何单艘飞船的容量。解决办法只有一个：先把推进剂送到轨道上，加满，再出发。这套架构叫在轨加注，而它<b>一次都没有被验证过</b>。</p>
+
+<p>到第 13 飞为止，星舰从未尝试过让两艘飞船在轨交会、对接并转移低温推进剂。第 13 飞的计划里根本没有第二艘飞船。SpaceX 在 2026 年 8 月的更新里，仍把船对船转移描述为「未来的 HLS 飞行测试」，时间取决于 V3 的进展。</p>
+
+<h3>一次「干净的转移」要跨过多少道坎</h3>
+<p>把接口对上只是开始。真正困难的部分从阀门打开那一刻才开始：</p>
+<ol class="judge">
+  <li>
+    <b>先要能到、能等、能对上</b>
+    <span>两艘飞船进入兼容轨道、完成交会与对接；发动机在轨重启、导航、供电、通信、姿态稳定，缺一项都做不了后续动作。</span>
+  </li>
+  <li>
+    <b>管路预冷与流体沉底</b>
+    <span>低温推进剂会让未预冷的管路瞬间气化，必须先冷却；微重力下液体不会自己待在出口，需要靠推力沉降。</span>
+  </li>
+  <li>
+    <b>两箱压力协调与稳定流动</b>
+    <span>液体与蒸气的边界在微重力下会模糊，仪器必须能区分「转移的是液体」还是「只是气体在流动」，并测出接收了多少质量。</span>
+  </li>
+  <li>
+    <b>联合体姿态管理</b>
+    <span>两个对接的飞行器，随着推进剂从一端流向另一端，质量分布持续变化，制导必须实时接管。</span>
+  </li>
+  <li>
+    <b>安全分离与善后</b>
+    <span>关阀、隔离、安全排放或回收残余、解锁、分离，然后两艘飞船各自执行既定的处置或返回。一次干净的转移接一次危险的分离，不算完成演示。</span>
+  </li>
+</ol>
+
+<p>NASA 现有的低温在轨转移指南刻意做得比单一承包商更宽——原因就是<b>从来没有独立航天器演示过低温推进剂转移</b>。对接和非低温加注有很长的历史，但低温转移是全新的操作类别。一次演示是「开始验证」，不是「验证结束」。</p>
+
+<h3>火星那一端还有第二套加注系统</h3>
+<p>地球轨道上加满，只解决了去程。飞船要在火星表面起飞返航，就得有返程推进剂。SpaceX 的方案是在火星现场制取：用大气中的 CO₂ 加上本地水，通过 Sabatier 反应合成甲烷和氧。化学是清楚的，未解决的是<b>建造一座无人化运行的矿场与化工厂</b>，在乘员依赖它之前完成生产、纯化、液化与长期贮存。</p>
+<p>从地球运返程推进剂，本身就会吃掉更多发射与转移能力。火星原位制取把质量负担从地球移走，代价是依赖地表电力、水源、压缩机、反应堆、低温贮备与在无本地工业基础条件下的维护能力。这两个加注问题相关，但不能混为一谈。</p>
+</section>
+
+<section id="st-check">
+    <h2>3.4 现实检查</h2>
+<div class="note warn">
+  <b>准确的说法是一句很窄的话：在 13 次综合飞行之后，专门验证船对船加注的那个里程碑，还没有到来。</b>说它「失败了」不公平——它压根没被试过。
+</div>
+
+<p>同样需要说清的还有几件事：</p>
+<ul>
+  <li>没有任何一艘星舰上级被发射塔捕获过、翻修过、然后再飞一次。所谓「完全复用」是设计目标，不是已达成的事实。</li>
+  <li>V3 尚未完成过一次从发射到回收的全剖面任务。第 14 飞才是第一次尝试入轨。</li>
+  <li>把在轨加注称为「最大的未验证技术」，是对<b>架构</b>的判断，不是说火箭本身已经完成、距离变得无关紧要。</li>
+  <li>载人火星任务还要叠加数月的生命支持、辐射暴露、医疗自主与通信延迟；进入与着陆的对象比任何已着陆火星的载荷都重得多；地表电力与栖息地必须在人到达之前先活下来。加注解决不了这些问题，它只是让任务的质量与能量预算勉强够用，从而让这些问题变得值得讨论。</li>
+</ul>
+</section>
+
+<nav class="pager">
+  <a class="pg prev" href="02-rocket-tech.html"><span class="pg-d">上一板块 02</span><span class="pg-t">航天火箭技术</span></a>
+  <a class="pg next" href="04-biosphere.html"><span class="pg-d">下一板块 04</span><span class="pg-t">飞船生态圈</span></a>
+</nav>
+
+    <footer>
+      <b>宇宙航行全景</b> · 从可回收火箭到星际航行<br>
+      本页为公开信息整理，数据与判断均已标注来源与不确定性，不构成任何投资建议。<br>
+      <a href="../index.html">← 返回全部板块</a>
+    </footer>
+
+  </main>
+</div>
+
+<button id="totop" type="button" aria-label="回到顶部">
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 13V3M8 3L3.5 7.5M8 3l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script src="../assets/site.js"></script>
+</body>
+</html>
