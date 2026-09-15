@@ -1,0 +1,62 @@
+[
+ {
+  "id": "s1",
+  "title": "全球格局：三个梯队",
+  "sub": false
+ },
+ {
+  "id": "s2",
+  "title": "国际：主要玩家进展",
+  "sub": false
+ },
+ {
+  "id": "s3",
+  "title": "国内：15 款型号分化",
+  "sub": false
+ },
+ {
+  "id": "s3-6",
+  "title": "阶段六 · 入轨+回收闭环",
+  "sub": true
+ },
+ {
+  "id": "s3-5",
+  "title": "阶段五 · 回收实验成功",
+  "sub": true
+ },
+ {
+  "id": "s3-4",
+  "title": "阶段四 · 失利归零",
+  "sub": true
+ },
+ {
+  "id": "s3-23",
+  "title": "阶段二至三 · 在研",
+  "sub": true
+ },
+ {
+  "id": "s4",
+  "title": "技术路线三个分岔口",
+  "sub": false
+ },
+ {
+  "id": "s5",
+  "title": "复用经济学",
+  "sub": false
+ },
+ {
+  "id": "s6",
+  "title": "技术可复制性",
+  "sub": false
+ },
+ {
+  "id": "s7",
+  "title": "关键时间线",
+  "sub": false
+ },
+ {
+  "id": "s8",
+  "title": "五个关键判断",
+  "sub": false
+ }
+]
