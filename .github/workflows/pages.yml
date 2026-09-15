@@ -17,23 +17,35 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.pages.outcome == 'success' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # 说明：configure-pages 的 enablement 选项需要非 GITHUB_TOKEN 的凭据，
+      # 因此这里不自动启用 Pages。仓库需先在 Settings → Pages 把 Source
+      # 设为 GitHub Actions。未启用时该步骤会失败，这里降级为提示，
+      # 避免仓库留下一条红色的失败记录。
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
-        with:
-          # 首次运行时自动在仓库设置里启用 Pages（Source = GitHub Actions）
-          enablement: true
+        continue-on-error: true
+
+      - name: Pages 尚未启用提示
+        if: steps.pages.outcome != 'success'
+        run: |
+          echo "::notice title=Pages 尚未启用::请打开 https://github.com/${{ github.repository }}/settings/pages ，将 Source 设为 GitHub Actions，然后重新运行本工作流。"
 
       - name: Upload artifact
+        if: steps.pages.outcome == 'success'
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
   deploy:
     needs: build
+    if: needs.build.outputs.ready == 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
