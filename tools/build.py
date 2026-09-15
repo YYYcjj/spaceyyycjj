@@ -85,7 +85,7 @@ def render_rail(cur, board_body_is_legacy):
     ]
     for b in BOARDS:
         active = ' active' if b['slug'] == cur['slug'] else ''
-        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">')
+        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
                      f'<span class="n">{b["num"]}</span>{esc(b["title"])}</a>')
         if b['slug'] == cur['slug']:
             subs = cur['toc'] if board_body_is_legacy else [
