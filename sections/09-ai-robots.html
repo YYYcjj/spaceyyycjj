@@ -50,6 +50,7 @@
       <a class="bo" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
       <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
       <a class="bo active" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
+      <a href="#chain" data-toc>技术链路</a>
       <a href="#a-why" data-toc><span class="n">9.1</span>为什么太空必须自主</a>
       <a href="#a-hardware" data-toc><span class="n">9.2</span>算力：抗辐射这道坎</a>
       <a href="#a-robots" data-toc><span class="n">9.3</span>机器人：能替人把东西建起来吗</a>
@@ -67,6 +68,76 @@
       <p class="dek">火星与地球单程通信延迟最长约 20 分钟，比邻星是 4.37 年。这意味着深空任务的自主性不是加分项，而是前提——但今天的「自主」是窄任务自主，不是通用智能。</p>
       <div class="meta">数据来源：NASA JPL、NASA HPSC 项目公开资料、行业市场报告 ｜ 整理 2026-09</div>
     </header>
+
+<section id="chain">
+      <h2>技术链路<span class="en">Technology Chain</span></h2>
+      <p class="lead">最先进的做法不是把地面的 AI 搬上船，而是承认通信延迟改不了，于是把「感知—决策—执行」整条回路搬进船里，只让地面做意图级指令。这一环打通之后，机器人才有可能替代人把设施建起来。</p>
+
+      <div class="frontier">
+        <span class="fr-cap">最先进的方法</span>
+        <span class="fr-t">抗辐射星载自主智能 + 自主机器人建造：把地面回路整个拿掉</span>
+      </div>
+
+      <div class="chain-bar">
+        <div class="cb done">
+          <span class="cb-i">01</span>
+          <span class="cb-t">地面遥操作</span>
+        </div>
+        <div class="cb lock">
+          <span class="cb-i">02</span>
+          <span class="cb-t">通信延迟约束</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">03</span>
+          <span class="cb-t">星上自主决策</span>
+        </div>
+        <div class="cb hold">
+          <span class="cb-i">04</span>
+          <span class="cb-t">抗辐射算力</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">05</span>
+          <span class="cb-t">自主建造机器人</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">06</span>
+          <span class="cb-t">人机协同闭环</span>
+        </div>
+      </div>
+      <div class="chain-legend"><span class="clg-cap">成熟度</span><span class="lg done"><i></i>已实现</span> · <span class="lg run"><i></i>在验证</span> · <span class="lg hold"><i></i>待突破</span> · <span class="lg lock"><i></i>物理约束</span> · <span class="lg plan"><i></i>仅纸上</span></div>
+
+      <h3 class="chain-sub">每一环怎么实现</h3>
+      <ol class="chain-list">
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">地面遥操作</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">近地轨道任务靠地面控制，延迟在秒级以内、可以接受。所有地面验证过的操作流程与工具链都可以直接复用。</div>
+        </li>
+        <li class="lock">
+          <div class="cl-h"><span class="cl-t">通信延迟约束</span><span class="tag t-fail">物理约束</span></div>
+          <div class="cl-x">火星最远单程约 20 分钟。这不是技术问题，是光速决定的几何事实，任何工程手段都改不了。它把「自主」从优化项变成必需项。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">星上自主决策</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">让模型在星上跑：用视觉/激光雷达 SLAM 加惯性、星敏组合做不依赖地面的定位，着陆与避障全部本地完成。难点是模型要足够小而可解释，并且要有明确的安全边界与容错降级策略。</div>
+        </li>
+        <li class="hold">
+          <div class="cl-h"><span class="cl-t">抗辐射算力</span><span class="tag t-hold">待突破</span></div>
+          <div class="cl-x">三条路线在并行：一是抗辐射加固专用芯片（HPSC 项目与 Microchip 合作，性能声称约为在轨芯片的 500 倍）；二是商用现货芯片加三模冗余投票；三是整体屏蔽加内存纠错。本质是在算力与可靠性之间做取舍。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">自主建造机器人</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">就地取材：月壤烧结、3D 打印构件，再用自主机械臂装配。需要高可靠操作与力控，以及在没有实时人工干预下处理异常的能力。这是长期驻留和就地取材的前提。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">人机协同闭环</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">地面只下「意图级」指令（要达成什么），星上自己做「动作级」规划（怎么达成），人只在关键节点介入。这样能把通信需求从连续回路降到事件级。</div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最难的一环：</b>卡在第四环（抗辐射算力）。火星最远单程约 20 分钟的延迟把「必须自主」变成硬性要求，而自主又直接压在算力上——辐射环境会翻转存储位、烧毁器件，要么用加固芯片牺牲性能，要么用冗余与纠错吃掉算力。这是整条链路里唯一还没有看到明确解法的地方。
+      </div>
+    </section>
 
 <section id="a-why">
     <h2>9.1 为什么太空必须自主</h2>
