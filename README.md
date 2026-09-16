@@ -33,6 +33,7 @@ tools/build.py                站点生成器
 tools/content_a.py            板块 1-5 内容
 tools/content_b.py            板块 6-9 内容
 tools/chains.py               九个板块的「技术链路」数据
+tools/costs.py                九个板块的「要花多少钱」数据
 tools/board01_body.html       板块一正文（由早期单页报告抽取，一次性素材）
 tools/board01_toc.json        板块一目录条目
 .github/workflows/pages.yml   GitHub Pages 部署工作流
@@ -46,7 +47,8 @@ python3 tools/build.py
 ```
 
 站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
-技术链路写在 `tools/chains.py`，由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
+技术链路写在 `tools/chains.py`，成本写在 `tools/costs.py`，
+由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
 改内容只改 Python 数据文件，不要手改生成的 HTML。
 
 ## 技术链路
@@ -75,6 +77,27 @@ python3 tools/build.py
 
 成熟度取值只能是 `done` / `run` / `hold` / `lock` / `plan`，
 构建时会校验环数必须为 6、成熟度取值必须合法。
+
+## 要花多少钱
+
+每条技术链路后面都跟一张成本表，按 slug 从 `tools/costs.py` 取：
+
+```python
+"slug": dict(
+    items=[dict(t="项目", a="金额", n="口径与说明")],
+    scale="整条链路的总量级（一句话）",
+    note="口径提醒：金额来源、区间、汇率换算依据",
+)
+```
+
+口径约定：
+
+- 金额单位统一为**美元**，因为原始来源全部是美元计价；只在有实际参考意义时才给人民币换算
+  （按约 7.2 元人民币/美元）。
+- 同一项目不同来源差异可能达到数倍，**凡有区间的一律给区间，不取单点值**；
+  报价（牌价）与成本（边际成本）必须分列，不能混为一谈。
+- 成本表用 `table.cost`，它的列宽只在 `min-width:641px` 生效——
+  写进移动端会覆盖卡片化的 `td{width:100%}`，把卡片压窄。
 
 ## 技术说明
 
