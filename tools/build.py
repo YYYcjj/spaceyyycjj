@@ -30,16 +30,19 @@ from content_a import SITE, BOARDS_A          # noqa: E402
 from content_b import BOARDS_B                # noqa: E402
 from chains import CHAINS                     # noqa: E402
 from costs import COSTS                       # noqa: E402
+from designs import DESIGNS                   # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
 
-# 把技术链路与成本挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
+# 把技术链路 / 成本 / 具体设计挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
 for _b in BOARDS:
     _b['chain'] = CHAINS.get(_b['slug'])
     _b['cost'] = COSTS.get(_b['slug'])
+    _b['design'] = DESIGNS.get(_b['slug'])
     assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
     assert _b['cost'], f'板块 {_b["slug"]} 缺少成本数据'
+    assert _b['design'], f'板块 {_b["slug"]} 缺少具体设计'
 
 # 状态 → (标签类, 中文标签)
 CHAIN_STATUS = [
@@ -222,6 +225,56 @@ def render_cost(cost):
     )
 
 
+# ---------------------------------------------------------------- 具体设计
+def render_design(b, num):
+    """把 design 数据渲染成：设计目标 → 三维等轴测图 → 设计参数 → 设计分解 → 说明。"""
+    d = b.get('design')
+    if not d:
+        return ''
+
+    specs = []
+    for it in d['specs']:
+        specs.append(f'          <tr>\n'
+                     f'            <td class="nm" data-th="设计参数">{esc(it["k"])}</td>\n'
+                     f'            <td class="num" data-th="取值">{esc(it["v"])}</td>\n'
+                     f'            <td data-th="为什么是这个值">{esc(it["n"])}</td>\n'
+                     f'          </tr>')
+
+    subs = '\n'.join(
+        f'        <div class="ds">\n'
+        f'          <div class="ds-t">{esc(s["t"])}</div>\n'
+        f'          <div class="ds-n">{esc(s["n"])}</div>\n'
+        f'        </div>' for s in d['subs'])
+
+    return (
+        '<section id="design">\n'
+        '      <h2>具体设计<span class="en">Design</span></h2>\n'
+        f'      <p class="lead">{esc(d["headline"])}</p>\n'
+        '\n'
+        '      <figure class="figure">\n'
+        f'        <div class="fig-scroll">{d["scene"]()}</div>\n'
+        f'        <p class="fig-hint">图为等轴测示意图，手机上可左右拖动查看细节。</p>\n'
+        f'        <figcaption>图 {num}　{esc(d["caption"])}</figcaption>\n'
+        '      </figure>\n'
+        '\n'
+        '      <h3 class="chain-sub">设计参数</h3>\n'
+        '      <div class="tablewrap">\n'
+        '        <table class="spec">\n'
+        '          <thead><tr><th>设计参数</th><th>取值</th><th>为什么是这个值</th></tr></thead>\n'
+        '          <tbody>\n' + '\n'.join(specs) + '\n          </tbody>\n'
+        '        </table>\n'
+        '      </div>\n'
+        '\n'
+        '      <h3 class="chain-sub">设计分解</h3>\n'
+        '      <div class="design-subs">\n' + subs + '\n      </div>\n'
+        '\n'
+        '      <div class="note warn">\n'
+        f'        {esc(d["note"])}\n'
+        '      </div>\n'
+        '    </section>'
+    )
+
+
 # ---------------------------------------------------------------- 页面外壳
 PAGE = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -287,18 +340,21 @@ PAGE = """<!DOCTYPE html>
 
 
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
+DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='')
 
 
 def build_section(b, board01):
     legacy = b.get('legacy')
     chain = render_chain(b)
+    design = render_design(b, b['num'])
+    front = (chain + '\n\n' + design) if chain else design
 
     if legacy:
         body = board01[0]
-        if chain:
+        if front:
             # 插在 KPI 之后、第一个正式章节之前
             m = re.search(r'\n<section id=', body)
-            body = body[:m.start()] + '\n\n' + chain + body[m.start():]
+            body = body[:m.start()] + '\n\n' + front + body[m.start():]
         toc_subs = board01[1]
     else:
         n = int(b['num'])
@@ -309,13 +365,14 @@ def build_section(b, board01):
                           f'{s["html"].strip()}\n'
                           f'</section>')
         body = '\n\n'.join(blocks)
-        if chain:
-            body = chain + '\n\n' + body
+        if front:
+            body = front + '\n\n' + body
         toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
                     for i, s in enumerate(b['subs'])]
 
-    # 侧栏目录：技术链路永远是第一项，且不带编号
-    b['toc'] = ([dict(CHAIN_TOC)] + toc_subs) if chain else toc_subs
+    # 侧栏目录：技术链路 / 具体设计 在最前面，且不带编号
+    head = ([dict(CHAIN_TOC)] if chain else []) + ([dict(DESIGN_TOC)] if design else [])
+    b['toc'] = head + toc_subs
 
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
