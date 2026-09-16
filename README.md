@@ -27,6 +27,8 @@
 ```
 index.html                    首页：九个板块总览 + 首屏 KPI
 sections/01-current.html      … 09-ai-robots.html   九个板块页
+figures/01-current.svg        … 09-ai-robots.svg   各板块的三维设计图（独立矢量文件）
+figures/index.json            图片清单（文件名 / 标题 / 图注 / 尺寸）
 assets/site.css               设计系统（含移动端卡片化）
 assets/site.js                交互脚本（无依赖）
 tools/build.py                站点生成器
@@ -36,6 +38,8 @@ tools/chains.py               九个板块的「技术链路」数据
 tools/costs.py                九个板块的「要花多少钱」数据
 tools/designs.py              九个板块的「具体设计」数据 + 三维等轴测场景
 tools/iso.py                  等轴测（isometric）SVG 生成器
+tools/check_designs.py        设计图自检（文字越界 / 互相重叠）
+tools/export_figures.py       把九张图导出成独立的 figures/*.svg
 tools/board01_body.html       板块一正文（由早期单页报告抽取，一次性素材）
 tools/board01_toc.json        板块一目录条目
 .github/workflows/pages.yml   GitHub Pages 部署工作流
@@ -45,8 +49,13 @@ tools/board01_toc.json        板块一目录条目
 ## 重新生成
 
 ```bash
-python3 tools/build.py
+python3 tools/build.py            # 生成 index.html 与 sections/*.html
+python3 tools/check_designs.py    # 设计图自检
+python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重跑）
 ```
+
+注意：页面里每张图的右下角有一个「打开矢量原图（SVG）」链接，指向 `../figures/NN-slug.svg`。
+**改了 `designs.py` 里的图之后必须重跑 `export_figures.py`**，否则页面上的图和下载到的原图会不一致。
 
 站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
 技术链路写在 `tools/chains.py`，成本写在 `tools/costs.py`，具体设计写在 `tools/designs.py`，
