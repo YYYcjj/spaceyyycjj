@@ -43,6 +43,7 @@
     <nav aria-label="目录">
       <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
       <a class="bo active" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
+      <a href="#chain" data-toc>技术链路</a>
       <a href="#r-ceiling" data-toc><span class="n">2.1</span>天花板在哪：三个数把话说死</a>
       <a href="#r-cycle" data-toc><span class="n">2.2</span>发动机循环：三条路线各自放弃了什么</a>
       <a href="#r-material" data-toc><span class="n">2.3</span>推进剂与箭体材料的取舍</a>
@@ -66,6 +67,76 @@
       <p class="dek">可回收、复用、在轨加注——这些都在改变航天。但火箭本身的热力学极限没有变：化学推进的比冲已经接近理论值，剩下能压的只有结构质量和翻修成本。</p>
       <div class="meta">公开口径参数 ｜ 不同批次与来源存在差异 ｜ 数据整理 2026-09</div>
     </header>
+
+<section id="chain">
+      <h2>技术链路<span class="en">Technology Chain</span></h2>
+      <p class="lead">化学推进的物理天花板改不了，所以最先进的做法不是「提高比冲」，而是选一条能在逼近比冲上限的同时把翻修成本压下去的组合——这才是火箭技术真正的竞争点。</p>
+
+      <div class="frontier">
+        <span class="fr-cap">最先进的方法</span>
+        <span class="fr-t">全流量分级燃烧 + 液氧甲烷：把比冲和翻修成本同时往极限推</span>
+      </div>
+
+      <div class="chain-bar">
+        <div class="cb done">
+          <span class="cb-i">01</span>
+          <span class="cb-t">推进剂选择</span>
+        </div>
+        <div class="cb done">
+          <span class="cb-i">02</span>
+          <span class="cb-t">发动机循环</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">03</span>
+          <span class="cb-t">比冲逼近上限</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">04</span>
+          <span class="cb-t">结构与冷却</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">05</span>
+          <span class="cb-t">结构系数压缩</span>
+        </div>
+        <div class="cb hold">
+          <span class="cb-i">06</span>
+          <span class="cb-t">翻修成本</span>
+        </div>
+      </div>
+      <div class="chain-legend"><span class="clg-cap">成熟度</span><span class="lg done"><i></i>已实现</span> · <span class="lg run"><i></i>在验证</span> · <span class="lg hold"><i></i>待突破</span> · <span class="lg lock"><i></i>物理约束</span> · <span class="lg plan"><i></i>仅纸上</span></div>
+
+      <h3 class="chain-sub">每一环怎么实现</h3>
+      <ol class="chain-list">
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">推进剂选择</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">选液氧甲烷。它比冲不如液氢液氧、密度比冲不如煤油，但赢在两件事：结焦温度约 978°C、积碳极少，以及可以在火星原位制备——前者决定翻修速度，后者决定返程燃料。</div>
+        </li>
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">发动机循环</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">走全流量分级燃烧：两套预燃室各自驱动一台涡轮泵，全部推进剂都经过预燃室，没有级间密封的泄漏损失，室压可以做到 300 bar 量级，是当前室压最高的循环。代价是系统复杂、启动时序难调。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">比冲逼近上限</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">室压越高，膨胀比越大，比冲越接近理论值。工程手段是提高室压 + 加大喷管面积比，但受材料耐温与再生冷却能力限制，只能一点一点抠。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">结构与冷却</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">再生冷却通道把推进剂先流过内壁带走热量；内壁用铜合金、涡轮泵用高温合金；增材制造把复杂流道一次成型，省掉大量焊缝。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">结构系数压缩</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">干重约占起飞重量 4%。手段是复合材料贮箱、铝锂合金、拓扑优化。但可回收设计会把着陆腿、栅格舵、剩余推进剂都算进干重，所以复用箭的结构系数天然比一次性箭更差。</div>
+        </li>
+        <li class="hold">
+          <div class="cl-h"><span class="cl-t">翻修成本</span><span class="tag t-hold">待突破</span></div>
+          <div class="cl-x">目标是把复用做成「过站检查」：深度节流、多次点火、健康监测（振动/温度/应变）提前预警部件寿命。翻修工时至今没有公开口径，这也是复用是否真便宜的最后一环。</div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最难的一环：</b>比冲上限由推进剂组合锁死（液氢液氧理论真空比冲约 450 s），工程手段只能逼近它。前两环已经走完，第四、五环是仅剩空间，而且方向相反——可回收设计本身会把结构系数推高。想要量级突破，只能换掉化学推进（见板块五）。
+      </div>
+    </section>
 
 <section id="r-ceiling">
     <h2>2.1 天花板在哪：三个数把话说死</h2>
