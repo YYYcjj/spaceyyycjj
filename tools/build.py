@@ -29,14 +29,17 @@ sys.path.insert(0, HERE)
 from content_a import SITE, BOARDS_A          # noqa: E402
 from content_b import BOARDS_B                # noqa: E402
 from chains import CHAINS                     # noqa: E402
+from costs import COSTS                       # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
 
-# 把技术链路挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
+# 把技术链路与成本挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
 for _b in BOARDS:
     _b['chain'] = CHAINS.get(_b['slug'])
+    _b['cost'] = COSTS.get(_b['slug'])
     assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
+    assert _b['cost'], f'板块 {_b["slug"]} 缺少成本数据'
 
 # 状态 → (标签类, 中文标签)
 CHAIN_STATUS = [
@@ -184,7 +187,38 @@ def render_chain(b):
         '      <div class="note warn">\n'
         f'        <b>最难的一环：</b>{esc(ch["bottleneck"])}\n'
         '      </div>\n'
+        '\n'
+        + render_cost(b.get('cost')) + '\n'
         '    </section>'
+    )
+
+
+# ---------------------------------------------------------------- 要花多少钱
+def render_cost(cost):
+    """把成本数据渲染成一张三段式表格：项目 / 金额 / 口径与说明。"""
+    if not cost:
+        return ''
+
+    rows = []
+    for it in cost['items']:
+        rows.append(f'          <tr>\n'
+                    f'            <td class="nm" data-th="项目">{esc(it["t"])}</td>\n'
+                    f'            <td class="num" data-th="金额">{esc(it["a"])}</td>\n'
+                    f'            <td data-th="口径与说明">{esc(it["n"])}</td>\n'
+                    f'          </tr>')
+
+    return (
+        '      <h3 class="chain-sub">要花多少钱</h3>\n'
+        '      <div class="tablewrap">\n'
+        '        <table class="cost">\n'
+        '          <thead><tr><th>项目</th><th>金额</th><th>口径与说明</th></tr></thead>\n'
+        '          <tbody>\n' + '\n'.join(rows) + '\n          </tbody>\n'
+        '        </table>\n'
+        '      </div>\n'
+        f'      <p class="cost-scale"><b>总量级：</b>{esc(cost["scale"])}</p>\n'
+        '      <div class="note info">\n'
+        f'        {esc(cost["note"])}\n'
+        '      </div>'
     )
 
 
