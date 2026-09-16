@@ -476,3 +476,125 @@ footer b{color:var(--muted); font-weight:600;}
   .pg.next{text-align:left;}
   .pg.empty{display:none;}
 }
+
+/* ==========================================================================
+   技术链路：概览条 + 图例 + 逐环明细 + 当前卡点
+   ========================================================================== */
+
+/* ---------- 概览条：六环并排，顶部一条颜色表示状态 ---------- */
+.chain-bar{
+  display:grid; grid-auto-flow:column; grid-auto-columns:1fr;
+  gap:1px; background:var(--line);
+  border:1px solid var(--line); border-radius:var(--radius);
+  overflow:hidden; margin:18px 0 0;
+}
+.chain-bar .cb{
+  position:relative; background:var(--bg);
+  padding:13px 12px 11px;
+  display:flex; flex-direction:column; gap:5px;
+}
+.chain-bar .cb::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:3px;
+  background:var(--gray-bd);
+}
+.chain-bar .cb.done::before{background:var(--green-bd);}
+.chain-bar .cb.run::before {background:var(--blue-bd);}
+.chain-bar .cb.hold::before{background:var(--amber-bd);}
+.chain-bar .cb.lock::before{background:var(--red-bd);}
+.chain-bar .cb.plan::before{background:var(--gray-bd);}
+.chain-bar .cb-i{
+  font-size:10px; letter-spacing:.9px; color:var(--faint);
+  font-variant-numeric:tabular-nums; line-height:1;
+}
+.chain-bar .cb.done .cb-i{color:var(--green-tx);}
+.chain-bar .cb.run .cb-i {color:var(--blue-tx);}
+.chain-bar .cb.hold .cb-i{color:var(--amber-tx);}
+.chain-bar .cb.lock .cb-i{color:var(--red-tx);}
+.chain-bar .cb-t{
+  font-size:12.5px; font-weight:600; letter-spacing:-.1px; line-height:1.35;
+}
+
+/* ---------- 最先进的方法 ---------- */
+.frontier{
+  background:var(--accent-bg); border:1px solid var(--accent-bd);
+  border-radius:var(--radius); padding:15px 19px 16px; margin:18px 0 0;
+}
+.frontier .fr-cap{
+  display:block; font-size:10.5px; letter-spacing:1.3px; text-transform:uppercase;
+  color:var(--accent); font-weight:600; margin-bottom:6px;
+}
+.frontier .fr-t{
+  display:block; font-size:15.5px; font-weight:650; letter-spacing:-.2px; line-height:1.55;
+}
+
+/* ---------- 图例 ---------- */
+.chain-legend{
+  display:flex; flex-wrap:wrap; align-items:center; gap:13px;
+  margin:11px 0 0; font-size:11.5px; color:var(--muted);
+}
+.chain-legend .clg-cap{color:var(--faint); letter-spacing:.6px;}
+.chain-legend .lg{display:inline-flex; align-items:center; gap:6px;}
+.chain-legend .lg i{
+  display:block; width:10px; height:3px; border-radius:2px; background:var(--gray-bd);
+}
+.chain-legend .lg.done i{background:var(--green-bd);}
+.chain-legend .lg.run i {background:var(--blue-bd);}
+.chain-legend .lg.hold i{background:var(--amber-bd);}
+.chain-legend .lg.lock i{background:var(--red-bd);}
+.chain-legend .lg.plan i{background:var(--gray-bd);}
+
+/* ---------- 逐环明细 ---------- */
+.chain-sub{
+  font-size:13px; font-weight:650; letter-spacing:.2px; color:var(--muted);
+  margin:30px 0 0; padding:0; border:none;
+}
+.chain-sub::before{
+  content:""; display:inline-block; width:14px; height:2px; background:var(--ink);
+  vertical-align:middle; margin-right:9px;
+}
+.chain-list{list-style:none; padding:0; margin:16px 0 0; counter-reset:cn;}
+.chain-list li{
+  counter-increment:cn; position:relative;
+  padding:0 0 20px 42px; margin-left:13px;
+  border-left:2px solid var(--line-strong);
+}
+.chain-list li:last-child{border-left-color:transparent; padding-bottom:2px;}
+.chain-list li::before{
+  content:counter(cn, decimal-leading-zero);
+  position:absolute; left:-13px; top:0;
+  width:24px; height:24px; line-height:20px;
+  border:2px solid var(--line-strong); border-radius:50%;
+  background:var(--bg); color:var(--muted);
+  font-size:9.5px; font-weight:600; text-align:center;
+  font-variant-numeric:tabular-nums; letter-spacing:-.3px;
+}
+.chain-list li.done::before{border-color:var(--green-bd); color:var(--green-tx);}
+.chain-list li.run::before {border-color:var(--blue-bd);  color:var(--blue-tx);}
+.chain-list li.hold::before{border-color:var(--amber-bd); color:var(--amber-tx);}
+.chain-list li.lock::before{border-color:var(--red-bd);   color:var(--red-tx);}
+.chain-list li.plan::before{border-color:var(--gray-bd);  color:var(--gray-tx);}
+.chain-list .cl-h{
+  display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+  min-height:24px; margin-bottom:5px;
+}
+.chain-list .cl-t{font-size:14.5px; font-weight:650; letter-spacing:-.2px;}
+.chain-list .cl-x{font-size:13px; color:var(--text-soft); line-height:1.7; max-width:68ch;}
+
+/* ---------- 链路段的响应式 ---------- */
+@media (max-width:1080px){
+  .chain-bar .cb{padding:11px 10px 9px;}
+  .chain-bar .cb-t{font-size:12px;}
+}
+@media (max-width:640px){
+  /* 手机上概览条会挤成六列，直接让明细列表承担链路表达 */
+  .chain-bar,.chain-legend{display:none;}
+  .frontier{padding:13px 15px 14px; margin-top:16px;}
+  .frontier .fr-t{font-size:14.5px;}
+  .chain-sub{margin-top:26px;}
+  .chain-list{margin-top:16px;}
+  .chain-list li{padding-left:36px; margin-left:11px;}
+  .chain-list li::before{left:-11px; width:22px; height:22px; line-height:18px;}
+  .chain-list .cl-h{min-height:22px; gap:7px;}
+  .chain-list .cl-t{font-size:14px;}
+  .chain-list .cl-x{font-size:12.5px;}
+}
