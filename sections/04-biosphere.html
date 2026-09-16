@@ -45,6 +45,7 @@
       <a class="bo" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
       <a class="bo" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
       <a class="bo active" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
+      <a href="#chain" data-toc>技术链路</a>
       <a href="#b-math" data-toc><span class="n">4.1</span>先把账算清：一个人一天要多少</a>
       <a href="#b-eclss" data-toc><span class="n">4.2</span>闭环做到了什么程度</a>
       <a href="#b-radiation" data-toc><span class="n">4.3</span>辐射：唯一还没有解法的问题</a>
@@ -67,6 +68,76 @@
       <p class="dek">一个人每天消耗 0.8 公斤氧、3 公斤水、1.5 公斤食物。任务越长，这些数字就越不是补给问题，而是闭环率问题——回收不到的水，只能用发射成本去买。</p>
       <div class="meta">数据来源：NASA ECLSS 公开资料、ISS 在轨运行记录 ｜ 整理 2026-09</div>
     </header>
+
+<section id="chain">
+      <h2>技术链路<span class="en">Technology Chain</span></h2>
+      <p class="lead">最先进的做法不是「多带点补给」，而是把地球的生物地球化学循环拆成几段搬到船上：先用水和氧的物理化学闭环把最容易闭的闭上，再用植物把食物这一段补上。</p>
+
+      <div class="frontier">
+        <span class="fr-cap">最先进的方法</span>
+        <span class="fr-t">物理化学再生 + 受控生态生保（CELSS）的混合闭环</span>
+      </div>
+
+      <div class="chain-bar">
+        <div class="cb done">
+          <span class="cb-i">01</span>
+          <span class="cb-t">水闭环</span>
+        </div>
+        <div class="cb done">
+          <span class="cb-i">02</span>
+          <span class="cb-t">氧与二氧化碳闭环</span>
+        </div>
+        <div class="cb hold">
+          <span class="cb-i">03</span>
+          <span class="cb-t">食物闭环</span>
+        </div>
+        <div class="cb hold">
+          <span class="cb-i">04</span>
+          <span class="cb-t">废物资源化</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">05</span>
+          <span class="cb-t">人工重力</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">06</span>
+          <span class="cb-t">辐射防护</span>
+        </div>
+      </div>
+      <div class="chain-legend"><span class="clg-cap">成熟度</span><span class="lg done"><i></i>已实现</span> · <span class="lg run"><i></i>在验证</span> · <span class="lg hold"><i></i>待突破</span> · <span class="lg lock"><i></i>物理约束</span> · <span class="lg plan"><i></i>仅纸上</span></div>
+
+      <h3 class="chain-sub">每一环怎么实现</h3>
+      <ol class="chain-list">
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">水闭环</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">收集冷凝水与尿液，经蒸馏、多级过滤、催化氧化后回到饮用水标准。ISS 的水回收闭环率约 98%，是整条链路里闭得最彻底的一环。</div>
+        </li>
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">氧与二氧化碳闭环</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">电解水制氧供呼吸；用 Sabatier 反应把二氧化碳和氢还原成甲烷与水，水再回去电解。氧回收约 50%，剩下的一半靠补充。这条循环已经工程化运行多年。</div>
+        </li>
+        <li class="hold">
+          <div class="cl-h"><span class="cl-t">食物闭环</span><span class="tag t-hold">待突破</span></div>
+          <div class="cl-x">走受控生态生保：水培/气雾培在密闭舱内种叶菜与小麦，用 LED 按需配光谱、把光效压到最高。难点是体积、能耗与光照面积——要喂饱一个人，种植面积本身就是一笔巨大的质量账，所以至今没有闭环。</div>
+        </li>
+        <li class="hold">
+          <div class="cl-h"><span class="cl-t">废物资源化</span><span class="tag t-hold">待突破</span></div>
+          <div class="cl-x">用生物反应器或湿式氧化把有机废物转成养分与气体，这一步是食物闭环的必要配套，否则闭环在质量上不成立。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">人工重力</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">用旋转舱产生离心加速度，替代地球重力。工程上是把居住舱与配重臂连接后整体旋转，但转动带来的科里奥利效应会让人体前庭系统不适，转速与半径必须折中。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">辐射防护</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">被动路线用富氢材料（聚乙烯、水墙，甚至用饮水与废物充当屏蔽层）；主动路线用超导磁层偏转带电粒子，但需要低温与巨大功率。目前两条都没有可上船的方案，这是唯一还没有解法的环节。</div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最难的一环：</b>水和氧已经能闭环，但链路卡在食物与辐射这两环。一次 3 年往返的火星任务，靠地球补给食物在质量上算不过来；而辐射防护至今没有可行方案，是唯一连技术路线都不清晰的环节。
+      </div>
+    </section>
 
 <section id="b-math">
     <h2>4.1 先把账算清：一个人一天要多少</h2>
