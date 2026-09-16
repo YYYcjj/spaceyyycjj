@@ -107,7 +107,7 @@ def render_rail(cur):
     ]
     for b in BOARDS:
         active = ' active' if b['slug'] == cur['slug'] else ''
-        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">')
+        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
                      f'<span class="n">{b["num"]}</span>{esc(b["title"])}</a>')
         if b['slug'] == cur['slug']:
             for s in cur['toc']:
@@ -134,13 +134,13 @@ def render_pager(cur):
     out = []
     if i > 0:
         p = BOARDS[i - 1]
-        out.append(f'<a class="pg prev" href="{section_filename(p)}">')
+        out.append(f'<a class="pg prev" href="{section_filename(p)}">'
                    f'<span class="pg-d">上一板块 {p["num"]}</span><span class="pg-t">{esc(p["title"])}</span></a>')
     else:
         out.append('<span class="pg empty"></span>')
     if i < len(BOARDS) - 1:
         n = BOARDS[i + 1]
-        out.append(f'<a class="pg next" href="{section_filename(n)}">')
+        out.append(f'<a class="pg next" href="{section_filename(n)}">'
                    f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{esc(n["title"])}</span></a>')
     else:
         out.append('<a class="pg next" href="../index.html">')
