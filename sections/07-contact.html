@@ -49,6 +49,7 @@
       <a class="bo" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
       <a class="bo active" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
       <a href="#chain" data-toc>技术链路</a>
+      <a href="#design" data-toc>具体设计</a>
       <a href="#c-paradox" data-toc><span class="n">7.1</span>费米悖论：问题本身比答案可靠</a>
       <a href="#c-biosign" data-toc><span class="n">7.2</span>生物标志物：从大气里读生命</a>
       <a href="#c-seti" data-toc><span class="n">7.3</span>射电搜索：一次有价值的静默</a>
@@ -179,6 +180,93 @@
       <p class="cost-scale"><b>总量级：</b>整条搜索链路的总投入是亿元级，不到一台旗舰望远镜的零头</p>
       <div class="note info">
         这是九条链路里最便宜的一条。1 亿美元摊到十年是每年 1,000 万美元——与「不去找就永远不知道」的不确定性相比，成本本身不构成放弃的理由。
+      </div>
+    </section>
+
+<section id="design">
+      <h2>具体设计<span class="en">Design</span></h2>
+      <p class="lead">从「守着听一次」改成「买下十年望远镜时间做系统扫描」，并把确认流程做成流水线</p>
+
+      <figure class="figure">
+        <div class="fig-scroll"><svg viewBox="0 0 680 410" role="img" aria-label="射电 SETI 天线阵列与信号处理链的等轴测示意图"><defs><marker id="ar" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#6f6f69" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><polygon points="245.37,224.83 273.41,241.02 245.37,257.21 217.33,241.02" fill="#f1efe8" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="217.33,241.02 245.37,257.21 245.37,263.68 217.33,247.49" fill="#e2dfd6" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="273.41,241.02 245.37,257.21 245.37,263.68 273.41,247.49" fill="#cbc8bf" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><ellipse cx="245.37" cy="241.02" rx="5.95" ry="3.43" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 239.42 226.45 L 239.42 241.02 A 5.95 3.43 0 0 0 251.32 241.02 L 251.32 226.45 A 5.95 3.43 0 0 1 239.42 226.45 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="226.45" rx="5.95" ry="3.43" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 239.42 226.45 L 213.64 202.17 A 31.72 18.32 0 0 1 277.09 202.17 L 251.32 226.45 A 5.95 3.43 0 0 0 239.42 226.45 Z" fill="#e3e3de" stroke="#1c1c1a" stroke-width="0.8" opacity="1.0"/><polygon points="309.86,262.06 337.9,278.25 309.86,294.44 281.82,278.25" fill="#f1efe8" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="281.82,278.25 309.86,294.44 309.86,300.92 281.82,284.73" fill="#e2dfd6" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="337.9,278.25 309.86,294.44 309.86,300.92 337.9,284.73" fill="#cbc8bf" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><ellipse cx="245.37" cy="202.17" rx="31.72" ry="18.32" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 213.64 200.55 L 213.64 202.17 A 31.72 18.32 0 0 0 277.09 202.17 L 277.09 200.55 A 31.72 18.32 0 0 1 213.64 200.55 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="200.55" rx="31.72" ry="18.32" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="200.55" rx="3.97" ry="2.29" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 241.4 190.84 L 241.4 200.55 A 3.97 2.29 0 0 0 249.33 200.55 L 249.33 190.84 A 3.97 2.29 0 0 1 241.4 190.84 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="190.84" rx="3.97" ry="2.29" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="190.84" rx="4.96" ry="2.86" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 240.41 186.79 L 240.41 190.84 A 4.96 2.86 0 0 0 250.32 190.84 L 250.32 186.79 A 4.96 2.86 0 0 1 240.41 186.79 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="245.37" cy="186.79" rx="4.96" ry="2.86" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="278.25" rx="5.95" ry="3.43" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 303.91 263.68 L 303.91 278.25 A 5.95 3.43 0 0 0 315.81 278.25 L 315.81 263.68 A 5.95 3.43 0 0 1 303.91 263.68 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="263.68" rx="5.95" ry="3.43" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 303.91 263.68 L 278.14 239.4 A 31.72 18.32 0 0 1 341.58 239.4 L 315.81 263.68 A 5.95 3.43 0 0 0 303.91 263.68 Z" fill="#e3e3de" stroke="#1c1c1a" stroke-width="0.8" opacity="1.0"/><polygon points="374.35,299.3 402.39,315.49 374.35,331.67 346.31,315.49" fill="#f1efe8" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="346.31,315.49 374.35,331.67 374.35,338.15 346.31,321.96" fill="#e2dfd6" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="402.39,315.49 374.35,331.67 374.35,338.15 402.39,321.96" fill="#cbc8bf" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><ellipse cx="309.86" cy="239.4" rx="31.72" ry="18.32" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 278.14 237.78 L 278.14 239.4 A 31.72 18.32 0 0 0 341.58 239.4 L 341.58 237.78 A 31.72 18.32 0 0 1 278.14 237.78 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="237.78" rx="31.72" ry="18.32" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="237.78" rx="3.97" ry="2.29" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 305.89 228.07 L 305.89 237.78 A 3.97 2.29 0 0 0 313.82 237.78 L 313.82 228.07 A 3.97 2.29 0 0 1 305.89 228.07 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="228.07" rx="3.97" ry="2.29" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="228.07" rx="4.96" ry="2.86" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 304.9 224.02 L 304.9 228.07 A 4.96 2.86 0 0 0 314.81 228.07 L 314.81 224.02 A 4.96 2.86 0 0 1 304.9 224.02 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="309.86" cy="224.02" rx="4.96" ry="2.86" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 301.93 223.21 L 268.22 50 A 41.64 24.04 0 0 1 351.49 50 L 317.79 223.21 A 7.93 4.58 0 0 0 301.93 223.21 Z" fill="#a3c8ea" opacity="0.18"/><ellipse cx="374.35" cy="315.49" rx="5.95" ry="3.43" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 368.4 300.92 L 368.4 315.49 A 5.95 3.43 0 0 0 380.3 315.49 L 380.3 300.92 A 5.95 3.43 0 0 1 368.4 300.92 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="374.35" cy="300.92" rx="5.95" ry="3.43" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 368.4 300.92 L 342.63 276.63 A 31.72 18.32 0 0 1 406.07 276.63 L 380.3 300.92 A 5.95 3.43 0 0 0 368.4 300.92 Z" fill="#e3e3de" stroke="#1c1c1a" stroke-width="0.8" opacity="1.0"/><ellipse cx="374.35" cy="276.63" rx="31.72" ry="18.32" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 342.63 275.01 L 342.63 276.63 A 31.72 18.32 0 0 0 406.07 276.63 L 406.07 275.01 A 31.72 18.32 0 0 1 342.63 275.01 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="374.35" cy="275.01" rx="31.72" ry="18.32" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="374.35" cy="275.01" rx="3.97" ry="2.29" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 370.38 265.3 L 370.38 275.01 A 3.97 2.29 0 0 0 378.31 275.01 L 378.31 265.3 A 3.97 2.29 0 0 1 370.38 265.3 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="374.35" cy="265.3" rx="3.97" ry="2.29" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><polygon points="415,332.48 420.61,335.72 399.58,347.86 393.98,344.63" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="393.98,344.63 399.58,347.86 399.58,360.81 393.98,357.58" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="420.61,335.72 399.58,347.86 399.58,360.81 420.61,348.67" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><ellipse cx="374.35" cy="265.3" rx="4.96" ry="2.86" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 369.39 261.25 L 369.39 265.3 A 4.96 2.86 0 0 0 379.3 265.3 L 379.3 261.25 A 4.96 2.86 0 0 1 369.39 261.25 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="374.35" cy="261.25" rx="4.96" ry="2.86" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><polygon points="424.82,338.15 430.43,341.39 409.4,353.53 403.79,350.29" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="403.79,350.29 409.4,353.53 409.4,366.48 403.79,363.24" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="430.43,341.39 409.4,353.53 409.4,366.48 430.43,354.34" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="434.63,343.82 440.24,347.05 419.21,359.19 413.6,355.96" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="413.6,355.96 419.21,359.19 419.21,372.15 413.6,368.91" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="440.24,347.05 419.21,359.19 419.21,372.15 440.24,360" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="309.86,343.01 349.11,365.67 328.08,377.81 288.83,355.15" fill="#cfe2f7" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="288.83,355.15 328.08,377.81 328.08,394 288.83,371.34" fill="#a9caf0" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="349.11,365.67 328.08,377.81 328.08,394 349.11,381.86" fill="#83b2e1" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="444.45,349.48 450.05,352.72 429.02,364.86 423.42,361.62" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="423.42,361.62 429.02,364.86 429.02,377.81 423.42,374.57" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="450.05,352.72 429.02,364.86 429.02,377.81 450.05,365.67" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="309.86,339.77 349.11,362.43 328.08,374.57 288.83,351.91" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="288.83,351.91 328.08,374.57 328.08,377.81 288.83,355.15" fill="#d9dce1" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="349.11,362.43 328.08,374.57 328.08,377.81 349.11,365.67" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="454.26,355.15 459.87,358.39 438.84,370.53 433.23,367.29" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="433.23,367.29 438.84,370.53 438.84,383.48 433.23,380.24" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="459.87,358.39 438.84,370.53 438.84,383.48 459.87,371.34" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="464.07,360.81 469.68,364.05 448.65,376.19 443.04,372.96" fill="#5a5e66" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="443.04,372.96 448.65,376.19 448.65,389.14 443.04,385.91" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polygon points="469.68,364.05 448.65,376.19 448.65,389.14 469.68,377" fill="#34373d" stroke="#1c1c1a" stroke-width="0.7" stroke-linejoin="round"/><polyline points="309.86,82.37 330.98,75.9 356.8,75.9" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="361.8" y="71.9" fill="#6f6f69" font-size="10.5" text-anchor="start">窄带信号 1–10 GHz</text><polyline points="374.35,265.3 394.75,260.45 419.68,260.45" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="424.68" y="256.45" fill="#6f6f69" font-size="10.5" text-anchor="start">馈源 · 多波束接收机</text><polyline points="374.35,283.11 394.75,286.35 419.68,286.35" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="424.68" y="282.35" fill="#6f6f69" font-size="10.5" text-anchor="start">口径决定灵敏度</text><polyline points="245.37,223.21 224.97,218.36 200.04,218.36" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="195.04" y="214.36" fill="#6f6f69" font-size="10.5" text-anchor="end">抛物面天线 ×3</text><polyline points="329.49,349.48 300.26,357.58 264.53,357.58" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="259.53" y="353.58" fill="#6f6f69" font-size="10.5" text-anchor="end">10 年专用观测时间</text><polyline points="349.11,360.81 352.57,352.72 356.8,352.72" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="361.8" y="348.72" fill="#6f6f69" font-size="10.5" text-anchor="start">信号处理方舱</text><polyline points="424.82,334.91 449.63,340.58 479.96,340.58" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="484.96" y="336.58" fill="#6f6f69" font-size="10.5" text-anchor="start">相干消色散 · 干扰剔除</text></svg></div>
+        <p class="fig-hint">图为等轴测示意图，手机上可左右拖动查看细节。</p>
+        <figcaption>图 07　抛物面口径决定灵敏度，馈源处的多波束接收机决定能同时扫多少天区。</figcaption>
+      </figure>
+
+      <h3 class="chain-sub">设计参数</h3>
+      <div class="tablewrap">
+        <table class="spec">
+          <thead><tr><th>设计参数</th><th>取值</th><th>为什么是这个值</th></tr></thead>
+          <tbody>
+          <tr>
+            <td class="nm" data-th="设计参数">观测频段</td>
+            <td class="num" data-th="取值">1–10 GHz</td>
+            <td data-th="为什么是这个值">既能穿透大气、又不被宇宙背景噪声淹没的最佳射电窗口</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">望远镜时间</td>
+            <td class="num" data-th="取值">GBT 与 Parkes 各 20–25%</td>
+            <td data-th="为什么是这个值">为期 10 年，是历史上规模最大的专用 SETI 观测时间</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">目标清单</td>
+            <td class="num" data-th="取值">最近约 100 万颗恒星</td>
+            <td data-th="为什么是这个值">定向搜索；另对银心与银河系平面做浅层扫描</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">系外目标</td>
+            <td class="num" data-th="取值">最近约 100 个星系</td>
+            <td data-th="为什么是这个值">覆盖数万亿颗恒星，赌的是「极强发射功率的超级文明」</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">灵敏度</td>
+            <td class="num" data-th="取值">约 50 倍提升</td>
+            <td data-th="为什么是这个值">能听到最近千颗恒星方向持续瞄准我们的普通航空雷达</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">数据处理</td>
+            <td class="num" data-th="取值">约 100 倍加速</td>
+            <td data-th="为什么是这个值">多波束接收机 + 相干消色散 + 公众算力分布式分析</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">确认门槛</td>
+            <td class="num" data-th="取值">3σ 不够，需可重复 + 独立设备复核</td>
+            <td data-th="为什么是这个值">K2-18b 的 DMS 提示只有 3σ，不能定论</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="chain-sub">设计分解</h3>
+      <div class="design-subs">
+        <div class="ds">
+          <div class="ds-t">多波束接收机</div>
+          <div class="ds-n">一次观测覆盖多个天区，把扫描效率提高一个量级</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">相干消色散</div>
+          <div class="ds-n">补偿星际介质造成的信号色散，是识别窄带信号的关键一步</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">射频干扰剔除</div>
+          <div class="ds-n">地面雷达、卫星、手机都在同一频段，剔除流程比观测本身更耗时</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">候选复核流水线</div>
+          <div class="ds-n">任何候选都要重复观测 + 独立设备验证 + 排除自然解释</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">光学 SETI</div>
+          <div class="ds-n">寻找纳秒级激光脉冲，需要高速光度计与精确时间同步</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">主动发射（METI）</div>
+          <div class="ds-n">是否该发、发什么、谁有权发都没有共识，一问一答需要 248 年</div>
+        </div>
+      </div>
+
+      <div class="note warn">
+        这是九条链路里最便宜也最容易被误解的一条：它的产出不是「找到」，而是把「没找到」变成有统计意义的结论——所以系统性和排除流程比单次灵敏度更重要。
       </div>
     </section>
 
