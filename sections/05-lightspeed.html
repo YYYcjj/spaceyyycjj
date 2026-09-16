@@ -46,6 +46,7 @@
       <a class="bo" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
       <a class="bo" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
       <a class="bo active" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
+      <a href="#chain" data-toc>技术链路</a>
       <a href="#l-limit" data-toc><span class="n">5.1</span>为什么光速不可达</a>
       <a href="#l-ladder" data-toc><span class="n">5.2</span>推进方案阶梯：从能用的到只能算的</a>
       <a href="#l-sail" data-toc><span class="n">5.3</span>光帆：唯一实飞过的星际候选方案</a>
@@ -66,6 +67,76 @@
       <p class="dek">先给结论：有质量的物体永远达不到光速——这不是技术问题，是狭义相对论的结论。真正值得讨论的是 0.1c 到 0.2c，而即便到了这个量级，刹车和载荷又会变成新的墙。</p>
       <div class="meta">物理常数与任务参数为公开值 ｜ 方案成熟度来自各项目公开状态 ｜ 整理 2026-09</div>
     </header>
+
+<section id="chain">
+      <h2>技术链路<span class="en">Technology Chain</span></h2>
+      <p class="lead">最先进的一条不是反物质，也不是冲压发动机，而是「光子帆 + 地基激光」。原因很直接：飞船自己能带的能量永远不够，那就干脆把能源留在地球，只把几克重的探测器打出去。到 0.2c 需要的激光功率只有靠地面阵列才可能实现。</p>
+
+      <div class="frontier">
+        <span class="fr-cap">最先进的方法</span>
+        <span class="fr-t">激光推进光帆（Breakthrough Starshot 路线）：把能源留在地球，只送克的载荷</span>
+      </div>
+
+      <div class="chain-bar">
+        <div class="cb plan">
+          <span class="cb-i">01</span>
+          <span class="cb-t">地基激光阵列</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">02</span>
+          <span class="cb-t">克级星芯片</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">03</span>
+          <span class="cb-t">光帆材料</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">04</span>
+          <span class="cb-t">加速与姿态稳定</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">05</span>
+          <span class="cb-t">通信回传</span>
+        </div>
+        <div class="cb lock">
+          <span class="cb-i">06</span>
+          <span class="cb-t">减速</span>
+        </div>
+      </div>
+      <div class="chain-legend"><span class="clg-cap">成熟度</span><span class="lg done"><i></i>已实现</span> · <span class="lg run"><i></i>在验证</span> · <span class="lg hold"><i></i>待突破</span> · <span class="lg lock"><i></i>物理约束</span> · <span class="lg plan"><i></i>仅纸上</span></div>
+
+      <h3 class="chain-sub">每一环怎么实现</h3>
+      <ol class="chain-list">
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">地基激光阵列</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">把上千台激光器做相位相干合成，总功率约 100 吉瓦、面积约 1 平方公里，在数分钟内持续照射同一片帆面。难点是相干合成的相位控制与热管理，以及这个阵列本身要消耗一座中型电站的功率。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">克级星芯片</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">把相机、处理器、发射机、光伏全部压进几克的「StarChip」。需要极低功耗设计与抗辐射加固，且要能承受发射与加速段的高加速度。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">光帆材料</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">帆是几米宽、只有几克重的超薄介质膜，反射率要求极高（99.9% 量级），候选材料是氮化硅一类；帆面必须在高速下保持平整，否则光束会发散、推力骤降。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">加速与姿态稳定</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">激光持续照射数分钟完成加速。因为帆面推力不均会带来力矩，需要用帆面微结构或自旋稳定来做姿态控制，否则探测器会翻滚出光束。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">通信回传</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">克级质量的发射机把图像传回 4.25 光年外，需要地面建大口径接收阵列，并且要在极低发射功率下实现高增益链路。这是「发得出去」之后的第二道难题。</div>
+        </li>
+        <li class="lock">
+          <div class="cl-h"><span class="cl-t">减速</span><span class="tag t-fail">物理约束</span></div>
+          <div class="cl-x">没有对应系统。加速靠地球的激光，到了目的地没有谁去刹车，所以探测器不会进入目标恒星系轨道，只能以 0.2c 掠过。这是路线本身的结构性缺口，不是工程优化能补的。</div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最难的一环：</b>整条链路还没走出第一环。0.2c 依赖约 100 吉瓦、面积约 1 平方公里的地基激光阵列，这个功率量级远超当前工程能力；而即便真加速到 0.2c，会发现自己没有刹车——光帆方案只能高速掠过目标恒星系，主要观测窗口只有数小时到数天。
+      </div>
+    </section>
 
 <section id="l-limit">
     <h2>5.1 为什么光速不可达</h2>
