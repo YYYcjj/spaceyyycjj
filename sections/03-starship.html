@@ -44,6 +44,7 @@
       <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
       <a class="bo" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
       <a class="bo active" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
+      <a href="#chain" data-toc>技术链路</a>
       <a href="#st-v3" data-toc><span class="n">3.1</span>V3 构型：比前两代大了多少</a>
       <a href="#st-flight14" data-toc><span class="n">3.2</span>第 14 飞：从「测试火箭」到「轨道运输系统」</a>
       <a href="#st-refuel" data-toc><span class="n">3.3</span>在轨加注：去火星的真正瓶颈</a>
@@ -66,6 +67,76 @@
       <p class="dek">星舰的全部野心落在两件事上：把上一级也收回来重复使用，以及在地球轨道上把推进剂加满再出发。前者决定成本，后者决定能不能到。截至 2026 年 9 月，两件事都还没有完成。</p>
       <div class="meta">数据截止 2026-09-15 ｜ 参数与节点来自 SpaceX 公开披露与飞行记录</div>
     </header>
+
+<section id="chain">
+      <h2>技术链路<span class="en">Technology Chain</span></h2>
+      <p class="lead">星舰最先进的地方不在「大」，而在于它把两件事合起来做：一二级全部复用，以及在轨加注。前者决定了成本，后者决定了能不能去火星——这是唯一一条有明确工程进度的路线。</p>
+
+      <div class="frontier">
+        <span class="fr-cap">最先进的方法</span>
+        <span class="fr-t">完全复用 + 在轨低温推进剂加注（把推进剂在轨道上倒一次手）</span>
+      </div>
+
+      <div class="chain-bar">
+        <div class="cb done">
+          <span class="cb-i">01</span>
+          <span class="cb-t">V3 构型与材料</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">02</span>
+          <span class="cb-t">全流量猛禽并联</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">03</span>
+          <span class="cb-t">再入与热防护</span>
+        </div>
+        <div class="cb run">
+          <span class="cb-i">04</span>
+          <span class="cb-t">回收方式</span>
+        </div>
+        <div class="cb hold">
+          <span class="cb-i">05</span>
+          <span class="cb-t">在轨推进剂加注</span>
+        </div>
+        <div class="cb plan">
+          <span class="cb-i">06</span>
+          <span class="cb-t">加注高频次周转</span>
+        </div>
+      </div>
+      <div class="chain-legend"><span class="clg-cap">成熟度</span><span class="lg done"><i></i>已实现</span> · <span class="lg run"><i></i>在验证</span> · <span class="lg hold"><i></i>待突破</span> · <span class="lg lock"><i></i>物理约束</span> · <span class="lg plan"><i></i>仅纸上</span></div>
+
+      <h3 class="chain-sub">每一环怎么实现</h3>
+      <ol class="chain-list">
+        <li class="done">
+          <div class="cl-h"><span class="cl-t">V3 构型与材料</span><span class="tag t-done">已实现</span></div>
+          <div class="cl-x">用 301 不锈钢做箭体：低温下强度反而升高、便宜、好焊、能露天存放。V3 把箭体再放大，二级贮箱容量 +18%，运力进入百吨级。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">全流量猛禽并联</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">一级 33 台发动机并联，靠推力矢量与故障隔离实现容错——单台失效时其余发动机可以补偿推力与力矩。这是「多发并联」最难的工程点。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">再入与热防护</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">六角形陶瓷隔热瓦加主动气动控制（前襟翼/后襟翼），靠襟翼配平让箭体以固定迎角再入。第 14 飞把星舰从「测试火箭」推向「轨道运输系统」。</div>
+        </li>
+        <li class="run">
+          <div class="cl-h"><span class="cl-t">回收方式</span><span class="tag t-run">在验证</span></div>
+          <div class="cl-x">助推器由发射塔机械臂直接抓取（「筷子夹」），省掉着陆腿，减少干重；飞船级则靠自身动力软着陆。飞船级的复用仍在验证中。</div>
+        </li>
+        <li class="hold">
+          <div class="cl-h"><span class="cl-t">在轨推进剂加注</span><span class="tag t-hold">待突破</span></div>
+          <div class="cl-x">两船在轨对接后转移液氧与液态甲烷。三个真问题：微重力下推进剂如何沉降到贮箱底部（沉底推进或微量加速度）、低温流体在传输管路的蒸发与两相流控制、以及对接后贮箱的绝热与压力管理。至今一次都没做过。</div>
+        </li>
+        <li class="plan">
+          <div class="cl-h"><span class="cl-t">加注高频次周转</span><span class="tag t-plan">仅纸上</span></div>
+          <div class="cl-x">一次火星任务需要十余次加注，意味着要在轨道上维持推进剂库、并让加注船快速往返。周转速度决定整件事是否可行，而不是单次技术是否成功。</div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最难的一环：</b>卡在第五环——在轨加注。前面几环做得再漂亮，没有低温推进剂转移就没有去火星的运力；而且一次火星任务需要十余次加注，加注周转速度会直接变成可行性门槛。
+      </div>
+    </section>
 
 <section id="st-v3">
     <h2>3.1 V3 构型：比前两代大了多少</h2>
