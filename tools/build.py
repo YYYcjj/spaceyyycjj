@@ -107,7 +107,7 @@ def render_rail(cur):
     ]
     for b in BOARDS:
         active = ' active' if b['slug'] == cur['slug'] else ''
-        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
+        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">')
                      f'<span class="n">{b["num"]}</span>{esc(b["title"])}</a>')
         if b['slug'] == cur['slug']:
             for s in cur['toc']:
@@ -134,16 +134,16 @@ def render_pager(cur):
     out = []
     if i > 0:
         p = BOARDS[i - 1]
-        out.append(f'<a class="pg prev" href="{section_filename(p)}">'
+        out.append(f'<a class="pg prev" href="{section_filename(p)}">')
                    f'<span class="pg-d">上一板块 {p["num"]}</span><span class="pg-t">{esc(p["title"])}</span></a>')
     else:
         out.append('<span class="pg empty"></span>')
     if i < len(BOARDS) - 1:
         n = BOARDS[i + 1]
-        out.append(f'<a class="pg next" href="{section_filename(n)}">'
+        out.append(f'<a class="pg next" href="{section_filename(n)}">')
                    f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{esc(n["title"])}</span></a>')
     else:
-        out.append('<a class="pg next" href="../index.html">'
+        out.append('<a class="pg next" href="../index.html">')
                    '<span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>')
     return '<nav class="pager">\n  ' + '\n  '.join(out) + '\n</nav>'
 
@@ -255,6 +255,9 @@ def render_design(b, num):
         f'        <div class="fig-scroll">{d["scene"]()}</div>\n'
         f'        <p class="fig-hint">图为等轴测示意图，手机上可左右拖动查看细节。</p>\n'
         f'        <figcaption>图 {num}　{esc(d["caption"])}</figcaption>\n'
+        f'        <p class="fig-dl">'
+        f'<a href="../figures/{b["num"]}-{b["slug"]}.svg">打开矢量原图（SVG）</a>'
+        f'<span class="sep">·</span>可另存后放进 PPT、或直接打印</p>\n'
         '      </figure>\n'
         '\n'
         '      <h3 class="chain-sub">设计参数</h3>\n'
