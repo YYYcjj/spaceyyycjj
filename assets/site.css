@@ -614,3 +614,54 @@ table.cost td.num{font-weight:650; color:var(--ink);}
   .chain-list .cl-t{font-size:14px;}
   .chain-list .cl-x{font-size:12.5px;}
 }
+
+/* ==========================================================================
+   具体设计：三维等轴测图 + 设计参数表 + 设计分解
+   ========================================================================== */
+
+/* 等轴测图沿用 .figure 容器，只在手机上压缩内边距、放大字号（图会缩小） */
+#design .figure{padding:20px 18px 14px;}
+
+/* 技术图很宽，手机上直接缩放会看不清标注——给它一个横向滚动容器，桌面不生效 */
+.fig-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+.fig-hint{display:none;}
+@media (max-width:640px){
+  .fig-scroll svg{min-width:540px;}
+  .fig-hint{
+    display:block; font-size:11px; color:var(--faint);
+    margin:9px 0 0; letter-spacing:.2px;
+  }
+}
+
+/* 设计参数表与成本表同样处理：长取值必须允许换行，列宽只在桌面生效 */
+table.spec td.nm,
+table.spec td.num{white-space:normal;}
+table.spec td.nm{font-weight:600;}
+table.spec td.num{font-weight:650; color:var(--ink); font-variant-numeric:tabular-nums;}
+@media (min-width:641px){
+  table.spec th:nth-child(1), table.spec td:nth-child(1){width:22%;}
+  table.spec th:nth-child(2), table.spec td:nth-child(2){width:25%;}
+}
+
+/* 设计分解：两列网格，1px 分隔线靠背景色透出 */
+.design-subs{
+  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px;
+  background:var(--line); border:1px solid var(--line);
+  border-radius:var(--radius); overflow:hidden; margin:16px 0 0;
+}
+.design-subs .ds{background:var(--bg); padding:14px 16px 13px;}
+.design-subs .ds-t{
+  font-size:13.5px; font-weight:650; letter-spacing:-.1px;
+  margin-bottom:5px; color:var(--ink);
+}
+.design-subs .ds-n{font-size:12.5px; color:var(--text-soft); line-height:1.75;}
+
+@media (max-width:1080px){
+  .design-subs{grid-template-columns:minmax(0,1fr);}
+}
+@media (max-width:640px){
+  #design .figure{padding:14px 12px 10px;}
+  #design .figure figcaption{font-size:11px;}
+  .design-subs .ds{padding:12px 14px 11px;}
+  .design-subs .ds-n{font-size:12px;}
+}
