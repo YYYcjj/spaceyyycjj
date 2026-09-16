@@ -625,6 +625,12 @@ table.cost td.num{font-weight:650; color:var(--ink);}
 /* 技术图很宽，手机上直接缩放会看不清标注——给它一个横向滚动容器，桌面不生效 */
 .fig-scroll{overflow-x:auto; -webkit-overflow-scrolling:touch;}
 .fig-hint{display:none;}
+.fig-dl{
+  margin:12px 0 0; padding-top:11px; border-top:1px solid var(--line);
+  font-size:12px; color:var(--faint);
+}
+.fig-dl a{color:var(--accent); font-weight:500;}
+.fig-dl .sep{margin:0 7px; color:var(--line-strong);}
 @media (max-width:640px){
   .fig-scroll svg{min-width:540px;}
   .fig-hint{
