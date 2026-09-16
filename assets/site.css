@@ -580,6 +580,22 @@ footer b{color:var(--muted); font-weight:600;}
 .chain-list .cl-t{font-size:14.5px; font-weight:650; letter-spacing:-.2px;}
 .chain-list .cl-x{font-size:13px; color:var(--text-soft); line-height:1.7; max-width:68ch;}
 
+/* ---------- 要花多少钱 ---------- */
+.cost-scale{
+  margin:15px 0 0; font-size:13.5px; color:var(--text-soft); line-height:1.8;
+}
+.cost-scale b{font-weight:650; color:var(--text);}
+/* 成本表里金额与项目名可能很长，必须允许换行，否则会撑出横向滚动 */
+table.cost td.nm,
+table.cost td.num{white-space:normal;}
+table.cost td.nm{font-weight:600;}
+table.cost td.num{font-weight:650; color:var(--ink);}
+/* 列宽只在桌面生效——写进移动端会把卡片压窄（td 的 width 会覆盖卡片化的 100%） */
+@media (min-width:641px){
+  table.cost th:nth-child(1), table.cost td:nth-child(1){width:30%;}
+  table.cost th:nth-child(2), table.cost td:nth-child(2){width:23%;}
+}
+
 /* ---------- 链路段的响应式 ---------- */
 @media (max-width:1080px){
   .chain-bar .cb{padding:11px 10px 9px;}
