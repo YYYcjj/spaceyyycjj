@@ -28,9 +28,25 @@ import sys
 sys.path.insert(0, HERE)
 from content_a import SITE, BOARDS_A          # noqa: E402
 from content_b import BOARDS_B                # noqa: E402
+from chains import CHAINS                     # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
+
+# 把技术链路挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
+for _b in BOARDS:
+    _b['chain'] = CHAINS.get(_b['slug'])
+    assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
+
+# 状态 → (标签类, 中文标签)
+CHAIN_STATUS = [
+    ('done', 't-done', '已实现'),
+    ('run',  't-run',  '在验证'),
+    ('hold', 't-hold', '待突破'),
+    ('lock', 't-fail', '物理约束'),
+    ('plan', 't-plan', '仅纸上'),
+]
+STATUS_MAP = {k: (cls, lab) for k, cls, lab in CHAIN_STATUS}
 
 # 移动端顶部胶囊导航用的短标签
 NAV_SHORT = {
@@ -75,7 +91,7 @@ def load_board01():
 
 
 # ---------------------------------------------------------------- 侧栏
-def render_rail(cur, board_body_is_legacy):
+def render_rail(cur):
     parts = [
         f'    <a class="brand" href="../index.html">',
         f'      {esc(SITE["title"])}',
@@ -88,14 +104,9 @@ def render_rail(cur, board_body_is_legacy):
         parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
                      f'<span class="n">{b["num"]}</span>{esc(b["title"])}</a>')
         if b['slug'] == cur['slug']:
-            subs = cur['toc'] if board_body_is_legacy else [
-                {'id': s['id'], 'title': s['title'], 'sub': False,
-                 'n': f'{int(b["num"])}.{i + 1}'}
-                for i, s in enumerate(cur['subs'])
-            ]
-            for s in subs:
+            for s in cur['toc']:
                 cls = ' class="sub"' if s['sub'] else ''
-                num = '' if s['sub'] else f'<span class="n">{s["n"]}</span>'
+                num = '' if (s['sub'] or not s.get('n')) else f'<span class="n">{s["n"]}</span>'
                 parts.append(f'      <a{cls} href="#{s["id"]}" data-toc>{num}{esc(s["title"])}</a>')
     parts.append('    </nav>')
     return '\n'.join(parts)
@@ -129,6 +140,52 @@ def render_pager(cur):
         out.append('<a class="pg next" href="../index.html">'
                    '<span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>')
     return '<nav class="pager">\n  ' + '\n  '.join(out) + '\n</nav>'
+
+
+# ---------------------------------------------------------------- 技术链路
+def render_chain(b):
+    """把板块的 chain 数据渲染成：最先进的方法 → 环节概览 → 逐环实现路径 → 最难的一环。"""
+    ch = b.get('chain')
+    if not ch:
+        return ''
+
+    cells, items = [], []
+    for i, n in enumerate(ch['nodes'], 1):
+        cls, lab = STATUS_MAP[n['s']]
+        cells.append(f'        <div class="cb {n["s"]}">\n'
+                     f'          <span class="cb-i">{i:02d}</span>\n'
+                     f'          <span class="cb-t">{esc(n["t"])}</span>\n'
+                     f'        </div>')
+        items.append(f'        <li class="{n["s"]}">\n'
+                     f'          <div class="cl-h"><span class="cl-t">{esc(n["t"])}</span>'
+                     f'<span class="tag {cls}">{lab}</span></div>\n'
+                     f'          <div class="cl-x">{esc(n["how"])}</div>\n'
+                     f'        </li>')
+
+    legend = ' · '.join(
+        f'<span class="lg {k}"><i></i>{lab}</span>' for k, _cls, lab in CHAIN_STATUS)
+
+    return (
+        '<section id="chain">\n'
+        '      <h2>技术链路<span class="en">Technology Chain</span></h2>\n'
+        f'      <p class="lead">{esc(ch["lead"])}</p>\n'
+        '\n'
+        '      <div class="frontier">\n'
+        '        <span class="fr-cap">最先进的方法</span>\n'
+        f'        <span class="fr-t">{esc(ch["frontier"])}</span>\n'
+        '      </div>\n'
+        '\n'
+        '      <div class="chain-bar">\n' + '\n'.join(cells) + '\n      </div>\n'
+        f'      <div class="chain-legend"><span class="clg-cap">成熟度</span>{legend}</div>\n'
+        '\n'
+        '      <h3 class="chain-sub">每一环怎么实现</h3>\n'
+        '      <ol class="chain-list">\n' + '\n'.join(items) + '\n      </ol>\n'
+        '\n'
+        '      <div class="note warn">\n'
+        f'        <b>最难的一环：</b>{esc(ch["bottleneck"])}\n'
+        '      </div>\n'
+        '    </section>'
+    )
 
 
 # ---------------------------------------------------------------- 页面外壳
@@ -195,11 +252,20 @@ PAGE = """<!DOCTYPE html>
 """
 
 
+CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
+
+
 def build_section(b, board01):
     legacy = b.get('legacy')
+    chain = render_chain(b)
+
     if legacy:
-        b['toc'] = board01[1]
         body = board01[0]
+        if chain:
+            # 插在 KPI 之后、第一个正式章节之前
+            m = re.search(r'\n<section id=', body)
+            body = body[:m.start()] + '\n\n' + chain + body[m.start():]
+        toc_subs = board01[1]
     else:
         n = int(b['num'])
         blocks = []
@@ -209,6 +275,14 @@ def build_section(b, board01):
                           f'{s["html"].strip()}\n'
                           f'</section>')
         body = '\n\n'.join(blocks)
+        if chain:
+            body = chain + '\n\n' + body
+        toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
+                    for i, s in enumerate(b['subs'])]
+
+    # 侧栏目录：技术链路永远是第一项，且不带编号
+    b['toc'] = ([dict(CHAIN_TOC)] + toc_subs) if chain else toc_subs
+
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
     page = PAGE.format(
@@ -216,7 +290,7 @@ def build_section(b, board01):
         desc=desc,
         favicon=FAVICON,
         topnav=render_topnav(b),
-        rail=render_rail(b, legacy),
+        rail=render_rail(b),
         num=b['num'], en=esc(b.get('eyebrow') or b['en']),
         h1=esc(h1), dek=esc(b['dek']), meta=esc(b['meta']),
         body=body,
