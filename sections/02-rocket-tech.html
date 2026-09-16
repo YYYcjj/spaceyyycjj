@@ -44,6 +44,7 @@
       <a class="bo" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
       <a class="bo active" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
       <a href="#chain" data-toc>技术链路</a>
+      <a href="#design" data-toc>具体设计</a>
       <a href="#r-ceiling" data-toc><span class="n">2.1</span>天花板在哪：三个数把话说死</a>
       <a href="#r-cycle" data-toc><span class="n">2.2</span>发动机循环：三条路线各自放弃了什么</a>
       <a href="#r-material" data-toc><span class="n">2.3</span>推进剂与箭体材料的取舍</a>
@@ -178,6 +179,89 @@
       <p class="cost-scale"><b>总量级：</b>一台发动机占一级成本一半以上，所以火箭降本几乎等价于「把发动机做便宜、做成可复用」</p>
       <div class="note info">
         推进剂只占成本不到 1%，所以燃料价格与发射成本基本无关；可用空间在结构质量、发动机单价和翻修工时这三处。
+      </div>
+    </section>
+
+<section id="design">
+      <h2>具体设计<span class="en">Design</span></h2>
+      <p class="lead">用全流量分级燃烧 + 液氧甲烷，把室压推到 300 bar 级、把翻修成本压到最低</p>
+
+      <figure class="figure">
+        <div class="fig-scroll"><svg viewBox="0 0 680 400" role="img" aria-label="全流量分级燃烧液氧甲烷发动机的等轴测示意图"><defs><marker id="ar" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#6f6f69" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><ellipse cx="128.51" cy="150.35" rx="51.84" ry="29.93" fill="#a3c8ea" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 76.67 29.87 L 76.67 150.35 A 51.84 29.93 0 0 0 180.36 150.35 L 180.36 29.87 A 51.84 29.93 0 0 1 76.67 29.87 Z" fill="#a3c8ea" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="128.51" cy="29.87" rx="51.84" ry="29.93" fill="#e6f1fb" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="204.65" cy="168.25" rx="21.93" ry="12.66" fill="#83b2e1" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 182.72 138.95 L 182.72 168.25 A 21.93 12.66 0 0 0 226.58 168.25 L 226.58 138.95 A 21.93 12.66 0 0 1 182.72 138.95 Z" fill="#83b2e1" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="204.65" cy="138.95" rx="21.93" ry="12.66" fill="#cfe2f7" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="340" cy="337.57" rx="67.79" ry="39.14" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 272.21 321.29 L 272.21 337.57 A 67.79 39.14 0 0 0 407.79 337.57 L 407.79 321.29 A 67.79 39.14 0 0 1 272.21 321.29 Z" fill="#1e2024" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="340" cy="321.29" rx="67.79" ry="39.14" fill="#43464d" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="258.23" cy="150.35" rx="17.95" ry="10.36" fill="#e9be7b" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 240.28 114.53 L 240.28 150.35 A 17.95 10.36 0 0 0 276.17 150.35 L 276.17 114.53 A 17.95 10.36 0 0 1 240.28 114.53 Z" fill="#e9be7b" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="258.23" cy="114.53" rx="17.95" ry="10.36" fill="#faeeda" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="340" cy="217.09" rx="43.87" ry="25.33" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 296.13 161.74 L 296.13 217.09 A 43.87 25.33 0 0 0 383.87 217.09 L 383.87 161.74 A 43.87 25.33 0 0 1 296.13 161.74 Z" fill="#c3c7ce" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="340" cy="161.74" rx="43.87" ry="25.33" fill="#f2f3f5" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 296.13 217.09 L 272.21 321.29 A 67.79 39.14 0 0 1 407.79 321.29 L 383.87 217.09 A 43.87 25.33 0 0 0 296.13 217.09 Z" fill="#34373d" stroke="#1c1c1a" stroke-width="0.8" opacity="0.92"/><ellipse cx="421.77" cy="244.77" rx="17.95" ry="10.36" fill="#e9be7b" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 403.83 208.95 L 403.83 244.77 A 17.95 10.36 0 0 0 439.72 244.77 L 439.72 208.95 A 17.95 10.36 0 0 1 403.83 208.95 Z" fill="#e9be7b" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="421.77" cy="208.95" rx="17.95" ry="10.36" fill="#faeeda" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="475.35" cy="324.54" rx="21.93" ry="12.66" fill="#83b2e1" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 453.42 295.24 L 453.42 324.54 A 21.93 12.66 0 0 0 497.28 324.54 L 497.28 295.24 A 21.93 12.66 0 0 1 453.42 295.24 Z" fill="#83b2e1" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="475.35" cy="295.24" rx="21.93" ry="12.66" fill="#cfe2f7" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="551.49" cy="394.55" rx="51.84" ry="29.93" fill="#b2d68c" stroke="#1c1c1a" stroke-width="0.7"/><path d="M 499.64 274.07 L 499.64 394.55 A 51.84 29.93 0 0 0 603.33 394.55 L 603.33 274.07 A 51.84 29.93 0 0 1 499.64 274.07 Z" fill="#b2d68c" stroke="#1c1c1a" stroke-width="0.7"/><ellipse cx="551.49" cy="274.07" rx="51.84" ry="29.93" fill="#eaf3de" stroke="#1c1c1a" stroke-width="0.7"/><line x1="258.23" y1="114.53" x2="306.16" y2="155.23" stroke="#1c1c1a" stroke-width="1.6"/><line x1="204.65" y1="138.95" x2="303.34" y2="199.19" stroke="#1c1c1a" stroke-width="1.6"/><line x1="421.77" y1="208.95" x2="373.84" y2="194.3" stroke="#1c1c1a" stroke-width="1.6"/><line x1="475.35" y1="295.24" x2="376.66" y2="241.51" stroke="#1c1c1a" stroke-width="1.6"/><line x1="128.51" y1="29.87" x2="193.37" y2="90.11" stroke="#6f6f69" stroke-width="1.4" stroke-dasharray="4 3"/><line x1="551.49" y1="274.07" x2="486.63" y2="259.42" stroke="#6f6f69" stroke-width="1.4" stroke-dasharray="4 3"/><line x1="414.89" y1="337.57" x2="414.89" y2="217.09" stroke="#6f6f69" stroke-width="0.8" marker-start="url(#ar)" marker-end="url(#ar)"/><text x="422.89" y="277.33" fill="#6f6f69" font-size="10.5" text-anchor="middle" dominant-baseline="middle">室压 300 bar 级</text><polyline points="340,161.74 385.42,145.46 440.94,145.46" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="445.94" y="141.46" fill="#6f6f69" font-size="10.5" text-anchor="start">主燃烧室</text><polyline points="421.77,208.95 467.2,215.47 522.71,215.47" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="527.71" y="211.47" fill="#6f6f69" font-size="10.5" text-anchor="start">富燃预燃室</text><polyline points="475.35,295.24 520.77,308.26 576.29,308.26" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="581.29" y="304.26" fill="#6f6f69" font-size="10.5" text-anchor="start">涡轮泵</text><polyline points="258.23,114.53 212.8,121.04 157.29,121.04" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="152.29" y="117.04" fill="#6f6f69" font-size="10.5" text-anchor="end">富氧预燃室</text><polyline points="204.65,138.95 159.23,178.02 103.71,178.02" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="98.71" y="174.02" fill="#6f6f69" font-size="10.5" text-anchor="end">涡轮泵</text><polyline points="340,301.75 382.49,350.59 434.43,350.59" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="439.43" y="346.59" fill="#6f6f69" font-size="10.5" text-anchor="start">再生冷却喷管</text><polyline points="128.51,29.87 93.35,23.36 50.37,23.36" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="45.37" y="19.36" fill="#6f6f69" font-size="10.5" text-anchor="end">液氧</text><polyline points="551.49,274.07 586.65,267.56 629.63,267.56" fill="none" stroke="#6f6f69" stroke-width="0.7" stroke-linejoin="round"/><text x="634.63" y="263.56" fill="#6f6f69" font-size="10.5" text-anchor="start">液态甲烷</text></svg></div>
+        <p class="fig-hint">图为等轴测示意图，手机上可左右拖动查看细节。</p>
+        <figcaption>图 02　全流量循环：两套预燃室各自驱动一台涡轮泵，全部推进剂都经过预燃室，没有级间密封的泄漏损失。</figcaption>
+      </figure>
+
+      <h3 class="chain-sub">设计参数</h3>
+      <div class="tablewrap">
+        <table class="spec">
+          <thead><tr><th>设计参数</th><th>取值</th><th>为什么是这个值</th></tr></thead>
+          <tbody>
+          <tr>
+            <td class="nm" data-th="设计参数">推进剂组合</td>
+            <td class="num" data-th="取值">液氧 / 液态甲烷</td>
+            <td data-th="为什么是这个值">结焦温度约 978 °C、积碳极少，可在火星原位制备</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">发动机循环</td>
+            <td class="num" data-th="取值">全流量分级燃烧</td>
+            <td data-th="为什么是这个值">两套预燃室各驱动一台涡轮泵，全部推进剂过预燃室，无级间泄漏</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">室压</td>
+            <td class="num" data-th="取值">300 bar 量级</td>
+            <td data-th="为什么是这个值">当前在役液体火箭发动机最高区间，直接抬高膨胀比与比冲</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">理论真空比冲</td>
+            <td class="num" data-th="取值">约 380 s（甲烷）/ 450 s（氢氧）</td>
+            <td data-th="为什么是这个值">比冲由推进剂组合锁死，循环只能逼近不能突破</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">冷却方式</td>
+            <td class="num" data-th="取值">再生冷却</td>
+            <td data-th="为什么是这个值">推进剂先流过内壁带走热量；内壁用铜合金，涡轮泵用高温合金</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">制造工艺</td>
+            <td class="num" data-th="取值">增材制造复杂流道</td>
+            <td data-th="为什么是这个值">把数百个零件合并为个位数，减少焊缝与装配工时</td>
+          </tr>
+          <tr>
+            <td class="nm" data-th="设计参数">结构系数</td>
+            <td class="num" data-th="取值">干重约占起飞重量 4%</td>
+            <td data-th="为什么是这个值">可回收设计会把着陆腿、栅格舵、剩余推进剂都算进干重</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="chain-sub">设计分解</h3>
+      <div class="design-subs">
+        <div class="ds">
+          <div class="ds-t">推力室</div>
+          <div class="ds-n">喷注器与燃烧稳定性是核心：高频燃烧振荡必须在试车台上压住</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">涡轮泵</div>
+          <div class="ds-n">全流量循环的两台泵要分别适应富燃与富氧燃气，材料与密封面临完全不同工况</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">阀门与管路</div>
+          <div class="ds-n">多次点火与深度节流需要阀门快速响应，是复用次数与响应速度的物理约束</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">贮箱</div>
+          <div class="ds-n">低温推进剂需要绝热与增压控制，推进剂密度决定箭体尺寸与结构质量</div>
+        </div>
+        <div class="ds">
+          <div class="ds-t">健康监测</div>
+          <div class="ds-n">振动 / 温度 / 应变传感器提前预警部件寿命，是「过站检查」能否成立的前提</div>
+        </div>
+      </div>
+
+      <div class="note warn">
+        这条设计路线的重点不是「更快」，而是「更便宜地重复使用」：甲烷的比冲不如氢氧、密度比冲不如煤油，赢的是几乎不积碳带来的翻修速度。
       </div>
     </section>
 
