@@ -32,6 +32,7 @@ assets/site.js                交互脚本（无依赖）
 tools/build.py                站点生成器
 tools/content_a.py            板块 1-5 内容
 tools/content_b.py            板块 6-9 内容
+tools/chains.py               九个板块的「技术链路」数据
 tools/board01_body.html       板块一正文（由早期单页报告抽取，一次性素材）
 tools/board01_toc.json        板块一目录条目
 .github/workflows/pages.yml   GitHub Pages 部署工作流
@@ -45,8 +46,35 @@ python3 tools/build.py
 ```
 
 站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
-由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
+技术链路写在 `tools/chains.py`，由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
 改内容只改 Python 数据文件，不要手改生成的 HTML。
+
+## 技术链路
+
+每个板块页开头都有一条「技术链路」，回答两件事：**这个领域最先进的方法是什么**，
+以及**它具体可以怎样实现**。
+
+- **最先进的方法**：每个板块点名一种前沿方案（例：板块五是「激光推进光帆」，
+  板块八是「近地小行星原位资源利用」），并说明它和别的路线差在哪。
+- **技术链路**：把该方案拆成 6 个必须按顺序打通的环节，每个环节写清**怎么实现**——
+  工程手段、关键参数、需要突破的点。
+- **成熟度标注**：每个环节标出当前状态（**已实现 / 在验证 / 待突破 / 物理约束 / 仅纸上**），
+  方便一眼看出哪些是工程问题、哪些是物理上就改不了的。
+- **最难的一环**：点明这 6 环里哪一环最决定成败，以及为什么。
+
+`tools/chains.py` 里每个板块的字段：
+
+```python
+"slug": dict(
+    frontier="这个领域最先进的方法",
+    lead="为什么这条路线算最先进",
+    nodes=[dict(t="环节名", s="成熟度", how="具体怎么实现")],   # 固定 6 环
+    bottleneck="最难、也最决定成败的那一环",
+)
+```
+
+成熟度取值只能是 `done` / `run` / `hold` / `lock` / `plan`，
+构建时会校验环数必须为 6、成熟度取值必须合法。
 
 ## 技术说明
 
