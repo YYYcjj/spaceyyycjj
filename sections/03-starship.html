@@ -46,6 +46,7 @@
       <a class="bo active" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#venture" data-toc>创业者路线图</a>
       <a href="#st-v3" data-toc><span class="n">3.1</span>V3 构型：比前两代大了多少</a>
       <a href="#st-flight14" data-toc><span class="n">3.2</span>第 14 飞：从「测试火箭」到「轨道运输系统」</a>
       <a href="#st-refuel" data-toc><span class="n">3.3</span>在轨加注：去火星的真正瓶颈</a>
@@ -258,6 +259,86 @@
 
       <div class="note warn">
         设计上最容易被忽略的一点：前几环（构型、入轨、回收）再漂亮，在轨加注没打通就没有去火星的运力——它是唯一一个「必须成功」而不是「可以优化」的环节。
+      </div>
+    </section>
+
+<section id="venture">
+      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>
+      <p class="lead">在轨加注至今一次都没做过，而一次火星任务需要十余次加注。整条链路第一次出现了一个明确的、有预算的、还没有解的问题。围绕它做实验、传感器与软件，比造船现实得多。</p>
+
+      <div class="entry">
+        <span class="en-cap">切入点</span>
+        <span class="en-t">围绕在轨低温推进剂加注做测试台、传感器与仿真——这是整条链路上唯一「必须成功」的未解问题</span>
+      </div>
+
+      <ol class="vs">
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">01</span>
+            <span class="vs-t">做一台缩比试验台</span>
+            <span class="vs-w">0–12 个月</span>
+          </div>
+          <p class="vs-do">在地面演示「微重力沉底 + 两相流」这两个核心现象：用落塔、抛物线飞行或旋转平台做一个能出数据的缩比台。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>试验台的数据能被至少一家研制方引用。</span>
+            <span class="vs-rk"><b>这一步的死法</b>把试验台做成演示装置而不是测量装置——没有可重复的数据就没有客户。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">02</span>
+            <span class="vs-t">把试验台变成数据服务</span>
+            <span class="vs-w">12–30 个月</span>
+          </div>
+          <p class="vs-do">建立低温流体在微重力下的模型库，卖仿真与标定服务。硬件只卖一次，模型可以反复卖。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>出现不买硬件、只买仿真与标定的客户。</span>
+            <span class="vs-rk"><b>这一步的死法</b>模型不公开验证方法，客户无法采信，永远停在一次性试验。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">03</span>
+            <span class="vs-t">上飞行件</span>
+            <span class="vs-w">30–48 个月</span>
+          </div>
+          <p class="vs-do">做加注必需的耗材：低温液位计、流量计、蒸发率传感器。这些东西每次加注都要用，且在轨验证过就是门槛。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>有一个传感器在轨飞过并传回数据。</span>
+            <span class="vs-rk"><b>这一步的死法</b>先做地面版就以为能做飞行版——真空、低温、振动三者叠加后的失效模式完全不同。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">04</span>
+            <span class="vs-t">做接口标准件</span>
+            <span class="vs-w">4–6 年</span>
+          </div>
+          <p class="vs-do">对接机构、传输管路、低温快接。一旦某个接口成为默认标准，就有长期位置——这是这条链路里最像「卖收费站」的生意。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>你的接口被两个以上互不相关的项目采用。</span>
+            <span class="vs-rk"><b>这一步的死法</b>过早押注单一客户的构型，客户改方案时全部作废。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">05</span>
+            <span class="vs-t">参与在轨推进剂库运营</span>
+            <span class="vs-w">6 年以上</span>
+          </div>
+          <p class="vs-do">从卖部件走到运营在轨推进剂库（重资产）。这一步需要前面几步积累的在轨数据、客户信誉与保险能力。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>签署第一份在轨推进剂交付合同。</span>
+            <span class="vs-rk"><b>这一步的死法</b>没有前几步的数据与信誉就直接做重资产，融资与保险都过不去。</span>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最该避免：</b>不要在加注的技术路线还没收敛时重仓硬件产线（微重力沉底方式仍有多种候选）；也不要把公司押在单一客户的构型上——构型一改，专用件全部作废。
+      </div>
+      <div class="note info">
+        这条链路的特点是「上游不确定」：加注一旦打通，后面的货运、载人都要有需求；打不通，你所有的产品都停在试验阶段。
       </div>
     </section>
 
