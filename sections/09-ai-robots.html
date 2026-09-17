@@ -52,6 +52,7 @@
       <a class="bo active" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#venture" data-toc>创业者路线图</a>
       <a href="#a-why" data-toc><span class="n">9.1</span>为什么太空必须自主</a>
       <a href="#a-hardware" data-toc><span class="n">9.2</span>算力：抗辐射这道坎</a>
       <a href="#a-robots" data-toc><span class="n">9.3</span>机器人：能替人把东西建起来吗</a>
@@ -263,6 +264,86 @@
 
       <div class="note warn">
         这条设计的反直觉之处：瓶颈不在算法，而在物理——辐射会翻转存储位、烧毁器件，真空又只能靠导热。所以算力提升的每一档，都要先解决抗辐射与散热这两个前提。
+      </div>
+    </section>
+
+<section id="venture">
+      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>
+      <p class="lead">这条链路有一条改不了的约束（火星单程最远约 20 分钟延迟），把「必须自主」变成了刚性需求。抗辐射算力是唯一还没有明确解法的环节，也正好是新公司能介入的地方——但千万不要从造芯片开始。</p>
+
+      <div class="entry">
+        <span class="en-cap">切入点</span>
+        <span class="en-t">做星上自主的算法与算力平台——传感器融合、自主导航，以及用冗余方案替代专用加固芯片</span>
+      </div>
+
+      <ol class="vs">
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">01</span>
+            <span class="vs-t">从算法入手，不要造芯片</span>
+            <span class="vs-w">0–18 个月</span>
+          </div>
+          <p class="vs-do">HPSC 的合同是 5000 万美元、三年，只有 Microchip 这种体量的公司才拿得到。新公司应该先做算法：把感知与传感器融合的模型压缩到低算力平台能跑。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>模型在低算力平台上达到可用的实时性与精度。</span>
+            <span class="vs-rk"><b>这一步的死法</b>一上来做抗辐射 ASIC：流片一次几百万美元，融资和周期都撑不住。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">02</span>
+            <span class="vs-t">用冗余方案替代专用加固芯片</span>
+            <span class="vs-w">18–36 个月</span>
+          </div>
+          <p class="vs-do">COTS（商用现货）三模冗余 + 纠错 + 屏蔽，用系统方案换取算力。先卖给小卫星与在轨服务公司，他们对算力的渴求比深空任务更强。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>方案在轨飞过一次并传回遥测。</span>
+            <span class="vs-rk"><b>这一步的死法</b>把冗余做成简单复制三份，没有做失效模式分析，在轨照样死。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">03</span>
+            <span class="vs-t">用地面市场养航天研发</span>
+            <span class="vs-w">36–48 个月</span>
+          </div>
+          <p class="vs-do">同一套自主系统卖给地面的检测、巡检与运维场景。参考量级：六足机器人做船舶船体检测，对应约 130 亿美元的地面市场。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>地面业务收入能覆盖公司基本运营。</span>
+            <span class="vs-rk"><b>这一步的死法</b>只做航天客户：预算大但节奏极慢，纯航天定位的公司基本活不到量产。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">04</span>
+            <span class="vs-t">做自主建造机器人与就地取材</span>
+            <span class="vs-w">4–5 年</span>
+          </div>
+          <p class="vs-do">月壤烧结、3D 打印构件、自主装配。客户是月球与在轨设施计划，这一环是长期驻留的前提，也是预算最集中的地方。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>在地面模拟环境里自主完成一次完整建造任务。</span>
+            <span class="vs-rk"><b>这一步的死法</b>机器人只能在结构化环境里工作，到了真实环境就需要大量人工干预，等于没有自主性。</span>
+          </div>
+        </li>
+        <li>
+          <div class="vs-h">
+            <span class="vs-p">05</span>
+            <span class="vs-t">从部件走到自主系统集成</span>
+            <span class="vs-w">5 年以上</span>
+          </div>
+          <p class="vs-do">把地面与太空两条线互相供血：地面验证可靠性，太空抬高估值与门槛。最终交付的是「整船自主能力」，而不是单个算法或单块板卡。</p>
+          <div class="vs-meta">
+            <span class="vs-mk"><b>里程碑</b>拿到第一个系统级自主能力合同。</span>
+            <span class="vs-rk"><b>这一步的死法</b>长期停在部件供应商的位置，被集成商赚走大部分利润。</span>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最该避免：</b>不要在没有地面收入的情况下做航天专供产品；也不要碰深空通信频段与发射许可这类强监管环节——那是资质游戏，不是技术游戏。
+      </div>
+      <div class="note info">
+        这条链路的独特优势是「地面市场远大于太空」：AI 在太空市场两年约 59→78 亿美元，而同类地面市场通常是它的十倍以上。
       </div>
     </section>
 
