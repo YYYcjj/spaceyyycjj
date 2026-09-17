@@ -31,18 +31,21 @@ from content_b import BOARDS_B                # noqa: E402
 from chains import CHAINS                     # noqa: E402
 from costs import COSTS                       # noqa: E402
 from designs import DESIGNS                   # noqa: E402
+from ventures import VENTURES                 # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
 
-# 把技术链路 / 成本 / 具体设计挂到对应板块上（按 slug 匹配，content 文件不用管这件事）
+# 把技术链路 / 成本 / 具体设计 / 创业者路线图挂到对应板块上（按 slug 匹配，content 文件不用管）
 for _b in BOARDS:
     _b['chain'] = CHAINS.get(_b['slug'])
     _b['cost'] = COSTS.get(_b['slug'])
     _b['design'] = DESIGNS.get(_b['slug'])
+    _b['venture'] = VENTURES.get(_b['slug'])
     assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
     assert _b['cost'], f'板块 {_b["slug"]} 缺少成本数据'
     assert _b['design'], f'板块 {_b["slug"]} 缺少具体设计'
+    assert _b['venture'], f'板块 {_b["slug"]} 缺少创业者路线图'
 
 # 状态 → (标签类, 中文标签)
 CHAIN_STATUS = [
@@ -278,6 +281,51 @@ def render_design(b, num):
     )
 
 
+# ---------------------------------------------------------------- 创业者路线图
+def render_venture(b):
+    """把 venture 数据渲染成：切入点 → 五个阶段（含里程碑与死法）→ 最该避免的事。"""
+    v = b.get('venture')
+    if not v:
+        return ''
+
+    items = []
+    for i, s in enumerate(v['steps'], 1):
+        items.append(
+            f'        <li>\n'
+            f'          <div class="vs-h">\n'
+            f'            <span class="vs-p">{i:02d}</span>\n'
+            f'            <span class="vs-t">{esc(s["p"])}</span>\n'
+            f'            <span class="vs-w">{esc(s["w"])}</span>\n'
+            f'          </div>\n'
+            f'          <p class="vs-do">{esc(s["do"])}</p>\n'
+            f'          <div class="vs-meta">\n'
+            f'            <span class="vs-mk"><b>里程碑</b>{esc(s["mile"])}</span>\n'
+            f'            <span class="vs-rk"><b>这一步的死法</b>{esc(s["risk"])}</span>\n'
+            f'          </div>\n'
+            f'        </li>')
+
+    return (
+        '<section id="venture">\n'
+        '      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>\n'
+        f'      <p class="lead">{esc(v["lead"])}</p>\n'
+        '\n'
+        '      <div class="entry">\n'
+        '        <span class="en-cap">切入点</span>\n'
+        f'        <span class="en-t">{esc(v["entry"])}</span>\n'
+        '      </div>\n'
+        '\n'
+        '      <ol class="vs">\n' + '\n'.join(items) + '\n      </ol>\n'
+        '\n'
+        '      <div class="note warn">\n'
+        f'        <b>最该避免：</b>{esc(v["avoid"])}\n'
+        '      </div>\n'
+        '      <div class="note info">\n'
+        f'        {esc(v["note"])}\n'
+        '      </div>\n'
+        '    </section>'
+    )
+
+
 # ---------------------------------------------------------------- 页面外壳
 PAGE = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -344,13 +392,15 @@ PAGE = """<!DOCTYPE html>
 
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
 DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='')
+VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='')
 
 
 def build_section(b, board01):
     legacy = b.get('legacy')
     chain = render_chain(b)
     design = render_design(b, b['num'])
-    front = (chain + '\n\n' + design) if chain else design
+    venture = render_venture(b)
+    front = '\n\n'.join(x for x in (chain, design, venture) if x)
 
     if legacy:
         body = board01[0]
@@ -373,8 +423,10 @@ def build_section(b, board01):
         toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
                     for i, s in enumerate(b['subs'])]
 
-    # 侧栏目录：技术链路 / 具体设计 在最前面，且不带编号
-    head = ([dict(CHAIN_TOC)] if chain else []) + ([dict(DESIGN_TOC)] if design else [])
+    # 侧栏目录：技术链路 / 具体设计 / 创业者路线图 在最前面，且不带编号
+    head = (([dict(CHAIN_TOC)] if chain else [])
+            + ([dict(DESIGN_TOC)] if design else [])
+            + ([dict(VENTURE_TOC)] if venture else []))
     b['toc'] = head + toc_subs
 
     h1 = b.get('h1') or b['title']
