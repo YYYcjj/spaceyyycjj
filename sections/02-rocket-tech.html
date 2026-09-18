@@ -45,6 +45,7 @@
       <a class="bo active" href="02-rocket-tech.html"><span class="n">02</span>航天火箭技术</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#r-ceiling" data-toc><span class="n">2.1</span>天花板在哪：三个数把话说死</a>
       <a href="#r-cycle" data-toc><span class="n">2.2</span>发动机循环：三条路线各自放弃了什么</a>
@@ -264,6 +265,103 @@
 
       <div class="note warn">
         这条设计路线的重点不是「更快」，而是「更便宜地重复使用」：甲烷的比冲不如氢氧、密度比冲不如煤油，赢的是几乎不积碳带来的翻修速度。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>全流量分级燃烧 + 液氧甲烷的组合已经跑通并进入飞行；比冲已逼近化学推进的物理上限，靠换推进剂或改循环再要量级提升已无空间。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>在逼近比冲上限的同时把翻修成本压下去——这两者方向相反，所以目标不是「每一项都做到最好」，而是在两者之间找到最优解。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">推进剂与循环定型</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从多种候选组合（煤油/氢/甲烷 × 燃气发生器/分级燃烧）收敛到一条主路线。</p>
+            <p class="trs-do"><b>怎么做　</b>甲烷胜出的理由是可解释的：比冲介于煤油与氢之间、积碳少（利于复用）、密度比冲好（贮箱小）、且可以在火星原位制备。配合全流量分级燃烧——富燃预燃室与富氧预燃室各驱动一台涡轮泵，全部推进剂都经过预燃室，室压可以推到 300 bar 级。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已通过：整机试车达标并进入飞行。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">逼近比冲上限</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>液氧甲烷的真空比冲约 350–380 s，液氢液氧的理论上限约 450 s。甲烷路线到不了 450 s，只能靠高室压 + 大膨胀比尽量逼近自己的上限。</p>
+            <p class="trs-do"><b>怎么做　</b>提高室压、加大喷管面积比；同时减薄喷管壁厚但仍要保住再生冷却能力——这靠铜合金内壁（GRCop 一类）+ 增材制造做出传统工艺做不出的冷却流道。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>室压 300 bar 级以上的高压试车台 + 铜合金/高温合金增材制造能力。</span>
+              <span class="trs-gt"><b>通过判据</b>真空比冲在现有基础上再提几个百分点，且试车中不出现烧穿。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">结构与冷却：从能承受热流到能反复承受</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>复用让「热疲劳」取代「瞬时热流」成为主要约束——同一台发动机要能经历多次全时长试车而不裂。</p>
+            <p class="trs-do"><b>怎么做　</b>再生冷却通道的几何优化（增材制造的自由度用在这里）；内壁用高导热铜合金对抗高热流；喷管延伸段换耐高温复合材料降重量。配套要靠无损检测（内窥 + CT）确认每次试车后有没有微裂纹。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>循环次数足够多的热试车样本 + 微裂纹检测手段。</span>
+              <span class="trs-gt"><b>通过判据</b>同一台发动机完成多次全时长试车，检测无裂纹扩展。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把结构系数压回去</span>
+              <span class="trs-w">2–4 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>可回收设计本身会推高结构系数——着陆腿、栅格舵、剩余推进剂都是纯质量。这部分增加会吃掉复用带来的一部分收益。</p>
+            <p class="trs-do"><b>怎么做　</b>复合材料贮箱减重、桁架拓扑优化、把着陆机构做成可拆卸模块；更聪明的做法是用再入时的剩余推进剂兼做气动控制，而不是额外增加一套系统。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>复合材料工艺 + 结构-热耦合仿真能力。</span>
+              <span class="trs-gt"><b>通过判据</b>结构系数回到接近一次性火箭的水平，同时保留完整复用能力。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把翻修成本打下来</span>
+              <span class="trs-w">3–5 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>发动机翻修是复用成本的大头——每次都要拆检泵、阀、密封。而提高室压和膨胀比会让翻修更贵，这正是矛盾所在。</p>
+            <p class="trs-do"><b>怎么做　</b>用试车与飞行数据建寿命模型，把「到点拆检」变成「按状态判修」；把涡轮泵密封、高温阀门这些高频翻修件设计成可快速更换的模块，让翻修从「返厂」下沉到「工位换件」。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>大量飞行数据 + 可快速拆装的接口设计。</span>
+              <span class="trs-gt"><b>通过判据</b>同一台发动机的「复用次数 × 翻修成本 / 新造价格」明显低于 1。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>最后一环（翻修成本）。它和比冲是反向约束：想推比冲就要提高室压与膨胀比，而室压越高、热负荷越大、翻修越贵。而比冲上限已经被推进剂组合锁死，所以真正拉开差距的其实是「同等比冲下谁的翻修更便宜」——这是工程权衡题，不是物理突破题。想再要量级突破只能换掉化学推进（见板块五）。
+      </div>
+      <div class="note info">
+        比冲数值为公开资料的典型值，具体型号差异较大；室压与翻修成本的口径各家不一，此处只作量级参照。
       </div>
     </section>
 
