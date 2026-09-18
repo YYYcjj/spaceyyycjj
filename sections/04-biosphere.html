@@ -47,6 +47,7 @@
       <a class="bo active" href="04-biosphere.html"><span class="n">04</span>飞船生态圈</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#b-math" data-toc><span class="n">4.1</span>先把账算清：一个人一天要多少</a>
       <a href="#b-eclss" data-toc><span class="n">4.2</span>闭环做到了什么程度</a>
@@ -269,6 +270,103 @@
 
       <div class="note warn">
         设计逻辑是「用质量换质量」：闭环系统本身要占质量，它的回收期必须短于任务时长才划算。现有 ISS 再生式系统搬到火星转移任务，质量回收期约 219 天，只省 2.5% 发射质量。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>水回收率约 98%、氧与二氧化碳已能闭环（ISS 的 ECLSS 已做到）；食物几乎全部靠地球补给。一次 3 年往返的火星任务，全补给食物在质量上算不过来。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>物理化学再生 + 受控生态生保（CELSS）的混合闭环——能物理化学解决的（水、氧）用物理化学，必须生物解决的（食物）用生态，两者不互相替代。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">水闭环</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「带水上去」到「回收 98%」。</p>
+            <p class="trs-do"><b>怎么做　</b>多级处理串联：冷凝水收集 → 尿液真空蒸馏 → 催化氧化 → 离子交换 → 活性炭过滤 → 紫外或碘消毒。每一级处理特定污染物，串联起来才能覆盖尿液、汗液、冷凝水三种来源。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：ISS 上的水回收率约 98%。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">氧与碳闭环</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「带氧气瓶」到「电解水制氧 + 回收二氧化碳中的氧」。</p>
+            <p class="trs-do"><b>怎么做　</b>电解水制氧（OGA）；萨巴蒂尔反应把 CO2 与 H2 合成 CH4 和 H2O——水回用、甲烷排掉。注意这一步只闭环了氧，碳是被排掉的，并没有真正循环。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：氧回收率约 90%。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">食物闭环</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「完全靠补给」到「在轨种出相当比例的食物」。这是整条链路里最弱的一环。</p>
+            <p class="trs-do"><b>怎么做　</b>受控生态种植：用 LED 光配方（特定波长组合调控生长速率与营养成分）、气培或水培的营养液循环、温室气体与湿度控制。作物优先选单位体积产能高的（生菜、小麦、马铃薯、大豆）。真正的难点不在种植本身，而在元素闭环——碳、氮、磷、钾和微量元素必须能循环回来，而不是靠不断补营养液。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>空间站上的长期种植实验数据 + 营养液再生技术 + 适合密闭环境的作物品种选育。</span>
+              <span class="trs-gt"><b>通过判据</b>在轨连续（≥1 年）稳定产出，且元素回收率能证明显著减少补给质量。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">废物资源化</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>人体废物、包装、废弃作物目前大部分当垃圾处理，里面的元素白白流失。</p>
+            <p class="trs-do"><b>怎么做　</b>微生物或酶解 + 湿式氧化，把有机废物转化成植物可吸收的养分形式；同时必须控制病原与异味——密闭空间里这两件事的权重比地面高得多。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>生物反应器小型化 + 长期运行稳定性验证。</span>
+              <span class="trs-gt"><b>通过判据</b>废物中的关键元素回收率进入闭环计算，并被证明有净收益（回收消耗 &lt; 补给节省）。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">人工重力与辐射防护</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>长期失重带来的骨密度流失、肌肉萎缩、体液重分布，与深空辐射的累积剂量，是长期航行的两大生理风险。两者都还没有可行方案。</p>
+            <p class="trs-do"><b>怎么做　</b>人工重力的矛盾是几何：要产生 1g 就得旋转，但半径越小转速就得越快，而转速一快科里奥利效应就会让人内耳不适——所以半径至少要百米量级，这直接决定飞船的尺寸。辐射防护的三条候选路线各有硬伤：被动屏蔽（水、聚乙烯、月壤）质量代价极大；主动磁场防护需要兆瓦级电功率；生物医学防护（辐射防护药物、促进细胞修复）还在早期。现实做法是「被动屏蔽 + 缩短暴露时间 + 药物」的组合，而不是等一个完美方案。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>深空辐射环境实测数据 + 百米级旋转结构（若走人工重力）+ 兆瓦级空间电源（若走主动屏蔽）。</span>
+              <span class="trs-gt"><b>通过判据</b>一次完整火星任务剖面的累积剂量与失重暴露被证明在可接受风险范围内。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>辐射防护。其他环节都是「把已知原理工程化」，只有这一环至今连技术路线都不清晰——它和食物闭环的区别是：食物闭环知道要往哪个方向做（元素循环），辐射防护连「主方案是什么」都还没定。而它对一次火星任务的影响是决定性的：累积剂量可能超出职业暴露限值数倍。
+      </div>
+      <div class="note info">
+        回收率与水处理流程为 ISS 公开资料口径；火星任务补给质量为公开研究中的估算量级。
       </div>
     </section>
 
