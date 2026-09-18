@@ -32,20 +32,29 @@ from chains import CHAINS                     # noqa: E402
 from costs import COSTS                       # noqa: E402
 from designs import DESIGNS                   # noqa: E402
 from ventures import VENTURES                 # noqa: E402
+from techroad import TECHROADS                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
 
-# 把技术链路 / 成本 / 具体设计 / 创业者路线图挂到对应板块上（按 slug 匹配，content 文件不用管）
+# 把技术链路 / 成本 / 具体设计 / 技术发展路线 / 创业者路线图挂到对应板块上（按 slug 匹配）
 for _b in BOARDS:
     _b['chain'] = CHAINS.get(_b['slug'])
     _b['cost'] = COSTS.get(_b['slug'])
     _b['design'] = DESIGNS.get(_b['slug'])
+    _b['techroad'] = TECHROADS.get(_b['slug'])
     _b['venture'] = VENTURES.get(_b['slug'])
     assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
     assert _b['cost'], f'板块 {_b["slug"]} 缺少成本数据'
     assert _b['design'], f'板块 {_b["slug"]} 缺少具体设计'
+    assert _b['techroad'], f'板块 {_b["slug"]} 缺少技术发展路线'
     assert _b['venture'], f'板块 {_b["slug"]} 缺少创业者路线图'
+for _b in BOARDS:
+    _tr = _b['techroad']
+    assert len(_tr['stages']) == 5, f'板块 {_b["slug"]} 技术路线应恰好 5 步，实际 {len(_tr["stages"])}'
+    for _s in _tr['stages']:
+        for _k in ('p', 'w', 'gap', 'do', 'need', 'gate'):
+            assert _s.get(_k), f'板块 {_b["slug"]} 第 {_s.get("p")} 步缺少字段 {_k}'
 
 # 状态 → (标签类, 中文标签)
 CHAIN_STATUS = [
@@ -326,6 +335,80 @@ def render_venture(b):
     )
 
 
+# ---------------------------------------------------------------- 技术发展路线
+ARROW_SVG = ('<svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true">'
+             '<path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" '
+             'stroke-linecap="round" stroke-linejoin="round"/></svg>')
+
+TECHROAD_LEAD = (
+    '下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，'
+    '所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，'
+    '判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。'
+)
+
+
+def _stage_w_class(w):
+    """把「时间量级」这个字段兼作状态位：已走完=绿、在推进=蓝、其余按年计=灰。"""
+    if w.startswith('已走完'):
+        return ' done'
+    if w.startswith('在推进') or w.startswith('走完'):
+        return ' run'
+    return ''
+
+
+def render_techroad(b):
+    """把 techroad 数据渲染成：今天→目标对比 + 五步推进（差距/做法/条件/判据）+ 最硬的一关。"""
+    t = b.get('techroad')
+    if not t:
+        return ''
+
+    items = []
+    for s in t['stages']:
+        items.append(
+            f'        <li>\n'
+            f'          <div class="trs-card">\n'
+            f'            <div class="trs-h">\n'
+            f'              <span class="trs-t">{esc(s["p"])}</span>\n'
+            f'              <span class="trs-w{_stage_w_class(s["w"])}">{esc(s["w"])}</span>\n'
+            f'            </div>\n'
+            f'            <p class="trs-gap"><b>要跨的差距　</b>{esc(s["gap"])}</p>\n'
+            f'            <p class="trs-do"><b>怎么做　</b>{esc(s["do"])}</p>\n'
+            f'            <div class="trs-meta">\n'
+            f'              <span class="trs-nd"><b>需要的条件</b>{esc(s["need"])}</span>\n'
+            f'              <span class="trs-gt"><b>通过判据</b>{esc(s["gate"])}</span>\n'
+            f'            </div>\n'
+            f'          </div>\n'
+            f'        </li>')
+
+    return (
+        '<section id="techroad">\n'
+        '      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>\n'
+        f'      <p class="lead">{TECHROAD_LEAD}</p>\n'
+        '\n'
+        '      <div class="trbook">\n'
+        '        <div class="trb now">\n'
+        '          <b>今天在哪</b>\n'
+        f'          <p>{esc(t["now"])}</p>\n'
+        '        </div>\n'
+        f'        <div class="trb-arw">{ARROW_SVG}</div>\n'
+        '        <div class="trb goal">\n'
+        '          <b>要到哪</b>\n'
+        f'          <p>{esc(t["goal"])}</p>\n'
+        '        </div>\n'
+        '      </div>\n'
+        '\n'
+        '      <ol class="trs">\n' + '\n'.join(items) + '\n      </ol>\n'
+        '\n'
+        '      <div class="note warn">\n'
+        f'        <b>最硬的一关：</b>{esc(t["hard"])}\n'
+        '      </div>\n'
+        '      <div class="note info">\n'
+        f'        {esc(t["note"])}\n'
+        '      </div>\n'
+        '    </section>'
+    )
+
+
 # ---------------------------------------------------------------- 页面外壳
 PAGE = """<!DOCTYPE html>
 <html lang="zh-CN">
@@ -392,6 +475,7 @@ PAGE = """<!DOCTYPE html>
 
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
 DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='')
+TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='')
 VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='')
 
 
@@ -399,8 +483,9 @@ def build_section(b, board01):
     legacy = b.get('legacy')
     chain = render_chain(b)
     design = render_design(b, b['num'])
+    techroad = render_techroad(b)
     venture = render_venture(b)
-    front = '\n\n'.join(x for x in (chain, design, venture) if x)
+    front = '\n\n'.join(x for x in (chain, design, techroad, venture) if x)
 
     if legacy:
         body = board01[0]
@@ -423,9 +508,10 @@ def build_section(b, board01):
         toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
                     for i, s in enumerate(b['subs'])]
 
-    # 侧栏目录：技术链路 / 具体设计 / 创业者路线图 在最前面，且不带编号
+    # 侧栏目录：这四项概览排在最前面，且不带编号
     head = (([dict(CHAIN_TOC)] if chain else [])
             + ([dict(DESIGN_TOC)] if design else [])
+            + ([dict(TECHROAD_TOC)] if techroad else [])
             + ([dict(VENTURE_TOC)] if venture else []))
     b['toc'] = head + toc_subs
 
