@@ -46,6 +46,7 @@
       <a class="bo active" href="03-starship.html"><span class="n">03</span>星舰建造与技术</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#st-v3" data-toc><span class="n">3.1</span>V3 构型：比前两代大了多少</a>
       <a href="#st-flight14" data-toc><span class="n">3.2</span>第 14 飞：从「测试火箭」到「轨道运输系统」</a>
@@ -259,6 +260,103 @@
 
       <div class="note warn">
         设计上最容易被忽略的一点：前几环（构型、入轨、回收）再漂亮，在轨加注没打通就没有去火星的运力——它是唯一一个「必须成功」而不是「可以优化」的环节。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>V3 构型与不锈钢箭体已定型；全流量猛禽已进入飞行；再入与热防护在逐次迭代；塔架捕获回收已经成功。缺的是「完全复用」的后半段——在轨加注一次都没做过。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>完全复用 + 在轨低温推进剂加注，让单次任务的运力不再受「一次起飞能带多少」限制。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">入轨与再入验证</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「能飞起来」到「再入后可控回收」。</p>
+            <p class="trs-do"><b>怎么做　</b>不锈钢箭体（便宜、耐温、焊接快，代价是比复合材料重）；迎风面贴六边形陶瓷隔热瓦；靠气动舵面做再入姿态控制，末段用发动机反推并对准塔架捕获。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已完成轨道级飞行与塔架捕获回收。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">让热防护真的可重复使用</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>隔热瓦目前每次飞行都要大量更换——「可重复使用」这一条还没有兑现。</p>
+            <p class="trs-do"><b>怎么做　</b>瓦片粘接工艺改进（解决振动脱落）、瓦缝密封、把瓦做成可快速更换的标准件；同时验证主动方案的可行性（瞬态气膜冷却、蒸腾冷却）以减少对瓦的依赖。配套要上自动化贴瓦与检瓦设备——手工贴瓦撑不起高频次。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>高频次飞行数据 + 自动化贴瓦/检瓦工装。</span>
+              <span class="trs-gt"><b>通过判据</b>单次再入后瓦片更换率降到很低，整箭翻修时间从天级压到小时级。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">回收方式定型</span>
+              <span class="trs-w run">走完大半</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「能捕获」到「周转快」。塔架捕获省掉了着陆腿的质量，代价是精度要求极高。</p>
+            <p class="trs-do"><b>怎么做　</b>提高捕获精度（箭上定位 + 塔架对位系统）；把捕获后的转运、检测、复飞做成固定节拍的流水线，而不是每飞一次重新组织一次。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>塔架与工位专用化——不能与其他任务共用发射资源。</span>
+              <span class="trs-gt"><b>通过判据</b>捕获成功率稳定，且「捕获到再次发射」的间隔显著缩短。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">在轨低温推进剂加注</span>
+              <span class="trs-w">3–6 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从未在轨道上转移过大量低温推进剂。这是去火星的硬门槛——一次火星任务需要十余次加注，没有它就没有那个量级的运力。</p>
+            <p class="trs-do"><b>怎么做　</b>拆成三层推进：(a) 低温长期贮存——多层绝热 + 在轨制冷，把蒸发压到零或极低；(b) 微重力液体定位——用微小推力把推进剂「沉」到贮箱底部，或用表面张力装置定位；(c) 两船对接后的转移——管路对接密封、两相流控制、流量与压力匹配。三层都要先在轨验证，不能只做地面试验。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>一对可对接的贮箱级试验器 + 长期在轨低温数据 + 在轨制冷技术。</span>
+              <span class="trs-gt"><b>通过判据</b>完成一次可计量的在轨推进剂转移，且蒸发损失在可接受范围内。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把加注周转压到天级</span>
+              <span class="trs-w">5 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>单次任务十余次加注，若每次都要数周，火星任务在工程上就不成立。</p>
+            <p class="trs-do"><b>怎么做　</b>加油船标准化与批量生产、快速对接、以及在轨道上预置推进剂（提前把燃料存好，而不是等飞船到了再发）。这一步开始从「航天工程」变成「物流调度」。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>大量可重复使用的加油船 + 轨道推进剂库 + 密集发射的调度能力。</span>
+              <span class="trs-gt"><b>通过判据</b>单次加注的周转时间压到天级，十余次加注可在一次发射窗口内完成。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>第四环（在轨低温加注）。它不依赖任何一项突破性科学，纯粹是工程复杂度叠加：低温、微重力、对接、两相流四个难点同时出现，而且一次失败会同时损失两艘飞行器。前面几环做得再漂亮，没有这一环就没有火星运力。
+      </div>
+      <div class="note info">
+        加注次数与周转时间为公开讨论中的量级估算，随构型与任务剖面变化。
       </div>
     </section>
 
