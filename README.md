@@ -37,10 +37,14 @@ tools/content_b.py            板块 6-9 内容
 tools/chains.py               九个板块的「技术链路」数据
 tools/costs.py                九个板块的「要花多少钱」数据
 tools/designs.py              九个板块的「具体设计」数据 + 三维等轴测场景
-tools/techroad.py             九个板块的「技术怎么一步步做」数据
+tools/techroad.py             九个板块的「技术怎么一步步做」叙述（45 步）
+tools/techparams.py           45 步的技术参数表与配图引用（与 techroad 分开维护）
+tools/techfigs.py             45 步的配图（装置用等轴测、过程用二维概念图）
 tools/ventures.py             九个板块的「创业者路线图」数据
 tools/iso.py                  等轴测（isometric）SVG 生成器
+tools/dia.py                  二维概念图图元库（曲线 / 刻度 / 流程 / 堆叠柱 / 时间条 / 散点）
 tools/check_designs.py        设计图自检（文字越界 / 互相重叠）
+tools/check_figs.py           技术路线 45 张配图的自检（同上两类问题）
 tools/export_figures.py       把九张图导出成独立的 figures/*.svg
 tools/board01_body.html       板块一正文（由早期单页报告抽取，一次性素材）
 tools/board01_toc.json        板块一目录条目
@@ -52,7 +56,8 @@ tools/board01_toc.json        板块一目录条目
 
 ```bash
 python3 tools/build.py            # 生成 index.html 与 sections/*.html
-python3 tools/check_designs.py    # 设计图自检
+python3 tools/check_designs.py    # 九张设计图自检（文字越界 / 重叠）
+python3 tools/check_figs.py       # 45 张技术路线配图自检（同上）
 python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重跑）
 ```
 
@@ -61,7 +66,8 @@ python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重
 
 站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
 技术链路写在 `tools/chains.py`，成本写在 `tools/costs.py`，具体设计写在 `tools/designs.py`，
-技术发展路线写在 `tools/techroad.py`，创业者路线图写在 `tools/ventures.py`，
+技术发展路线写在 `tools/techroad.py`（叙述）与 `tools/techparams.py`（参数 + 配图引用，图在 `techfigs.py`），
+创业者路线图写在 `tools/ventures.py`，
 由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
 **改内容只改 Python 数据文件，不要手改生成的 HTML。**
 
@@ -77,6 +83,12 @@ for _b in BOARDS:
     _b['venture']  = VENTURES.get(_b['slug'])
     assert all(_b[k] for k in ('chain', 'cost', 'design', 'techroad', 'venture')), \
         f'板块 {_b["slug"]} 数据缺失'
+
+# 技术路线再挂一层：按 (slug, 步号) 把参数与配图填进每一「步」
+for _b in BOARDS:
+    for _i, _s in enumerate(_b['techroad']['stages'], 1):
+        _m = STEP_META[(_b['slug'], _i)]
+        _s['params'], _s['fig'] = _m['params'], _m['fig']
 ```
 
 页面里五层的排列顺序由 `build_section()` 决定，目前是
@@ -182,8 +194,36 @@ python3 tools/check_designs.py
 结构是 **今天在哪 → 要到哪 → 五步 → 最硬的一关**：
 
 - **今天在哪 / 要到哪**：左右对比条，先把起点和终点摆清楚。
-- **五步**：每步有 `阶段名 / 时间量级 / 要跨的差距 / 怎么做 / 需要的条件 / 通过判据`。
+- **五步**：每步是一张完整的卡片，含
+  `阶段名 / 时间量级 / 要跨的差距 / 怎么做 / 配图 / 技术参数表 / 需要的条件 / 通过判据`。
 - **最硬的一关**：五步里哪一步最可能卡死，以及为什么。
+
+**每步的配图按内容选形式**（9 板块 × 5 步 = 45 张）：
+
+| 内容 | 用什么 | 生成器 |
+|---|---|---|
+| 装置、结构（发动机剖面、在轨加注、塔架、种植舱…） | 等轴测立体图 | `tools/iso.py` |
+| 过程、数值、层级（摊销曲线、对数刻度、流程链、时间条…） | 二维概念图 | `tools/dia.py` |
+
+图写在 `tools/techfigs.py`，键名与 `techparams.py` 里的 `fig` 字段一一对应。
+二维图有现成模板可以直接调：`series`（折线）、`logscale`（对数刻度尺）、
+`flow`（流程链）、`stack`（堆叠柱）、`timeline`（时间条）、`scatter`（散点）、`layers`（分层）。
+
+**参数与叙述分两个文件维护**：`techroad.py` 是叙述（为什么这么做、判据是什么），
+`techparams.py` 是数值（参数名 / 取值 / 口径）。两者更新节奏不同——
+叙述较稳，数值会随公开资料修订——分开写互不影响。
+`build.py` 用 `(slug, 步号)` 把两者挂在一起，并断言 45 步都有参数与图。
+
+⚠️ 二维图的文字坐标是**手写像素**，最容易出的错是「出框」和「互相重叠」——
+所以 45 张图必须跑自检：
+
+```bash
+python3 tools/check_figs.py
+```
+
+它会算出每张图里所有文字的像素矩形，两两求交，同时报出框与重叠。
+本轮做出的 12 个真 bug（图例压标题、x 轴名压注释、数值被推出画布、
+时间条跑出网格、尺寸线压在主体上……）**全部是它先发现的，截图看不出来**。
 
 时间量级字段同时兼作状态位：`已走完`（绿）/ `在推进`（蓝）/ 其余按年计的为灰。
 渲染时由 `_stage_w_class()` 按开头词判定，所以**写数据时请沿用这三个前缀**。
