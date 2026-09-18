@@ -44,6 +44,7 @@
       <a class="bo active" href="01-current.html"><span class="n">01</span>目前航天技术发展</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#s1" data-toc><span class="n">1.1</span>全球格局：三个梯队</a>
       <a href="#s2" data-toc><span class="n">1.2</span>国际：主要玩家进展</a>
@@ -296,6 +297,103 @@
 
       <div class="note warn">
         设计上的关键取舍：回收会让结构系数变差（着陆腿、栅格舵、剩余推进剂都是纯负担），所以复用箭在一次性运力指标上一定不如同重量的消耗型火箭——这笔账只能靠多次飞行摊回来。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>一子级回收的两条路线都已跑通（长十乙海上网系、朱雀三号陆地着陆腿），但中国还没有一款火箭完成复飞；猎鹰9 单枚已复用 37 次，是全球唯一走到高频次的。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>同一枚箭的两次飞行间隔压到天级，翻修从「返厂大修」变成「过站检查」，让火箭真正变成运输工具而不是消耗品。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">让同一枚箭再飞一次</span>
+              <span class="trs-w">1–2 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「能收回来」到「同一枚箭第二次入轨并再次回收」。中国目前是 0，这是 0→1 的分界。</p>
+            <p class="trs-do"><b>怎么做　</b>回收后做全箭无损检测：贮箱焊缝超声、发动机内窥、结构探伤；给每个关键件建寿命台账，据此定出「必换件清单」和「可继续用」的判据。第一次复飞不必追求成本，只求把检测与判修流程完整跑通一遍。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>一支愿意开放箭体飞行数据的复飞队伍 + 超声/内窥检测设备 + 至少两枚同型箭。</span>
+              <span class="trs-gt"><b>通过判据</b>同一枚箭完成第二次入轨并再次成功回收，且检测流程可复现。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把复用次数推过 5 次</span>
+              <span class="trs-w">2–3 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从复用 1 次到 5 次以上。只有越过这个门槛，单次飞行的硬件摊销才明显下来。</p>
+            <p class="trs-do"><b>怎么做　</b>把检测从「全检」改成「抽检 + 趋势监控」：用历史传感器数据（振动、温度、压力曲线）判断哪些件可以不拆。翻修工位化，把「返厂大修」拆成模块换件——前提是箭体本身要设计成可拆模块。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>前面累积的飞行数据（没有数据就只能全检） + 可拆模块化的箭体设计。</span>
+              <span class="trs-gt"><b>通过判据</b>单枚箭复用 ≥5 次，且平均翻修工时逐次下降。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把翻修成本压一个量级</span>
+              <span class="trs-w">3–5 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>单次翻修从千万美元级降到百万美元级（猎鹰9 的公开口径约 30 万美元一次）。</p>
+            <p class="trs-do"><b>怎么做　</b>把「按间隔换件」改成「按状态换件」——用飞行数据算剩余寿命，而不是到点就换。同时补上二级与整流罩的回收复用：整流罩已能回收，二级复用是最后一块成本高地。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>足够样本量（几十次飞行）才能建出可信的寿命模型 + 可复用的整流罩与二级。</span>
+              <span class="trs-gt"><b>通过判据</b>翻修成本 / 新造价格降到 10% 以内。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把发射场周转压到天级</span>
+              <span class="trs-w">4–6 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「发射间隔以月计」到「以天计」——周转能力才是运力的真正上限。</p>
+            <p class="trs-do"><b>怎么做　</b>推进剂加注自动化、测发流程并行化、工位快速复位；尽量把检测挪到工位上做，减少箭体转运次数。高空与海域的发射窗口协调要提前批量化。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>专用工位（不与其他任务抢）+ 自动化加注系统 + 高密度发射的空域海域协调。</span>
+              <span class="trs-gt"><b>通过判据</b>同一工位两次发射间隔 ≤7 天。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把复用乘上规模</span>
+              <span class="trs-w">6 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「单枚能复用」到「一年百次量级的常态运力」。</p>
+            <p class="trs-do"><b>怎么做　</b>用高发射频次压低单公斤价格，再把这个价格用到新市场（星座组网、深空货运、在轨制造），形成「发射便宜→需求变多→发射更多→更便宜」的正循环。这一步的关键不在火箭，而在需求侧。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>稳定的下游需求——没有需求，复用次数上不去，成本也不会降。</span>
+              <span class="trs-gt"><b>通过判据</b>年发射次数进入百次量级，单公斤价格比一次性火箭低一个数量级。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>第一步最难，而且它不是技术难题，是流程与组织难题——技术上门槛不高，但要求有人把一枚飞过的箭当成资产而不是消耗品来管理，并愿意为检测投入资源。这一步的成本不是「造不出来」，而是「没人愿意先亏一次」。
+      </div>
+      <div class="note info">
+        时间量级按公开项目节奏估算，不是承诺；实际快慢取决于客户复飞与翻修体系的推进速度。
       </div>
     </section>
 
