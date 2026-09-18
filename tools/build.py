@@ -53,13 +53,17 @@ for _b in BOARDS:
     assert _b['venture'], f'板块 {_b["slug"]} 缺少创业者路线图'
 for _b in BOARDS:
     _tr = _b['techroad']
-    assert len(_tr['stages']) == 5, f'板块 {_b["slug"]} 技术路线应恰好 5 步，实际 {len(_tr["stages"])}'
+    # 板块七比其他板块多一步（「解读」），所以是 5–6 步而不是恒等于 5
+    assert 5 <= len(_tr['stages']) <= 6, \
+        f'板块 {_b["slug"]} 技术路线应为 5–6 步，实际 {len(_tr["stages"])}'
     for _s in _tr['stages']:
         for _k in ('p', 'w', 'gap', 'do', 'need', 'gate'):
             assert _s.get(_k), f'板块 {_b["slug"]} 第 {_s.get("p")} 步缺少字段 {_k}'
 
 # 把技术参数与配图挂到每一步上（(slug, 步号) 索引；叙述与数值分开维护）
-assert len(STEP_META) == 45, f'技术参数表应有 45 项，实际 {len(STEP_META)}'
+_N_STEPS = sum(len(b['techroad']['stages']) for b in BOARDS)
+assert len(STEP_META) == _N_STEPS, \
+    f'技术参数表应有 {_N_STEPS} 项（与各板块步数之和一致），实际 {len(STEP_META)}'
 for _b in BOARDS:
     for _i, _s in enumerate(_b['techroad']['stages'], 1):
         _m = STEP_META.get((_b['slug'], _i))
@@ -98,6 +102,19 @@ def esc(s):
     return html.escape(s, quote=True)
 
 
+_BOLD = re.compile(r'\*\*([^*\n]+)\*\*')
+
+
+def rich(s):
+    """先转义、再把 **配对** 转成 <b>。
+
+    数据文件里写 **加粗** 比写 <b> 干净，但这些字段都要过 esc()——
+    直接输出会把星号当字面字符显示出来（实测有 5 处真的露在页面上）。
+    只用于纯文本字段；属性值（title、desc、aria-label 等）仍旧只用 esc()。
+    """
+    return _BOLD.sub(r'<b>\1</b>', esc(s))
+
+
 def section_filename(b):
     return f"{b['num']}-{b['slug']}.html"
 
@@ -124,20 +141,20 @@ def load_board01():
 def render_rail(cur):
     parts = [
         f'    <a class="brand" href="../index.html">',
-        f'      {esc(SITE["title"])}',
-        f'      <small>{esc(SITE["subtitle"])}</small>',
+        f'      {rich(SITE["title"])}',
+        f'      <small>{rich(SITE["subtitle"])}</small>',
         f'    </a>',
         f'    <nav aria-label="目录">',
     ]
     for b in BOARDS:
         active = ' active' if b['slug'] == cur['slug'] else ''
         parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
-                     f'<span class="n">{b["num"]}</span>{esc(b["title"])}</a>')
+                     f'<span class="n">{b["num"]}</span>{rich(b["title"])}</a>')
         if b['slug'] == cur['slug']:
             for s in cur['toc']:
                 cls = ' class="sub"' if s['sub'] else ''
                 num = '' if (s['sub'] or not s.get('n')) else f'<span class="n">{s["n"]}</span>'
-                parts.append(f'      <a{cls} href="#{s["id"]}" data-toc>{num}{esc(s["title"])}</a>')
+                parts.append(f'      <a{cls} href="#{s["id"]}" data-toc>{num}{rich(s["title"])}</a>')
     parts.append('    </nav>')
     return '\n'.join(parts)
 
@@ -147,7 +164,7 @@ def render_topnav(cur):
     items = ['<a href="../index.html">首页</a>']
     for b in BOARDS:
         active = ' class="active"' if b['slug'] == cur['slug'] else ''
-        items.append(f'<a href="{section_filename(b)}"{active}>{esc(NAV_SHORT[b["slug"]])}</a>')
+        items.append(f'<a href="{section_filename(b)}"{active}>{rich(NAV_SHORT[b["slug"]])}</a>')
     return ('<nav class="topnav" aria-label="板块导航">\n  <div class="inner">\n    '
             + '\n    '.join(items) + '\n  </div>\n</nav>')
 
@@ -159,13 +176,13 @@ def render_pager(cur):
     if i > 0:
         p = BOARDS[i - 1]
         out.append(f'<a class="pg prev" href="{section_filename(p)}">'
-                   f'<span class="pg-d">上一板块 {p["num"]}</span><span class="pg-t">{esc(p["title"])}</span></a>')
+                   f'<span class="pg-d">上一板块 {p["num"]}</span><span class="pg-t">{rich(p["title"])}</span></a>')
     else:
         out.append('<span class="pg empty"></span>')
     if i < len(BOARDS) - 1:
         n = BOARDS[i + 1]
         out.append(f'<a class="pg next" href="{section_filename(n)}">'
-                   f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{esc(n["title"])}</span></a>')
+                   f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{rich(n["title"])}</span></a>')
     else:
         out.append('<a class="pg next" href="../index.html">'
                    '<span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>')
@@ -184,12 +201,12 @@ def render_chain(b):
         cls, lab = STATUS_MAP[n['s']]
         cells.append(f'        <div class="cb {n["s"]}">\n'
                      f'          <span class="cb-i">{i:02d}</span>\n'
-                     f'          <span class="cb-t">{esc(n["t"])}</span>\n'
+                     f'          <span class="cb-t">{rich(n["t"])}</span>\n'
                      f'        </div>')
         items.append(f'        <li class="{n["s"]}">\n'
-                     f'          <div class="cl-h"><span class="cl-t">{esc(n["t"])}</span>'
+                     f'          <div class="cl-h"><span class="cl-t">{rich(n["t"])}</span>'
                      f'<span class="tag {cls}">{lab}</span></div>\n'
-                     f'          <div class="cl-x">{esc(n["how"])}</div>\n'
+                     f'          <div class="cl-x">{rich(n["how"])}</div>\n'
                      f'        </li>')
 
     legend = ' · '.join(
@@ -198,11 +215,11 @@ def render_chain(b):
     return (
         '<section id="chain">\n'
         '      <h2>技术链路<span class="en">Technology Chain</span></h2>\n'
-        f'      <p class="lead">{esc(ch["lead"])}</p>\n'
+        f'      <p class="lead">{rich(ch["lead"])}</p>\n'
         '\n'
         '      <div class="frontier">\n'
         '        <span class="fr-cap">最先进的方法</span>\n'
-        f'        <span class="fr-t">{esc(ch["frontier"])}</span>\n'
+        f'        <span class="fr-t">{rich(ch["frontier"])}</span>\n'
         '      </div>\n'
         '\n'
         '      <div class="chain-bar">\n' + '\n'.join(cells) + '\n      </div>\n'
@@ -212,7 +229,7 @@ def render_chain(b):
         '      <ol class="chain-list">\n' + '\n'.join(items) + '\n      </ol>\n'
         '\n'
         '      <div class="note warn">\n'
-        f'        <b>最难的一环：</b>{esc(ch["bottleneck"])}\n'
+        f'        <b>最难的一环：</b>{rich(ch["bottleneck"])}\n'
         '      </div>\n'
         '\n'
         + render_cost(b.get('cost')) + '\n'
@@ -229,9 +246,9 @@ def render_cost(cost):
     rows = []
     for it in cost['items']:
         rows.append(f'          <tr>\n'
-                    f'            <td class="nm" data-th="项目">{esc(it["t"])}</td>\n'
-                    f'            <td class="num" data-th="金额">{esc(it["a"])}</td>\n'
-                    f'            <td data-th="口径与说明">{esc(it["n"])}</td>\n'
+                    f'            <td class="nm" data-th="项目">{rich(it["t"])}</td>\n'
+                    f'            <td class="num" data-th="金额">{rich(it["a"])}</td>\n'
+                    f'            <td data-th="口径与说明">{rich(it["n"])}</td>\n'
                     f'          </tr>')
 
     return (
@@ -242,9 +259,9 @@ def render_cost(cost):
         '          <tbody>\n' + '\n'.join(rows) + '\n          </tbody>\n'
         '        </table>\n'
         '      </div>\n'
-        f'      <p class="cost-scale"><b>总量级：</b>{esc(cost["scale"])}</p>\n'
+        f'      <p class="cost-scale"><b>总量级：</b>{rich(cost["scale"])}</p>\n'
         '      <div class="note info">\n'
-        f'        {esc(cost["note"])}\n'
+        f'        {rich(cost["note"])}\n'
         '      </div>'
     )
 
@@ -259,26 +276,26 @@ def render_design(b, num):
     specs = []
     for it in d['specs']:
         specs.append(f'          <tr>\n'
-                     f'            <td class="nm" data-th="设计参数">{esc(it["k"])}</td>\n'
-                     f'            <td class="num" data-th="取值">{esc(it["v"])}</td>\n'
-                     f'            <td data-th="为什么是这个值">{esc(it["n"])}</td>\n'
+                     f'            <td class="nm" data-th="设计参数">{rich(it["k"])}</td>\n'
+                     f'            <td class="num" data-th="取值">{rich(it["v"])}</td>\n'
+                     f'            <td data-th="为什么是这个值">{rich(it["n"])}</td>\n'
                      f'          </tr>')
 
     subs = '\n'.join(
         f'        <div class="ds">\n'
-        f'          <div class="ds-t">{esc(s["t"])}</div>\n'
-        f'          <div class="ds-n">{esc(s["n"])}</div>\n'
+        f'          <div class="ds-t">{rich(s["t"])}</div>\n'
+        f'          <div class="ds-n">{rich(s["n"])}</div>\n'
         f'        </div>' for s in d['subs'])
 
     return (
         '<section id="design">\n'
         '      <h2>具体设计<span class="en">Design</span></h2>\n'
-        f'      <p class="lead">{esc(d["headline"])}</p>\n'
+        f'      <p class="lead">{rich(d["headline"])}</p>\n'
         '\n'
         '      <figure class="figure">\n'
         f'        <div class="fig-scroll">{d["scene"]()}</div>\n'
         f'        <p class="fig-hint">图为等轴测示意图，手机上可左右拖动查看细节。</p>\n'
-        f'        <figcaption>图 {num}　{esc(d["caption"])}</figcaption>\n'
+        f'        <figcaption>图 {num}　{rich(d["caption"])}</figcaption>\n'
         f'        <p class="fig-dl">'
         f'<a href="../figures/{b["num"]}-{b["slug"]}.svg">打开矢量原图（SVG）</a>'
         f'<span class="sep">·</span>可另存后放进 PPT、或直接打印</p>\n'
@@ -296,7 +313,7 @@ def render_design(b, num):
         '      <div class="design-subs">\n' + subs + '\n      </div>\n'
         '\n'
         '      <div class="note warn">\n'
-        f'        {esc(d["note"])}\n'
+        f'        {rich(d["note"])}\n'
         '      </div>\n'
         '    </section>'
     )
@@ -315,33 +332,33 @@ def render_venture(b):
             f'        <li>\n'
             f'          <div class="vs-h">\n'
             f'            <span class="vs-p">{i:02d}</span>\n'
-            f'            <span class="vs-t">{esc(s["p"])}</span>\n'
-            f'            <span class="vs-w">{esc(s["w"])}</span>\n'
+            f'            <span class="vs-t">{rich(s["p"])}</span>\n'
+            f'            <span class="vs-w">{rich(s["w"])}</span>\n'
             f'          </div>\n'
-            f'          <p class="vs-do">{esc(s["do"])}</p>\n'
+            f'          <p class="vs-do">{rich(s["do"])}</p>\n'
             f'          <div class="vs-meta">\n'
-            f'            <span class="vs-mk"><b>里程碑</b>{esc(s["mile"])}</span>\n'
-            f'            <span class="vs-rk"><b>这一步的死法</b>{esc(s["risk"])}</span>\n'
+            f'            <span class="vs-mk"><b>里程碑</b>{rich(s["mile"])}</span>\n'
+            f'            <span class="vs-rk"><b>这一步的死法</b>{rich(s["risk"])}</span>\n'
             f'          </div>\n'
             f'        </li>')
 
     return (
         '<section id="venture">\n'
         '      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>\n'
-        f'      <p class="lead">{esc(v["lead"])}</p>\n'
+        f'      <p class="lead">{rich(v["lead"])}</p>\n'
         '\n'
         '      <div class="entry">\n'
         '        <span class="en-cap">切入点</span>\n'
-        f'        <span class="en-t">{esc(v["entry"])}</span>\n'
+        f'        <span class="en-t">{rich(v["entry"])}</span>\n'
         '      </div>\n'
         '\n'
         '      <ol class="vs">\n' + '\n'.join(items) + '\n      </ol>\n'
         '\n'
         '      <div class="note warn">\n'
-        f'        <b>最该避免：</b>{esc(v["avoid"])}\n'
+        f'        <b>最该避免：</b>{rich(v["avoid"])}\n'
         '      </div>\n'
         '      <div class="note info">\n'
-        f'        {esc(v["note"])}\n'
+        f'        {rich(v["note"])}\n'
         '      </div>\n'
         '    </section>'
     )
@@ -383,7 +400,7 @@ def render_techroad(b):
                 '            <figure class="trs-fig">\n'
                 '              <div class="fig-scroll">'
                 + spec['make']().svg(spec['cap']) + '</div>\n'
-                f'              <figcaption>{esc(spec["cap"])}</figcaption>\n'
+                f'              <figcaption>{rich(spec["cap"])}</figcaption>\n'
                 '            </figure>\n'
             )
 
@@ -392,9 +409,9 @@ def render_techroad(b):
             rows = []
             for pk, pv, pn in s['params']:        # techparams 里是 (参数名, 取值, 口径) 三元组
                 rows.append(f'              <tr>\n'
-                            f'                <td class="nm" data-th="技术参数">{esc(pk)}</td>\n'
-                            f'                <td class="num" data-th="取值">{esc(pv)}</td>\n'
-                            f'                <td data-th="口径与依据">{esc(pn)}</td>\n'
+                            f'                <td class="nm" data-th="技术参数">{rich(pk)}</td>\n'
+                            f'                <td class="num" data-th="取值">{rich(pv)}</td>\n'
+                            f'                <td data-th="口径与依据">{rich(pn)}</td>\n'
                             f'              </tr>')
             prm_html = (
                 '            <div class="tablewrap">\n'
@@ -410,15 +427,15 @@ def render_techroad(b):
             f'        <li>\n'
             f'          <div class="trs-card">\n'
             f'            <div class="trs-h">\n'
-            f'              <span class="trs-t">{esc(s["p"])}</span>\n'
-            f'              <span class="trs-w{_stage_w_class(s["w"])}">{esc(s["w"])}</span>\n'
+            f'              <span class="trs-t">{rich(s["p"])}</span>\n'
+            f'              <span class="trs-w{_stage_w_class(s["w"])}">{rich(s["w"])}</span>\n'
             f'            </div>\n'
-            f'            <p class="trs-gap"><b>要跨的差距　</b>{esc(s["gap"])}</p>\n'
-            f'            <p class="trs-do"><b>怎么做　</b>{esc(s["do"])}</p>\n'
+            f'            <p class="trs-gap"><b>要跨的差距　</b>{rich(s["gap"])}</p>\n'
+            f'            <p class="trs-do"><b>怎么做　</b>{rich(s["do"])}</p>\n'
             + fig_html + prm_html +
             f'            <div class="trs-meta">\n'
-            f'              <span class="trs-nd"><b>需要的条件</b>{esc(s["need"])}</span>\n'
-            f'              <span class="trs-gt"><b>通过判据</b>{esc(s["gate"])}</span>\n'
+            f'              <span class="trs-nd"><b>需要的条件</b>{rich(s["need"])}</span>\n'
+            f'              <span class="trs-gt"><b>通过判据</b>{rich(s["gate"])}</span>\n'
             f'            </div>\n'
             f'          </div>\n'
             f'        </li>')
@@ -431,22 +448,22 @@ def render_techroad(b):
         '      <div class="trbook">\n'
         '        <div class="trb now">\n'
         '          <b>今天在哪</b>\n'
-        f'          <p>{esc(t["now"])}</p>\n'
+        f'          <p>{rich(t["now"])}</p>\n'
         '        </div>\n'
         f'        <div class="trb-arw">{ARROW_SVG}</div>\n'
         '        <div class="trb goal">\n'
         '          <b>要到哪</b>\n'
-        f'          <p>{esc(t["goal"])}</p>\n'
+        f'          <p>{rich(t["goal"])}</p>\n'
         '        </div>\n'
         '      </div>\n'
         '\n'
         '      <ol class="trs">\n' + '\n'.join(items) + '\n      </ol>\n'
         '\n'
         '      <div class="note warn">\n'
-        f'        <b>最硬的一关：</b>{esc(t["hard"])}\n'
+        f'        <b>最硬的一关：</b>{rich(t["hard"])}\n'
         '      </div>\n'
         '      <div class="note info">\n'
-        f'        {esc(t["note"])}\n'
+        f'        {rich(t["note"])}\n'
         '      </div>\n'
         '    </section>'
     )
@@ -542,7 +559,7 @@ def build_section(b, board01):
         blocks = []
         for i, s in enumerate(b['subs']):
             blocks.append(f'<section id="{s["id"]}">\n'
-                          f'    <h2>{n}.{i + 1} {esc(s["title"])}</h2>\n'
+                          f'    <h2>{n}.{i + 1} {rich(s["title"])}</h2>\n'
                           f'{s["html"].strip()}\n'
                           f'</section>')
         body = '\n\n'.join(blocks)
@@ -674,7 +691,7 @@ CARD = """        <a class="board-card" href="sections/{file}">
 def build_hub():
     cards = []
     for b in BOARDS:
-        points = '\n'.join(f'            <li>{esc(p)}</li>' for p in b['points'])
+        points = '\n'.join(f'            <li>{rich(p)}</li>' for p in b['points'])
         cards.append(CARD.format(file=section_filename(b), num=b['num'], en=esc(b['en']),
                                  title=esc(b['title']), dek=esc(b['short']),
                                  points=points))
