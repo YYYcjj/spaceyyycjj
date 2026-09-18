@@ -37,6 +37,7 @@ tools/content_b.py            板块 6-9 内容
 tools/chains.py               九个板块的「技术链路」数据
 tools/costs.py                九个板块的「要花多少钱」数据
 tools/designs.py              九个板块的「具体设计」数据 + 三维等轴测场景
+tools/techroad.py             九个板块的「技术怎么一步步做」数据
 tools/ventures.py             九个板块的「创业者路线图」数据
 tools/iso.py                  等轴测（isometric）SVG 生成器
 tools/check_designs.py        设计图自检（文字越界 / 互相重叠）
@@ -60,7 +61,7 @@ python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重
 
 站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
 技术链路写在 `tools/chains.py`，成本写在 `tools/costs.py`，具体设计写在 `tools/designs.py`，
-创业者路线图写在 `tools/ventures.py`，
+技术发展路线写在 `tools/techroad.py`，创业者路线图写在 `tools/ventures.py`，
 由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
 **改内容只改 Python 数据文件，不要手改生成的 HTML。**
 
@@ -69,11 +70,18 @@ python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重
 
 ```python
 for _b in BOARDS:
-    _b['chain']  = CHAINS.get(_b['slug'])
-    _b['cost']   = COSTS.get(_b['slug'])
-    _b['design'] = DESIGNS.get(_b['slug'])
-    assert _b['chain'] and _b['cost'] and _b['design'], f'板块 {_b["slug"]} 数据缺失'
+    _b['chain']    = CHAINS.get(_b['slug'])
+    _b['cost']     = COSTS.get(_b['slug'])
+    _b['design']   = DESIGNS.get(_b['slug'])
+    _b['techroad'] = TECHROADS.get(_b['slug'])
+    _b['venture']  = VENTURES.get(_b['slug'])
+    assert all(_b[k] for k in ('chain', 'cost', 'design', 'techroad', 'venture')), \
+        f'板块 {_b["slug"]} 数据缺失'
 ```
+
+页面里五层的排列顺序由 `build_section()` 决定，目前是
+**技术链路 → 具体设计 → 技术怎么一步步做 → 创业者路线图**，
+侧栏目录顶部对应四项不带编号的概览项（不与 N.1 / N.2 的编号体系冲突）。
 
 ## 技术链路
 
@@ -162,6 +170,49 @@ python3 tools/check_designs.py
 
 自检比肉眼看可靠得多——本轮的三个 bug（缩放只会缩不会放、缩放解漏掉右边缘约束、
 三条左侧标注 `v` 相同叠在一起）全都是它先发现的，截图上看不出来。
+
+## 技术怎么一步步做
+
+每个板块还有一节「技术怎么一步步做」——这一层是**纯工程视角**：
+从今天的技术基线出发，分五步推到目标状态，每一步具体做什么。
+
+与「创业者路线图」的分工要分清：那一条讲「一家公司怎么活下来」（商业），
+这一条讲「一项技术怎么被做出来」（工程）。
+
+结构是 **今天在哪 → 要到哪 → 五步 → 最硬的一关**：
+
+- **今天在哪 / 要到哪**：左右对比条，先把起点和终点摆清楚。
+- **五步**：每步有 `阶段名 / 时间量级 / 要跨的差距 / 怎么做 / 需要的条件 / 通过判据`。
+- **最硬的一关**：五步里哪一步最可能卡死，以及为什么。
+
+时间量级字段同时兼作状态位：`已走完`（绿）/ `在推进`（蓝）/ 其余按年计的为灰。
+渲染时由 `_stage_w_class()` 按开头词判定，所以**写数据时请沿用这三个前缀**。
+
+`tools/techroad.py` 里每个板块的字段：
+
+```python
+"slug": dict(
+    now="今天的技术基线：现在能做到什么，卡在哪",
+    goal="目标状态：要把它做成什么样",
+    stages=[dict(p="阶段名", w="时间量级", gap="要跨的差距",
+                 do="具体怎么做", need="需要什么条件", gate="通过判据")],
+    hard="最硬的一关，以及为什么",
+    note="口径提醒",
+)
+```
+
+构建时会断言每个板块恰好 5 步、且六个字段都不为空。
+
+**写作原则（与创业者路线图一致，别写成宣传文案）**：
+
+1. **每一步都要有「通过判据」**，而且必须可观测——试车时长、复用次数、回收率、σ 值，
+   不是「完成度 80%」这种没法核对的表述。没有判据的「推进」只是口号。
+2. **已走完的阶段也要写，并标明「已走完」**。路线图从今天的真实位置起画；
+   省略已走过的路，读者就不知道当前位置是怎么来的、为什么是这个顺序。
+3. **区分「工程问题」与「物理约束」**。物理上无解的（光帆没有减速、
+   光速决定的通信往返时间）要明说不可解决，不要写成「待突破」——
+   这两类混在一起会让人误以为只要投入资源就能解决。
+4. **写清路线选择理由**比堆参数更有价值（为什么选液氧甲烷、为什么选目标看 Δv 而不是成分）。
 
 ## 创业者路线图
 
