@@ -48,6 +48,7 @@
       <a class="bo active" href="05-lightspeed.html"><span class="n">05</span>飞船速度提升到光速发展</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#l-limit" data-toc><span class="n">5.1</span>为什么光速不可达</a>
       <a href="#l-ladder" data-toc><span class="n">5.2</span>推进方案阶梯：从能用的到只能算的</a>
@@ -268,6 +269,103 @@
 
       <div class="note warn">
         这套设计的诚实表述是：它解决「加速」，不解决「刹车」和「载荷」。0.2c 下主要观测窗口只有数小时到数天，所以它更像一次飞掠而不是一次驻留。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>整条链路都还在纸面。已完成的是几个小规模演示（相干激光合束、光帆材料样品），没有任何一次真实的太空推进试验，也没有任何一环跨过 TRL 4。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>用约 100 吉瓦的地基激光阵列，把几克重的探测器加速到 0.2c（约 6 万公里/秒）。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">先把能量密度做出来</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从千瓦级实验室激光到 100 吉瓦级相干阵列——差 8 个数量级。这不是「造更多台」就能解决的线性放大。</p>
+            <p class="trs-do"><b>怎么做　</b>分两级放大：先把千瓦级相干合束做到兆瓦级连续工作（验证相位控制算法与热管理），再谈吉瓦级。每上一个数量级，相位控制精度、光束质量、废热排放都要重新设计，不能线性外推。参考路线是上千台激光器的相位相干合成，再叠加自适应光学补偿大气扰动。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>一座中型电站量级的供电能力 + 大规模相位控制与自适应光学 + 公里级阵列场地。</span>
+              <span class="trs-gt"><b>通过判据</b>兆瓦级相干合束连续工作，光束质量满足长距离（百万公里级）聚焦要求。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">光帆材料</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从实验室样品到几米宽、只有几克重、反射率 99.9% 量级、且能在强光照射下保持平整的整张帆。</p>
+            <p class="trs-do"><b>怎么做　</b>候选材料是氮化硅一类超薄介质膜。推进顺序是先做小面积样品，验证反射率与热变形；再解决大面积制备与在轨展开。帆面平整度是关键——只要有一点弯曲，光束就聚不到帆上，推力会骤降。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>薄膜制备与转移工艺 + 在轨展开机构 + 高反射率镀膜。</span>
+              <span class="trs-gt"><b>通过判据</b>米级帆面在模拟激光照射下保持平整，反射率达到设计值。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">克级星芯片</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从现有小卫星（公斤级）压到克级，同时还要保留相机、处理器、发射机、光伏。</p>
+            <p class="trs-do"><b>怎么做　</b>定制低功耗 SoC + 抗辐射设计 + 高密度集成封装。关键思路是做减法——只保留完成观测所需的最小组件，而不是把地面系统的功能逐项搬上来。功能越多，质量越大，加速就越难。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>定制芯片流片 + 极端小型化封装 + 抗辐照验证。</span>
+              <span class="trs-gt"><b>通过判据</b>克级样机完成全套功能演示（成像、星上处理、数据发射）。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">加速与姿态稳定</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「能推得动」到「能连续几分钟稳定地推同一张帆」。帆面推力不均会产生力矩，几秒内探测器就会翻滚出光束。</p>
+            <p class="trs-do"><b>怎么做　</b>两条姿态控制路线：帆面微结构（可调反射率的单元阵列）主动配平，或让帆整体自旋用陀螺效应稳定。地面演示必须先把「加速—稳定」闭环跑通，再谈发射。这一步有个特殊之处：它必须等前三步全部到位才能开始。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>前面的阵列、光帆、芯片全部到位——这是唯一一步「无法提前动工」的。</span>
+              <span class="trs-gt"><b>通过判据</b>在一次地面试验中把克级帆持续加速到设计中速，全程保持姿态可控。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">通信回传</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>几克质量的发射机要把数据传回 4.25 光年外，链路预算极其紧张——发射功率受质量限制，距离是天文尺度。</p>
+            <p class="trs-do"><b>怎么做　</b>两端同时改进：地面建大口径接收阵列（数千个天线做合成孔径，等效口径上千米）；星上用极低功耗高增益发射；数据侧把传输量压到最低（只传关键帧，其余在星上丢弃）。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>大口径接收阵列 + 星上高效率功放 + 星上数据筛选算法。</span>
+              <span class="trs-gt"><b>通过判据</b>在模拟距离（如现有深空探测器）上验证等效链路预算可行。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>这条路线没有「最硬的一环」意义上的单一瓶颈——它是每一环都差得远，而且必须同时成立。更关键的是：即便所有工程问题都解决，**减速这一环在物理上没有解**。光帆靠地球的激光加速，到了目的地没有谁去刹车，所以探测器只能以 0.2c 掠过，主要观测窗口只有数小时到数天。这不是工程优化能补的结构性缺口。因此这条路线最现实的形态可能不是「到达另一颗恒星」，而是「快速掠过柯伊伯带或邻近恒星系做一次飞掠观测」。
+      </div>
+      <div class="note info">
+        0.2c ≈ 6 万公里/秒；Starshot 的官方系统模型给出约 126 亿美元的 CAPEX（激光、光学、储能三块），但独立估算的差距可达数个量级——这一步的造价本身就极不确定。
       </div>
     </section>
 
