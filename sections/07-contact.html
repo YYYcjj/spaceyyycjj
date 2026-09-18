@@ -50,6 +50,7 @@
       <a class="bo active" href="07-contact.html"><span class="n">07</span>与外星人交流</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#c-paradox" data-toc><span class="n">7.1</span>费米悖论：问题本身比答案可靠</a>
       <a href="#c-biosign" data-toc><span class="n">7.2</span>生物标志物：从大气里读生命</a>
@@ -269,6 +270,103 @@
 
       <div class="note warn">
         这是九条链路里最便宜也最容易被误解的一条：它的产出不是「找到」，而是把「没找到」变成有统计意义的结论——所以系统性和排除流程比单次灵敏度更重要。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>系外行星普查已确认 5,000 颗以上；大气光谱进入 JWST 时代（K2-18b 的 DMS 提示只有 3σ）；射电搜索持续投入（Breakthrough Listen 1 亿美元/10 年），数百万候选信号全部被排除。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>从「找信号」转向「找特征」——生物标志物与技术签名双线搜索，并把证据门槛从 3σ 推到 5σ 且可重复。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">先把行星找出来</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「猜有没有」到「知道有多少」。开普勒 + TESS 已用凌星法确认 5,000 颗以上。</p>
+            <p class="trs-do"><b>怎么做　</b>凌星法（行星经过恒星前方时亮度的周期性凹陷）+ 视向速度法（恒星被行星拖动的谱线摆动）测质量。两者结合才能同时得到半径与质量，进而判断是岩石行星还是气态巨行星。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：统计上已知多数恒星都有行星。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">读出大气成分</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「知道行星存在」到「知道它大气里有什么」。JWST 让这一步第一次变得可行。</p>
+            <p class="trs-do"><b>怎么做　</b>透射光谱——在行星凌星时，一部分星光穿过行星大气，从恒星光谱里扣掉这层大气的吸收特征，就能反推成分。难点是信号极弱，单次凌星的信噪比远不够，需要多次凌星叠加；而且观测时间要跟其他课题竞争，每一次机会都稀缺。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>大口径红外望远镜的专用观测时间（稀缺资源）+ 更强的信号处理与去系统误差方法。</span>
+              <span class="trs-gt"><b>通过判据</b>多个分子（不是单个）在 5σ 水平上被重复观测确认。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">生物标志物的判据</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「检出某个分子」到「证明它是生物来源」。单个分子几乎总有非生物解释，这是这一环最容易被误报的地方（K2-18b 的 3σ 提示就是典型）。</p>
+            <p class="trs-do"><b>怎么做　</b>改用组合判据：例如 O2 与 CH4 同时存在——两者会互相反应（甲烷会被氧化），没有持续补充就无法长期共存，所以这种「化学不平衡」本身就是证据。再加上动态特征（季节变化、昼夜差异）做交叉验证。同时必须把光化学、火山、彗星输运等已知非生物通道逐一排除。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>更完整的行星大气化学模型（才能说「排除」）+ 多仪器交叉验证。</span>
+              <span class="trs-gt"><b>通过判据</b>在排除已知非生物通道后，某组分子的组合仍无法被非生物过程解释。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">技术签名</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「找生命」到「找文明」——找非自然的证据，而不是自然过程的产物。</p>
+            <p class="trs-do"><b>怎么做　</b>三条线并行：工业污染气体（NO2、CFC 类，自然界没有来源）；热辐射异常（红外过量，可能是文明的废热，即戴森结构的间接效应）；无线电泄漏与光脉冲。技术签名相对生物标志物的优势是：它不依赖我们对「生命应该长什么样」的假设。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>中红外空间望远镜（测热辐射）+ 更宽频段的射电观测 + 长期监测。</span>
+              <span class="trs-gt"><b>通过判据</b>一个无法用自然过程解释的技术签名被独立确认并重复观测。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把搜索做成系统</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「零星观测」到「系统性覆盖」。已有数百万候选信号全部被排除，说明**干扰剔除比信号检出更难**——问题不在灵敏度，在怎么把地面雷达、卫星、手机信号从数据里挑出去。</p>
+            <p class="trs-do"><b>怎么做　</b>专用观测时间（不抢别人的）+ 宽带接收机 + 相干消色散；核心是干扰剔除算法，再用多台望远镜同时观测做「同源确认」——真正的天外信号，不同台站会看到同一条；地面的干扰只在一处出现。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>望远镜专用时间 + 大规模信号处理算力 + 多台站协同观测能力。</span>
+              <span class="trs-gt"><b>通过判据</b>建立可复现的搜索与排除流程，能在合理时间内系统性排除已知干扰源。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>证据门槛（第三环）。这不是技术问题，而是推理问题：我们只能靠「无法用自然过程解释」来推断生命存在，而这种推理永远不能像实验室那样做对照实验——你没法把一颗行星拿来当对照组。再叠加距离带来的时间尺度：最近的恒星 4.25 光年，一问一答就是 8.5 年，若目标在 30 光年外则要 60 年。所以「双向交流」在人的时间尺度上不成立，最现实的目标不是交流，而是**确认**：先确凿地知道「那里有」。
+      </div>
+      <div class="note info">
+        σ 值、候选信号数量与经费为公开资料口径；生物标志物的判据在学界仍有争议，此处给出的是目前较主流的思路。
       </div>
     </section>
 
