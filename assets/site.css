@@ -808,4 +808,26 @@ table.spec td.num{font-weight:650; color:var(--ink); font-variant-numeric:tabula
   .trs-card{padding:13px 15px 12px;}
   .trs-t{font-size:14px;}
   .trs-do{font-size:12.5px;}
+  .trs-fig{padding:11px 12px 9px; margin-top:12px;}
 }
+
+/* ---------- 每步的配图 ---------- */
+.trs-fig{
+  margin:15px 0 0; padding:15px 17px 11px;
+  background:var(--bg-sunk); border:1px solid var(--line); border-radius:9px;
+}
+.trs-fig svg{display:block; width:100%; height:auto;}
+.trs-fig figcaption{
+  font-size:11px; color:var(--faint); line-height:1.65;
+  margin-top:12px; padding-top:10px; border-top:1px solid var(--line);
+}
+
+/* 每步的技术参数表：用 table.params，与成本表的 table.cost 区分开 */
+table.params td.nm{font-weight:600;}
+table.params td.num{font-weight:650; color:var(--ink);}
+/* 列宽只在桌面生效——写进移动端会覆盖卡片化的 td{width:100%}，把卡片压窄 */
+@media (min-width:641px){
+  table.params th:nth-child(1), table.params td:nth-child(1){width:26%;}
+  table.params th:nth-child(2), table.params td:nth-child(2){width:23%;}
+}
+
