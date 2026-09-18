@@ -51,6 +51,7 @@
       <a class="bo active" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#rs-what" data-toc><span class="n">8.1</span>有什么资源，第一笔生意是什么</a>
       <a href="#rs-who" data-toc><span class="n">8.2</span>现在谁在做，做到哪一步</a>
@@ -264,6 +265,103 @@
 
       <div class="note warn">
         这条设计的破局点不在航天技术，而在需求侧：只有先有足够大的在轨推进剂需求，「就地取水」才有客户。这是个蛋鸡问题，也是它至今没有商业成功案例的真正原因。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>遥感普查已成熟；采样返回已验证（OSIRIS-REx 用 10 亿美元换回 122 克）；商业化采样至今 0 成功案例；原位提取与加工全部停在纸上。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>近地小行星原位资源利用（ISRU）——不把矿运回地球，而是就地变成在轨补给：水 → 电解 → 氢氧推进剂。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">先普查，别急着去</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「不知道有什么」到「大致知道哪类小行星含什么元素」。</p>
+            <p class="trs-do"><b>怎么做　</b>地面与空间望远镜做光谱分类——按光谱型分成碳质（C 型，含水与有机质）、石质（S 型）、金属（M 型）。这一步决定了后面所有目标选择的候选池。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：近地小行星已被系统编目与分类。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">选目标：Δv 比成分更重要</span>
+              <span class="trs-w run">在推进</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「有资源」到「能低成本到达」。这两件事经常冲突——资源最好的小行星，往往也是最难到达的。</p>
+            <p class="trs-do"><b>怎么做　</b>目标选择的第一个判据不是「含多少铂」，而是**到达所需的速度增量（Δv）**、自转周期（转太快就无法稳定着陆或接触）与轨道可返回性。优先选 C 型近地小行星——它们含水，而水是最容易变现的产品（电解成氢氧就是推进剂，不用复杂的冶炼）。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>更精确的轨道与自转数据 + 探测任务返回的成分数据（如灵神星任务的金属成分）。</span>
+              <span class="trs-gt"><b>通过判据</b>有一批 Δv 与成分双优的候选目标被独立确认。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">采样返回先跑通</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「飞过去看一眼」到「把样品带回来」。OSIRIS-REx 与隼鸟2号都做到了，代价是 10 亿美元换 122 克（约 8,200 万美元/克）。</p>
+            <p class="trs-do"><b>怎么做　</b>触碰即走（touch-and-go）采样——不做着陆，接触瞬间抓取就撤，规避了在小行星表面停留的风险；样品密封返回地球。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：样品成功返回并被实验室分析。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">把采样成本降两个数量级</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从 10 亿美元/次降到几千万美元/次——这是商业化采样的门槛。</p>
+            <p class="trs-do"><b>怎么做　</b>思路是「砍掉科学任务的所有奢侈配置」：用小型化航天器而不是大型多仪器平台，只带必需仪器，选低 Δv 目标缩短航行时间，用商业发射压低入轨成本。参照商业月球载荷的做法：把「行星科学旗舰任务」的设计哲学换成「够用就发」。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>低成本深空平台 + 商业发射 + 简化的采样机构。</span>
+              <span class="trs-gt"><b>通过判据</b>一次商业采样返回任务的成本进入千万美元量级并成功返回样品。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">原位提取与加工</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「带回样品」到「在原地把资源变成产品」。微重力下的采掘、分选、熔炼要把地面常识全部推翻——没有重力，就没有沉降分离，所有靠密度差的工艺都失效。</p>
+            <p class="trs-do"><b>怎么做　</b>三条子技术各自解决：(a) 采掘——用低反作用力的挖掘或抓取，因为在小行星上任何反作用力都会把自己推开；(b) 分选——用离心、磁选、静电分离替代重力沉降；(c) 加工——含水矿物加热释水（水冰 → 水蒸气 → 电解 → 氢氧）；金属则用太阳能炉或熔盐电解。全流程要先在微重力环境验证。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>在轨试验平台（微重力下验证分选与熔炼）+ 大功率空间电源（太阳能或核裂变表面电源）。</span>
+              <span class="trs-gt"><b>通过判据</b>在轨环境下产出一批可用推进剂，并被另一艘飞行器实际使用。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>经济闭环，而且它反直觉：铂族金属全球年产量只有约 190 吨，一旦把一块小行星的金属带回来，价格立刻就崩——**矿的价值会被自己的产量摧毁**。所以可行的产品不是运回地球的贵金属，而是**在轨消费的东西**：水、推进剂、屏蔽材料。这些东西的定价基准不是市场价格，而是「省下的发射成本」——把一公斤水送到轨道要花多少钱，就是它的上限。这个上限才是能不能成立的关键。
+      </div>
+      <div class="note info">
+        小行星分类与采样成本为公开资料口径；铂族金属年产量约 190 吨为近年统计量级；在轨推进剂市场价随发射成本变动，此处只作结构说明。
       </div>
     </section>
 
