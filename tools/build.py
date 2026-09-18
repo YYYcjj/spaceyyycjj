@@ -33,6 +33,8 @@ from costs import COSTS                       # noqa: E402
 from designs import DESIGNS                   # noqa: E402
 from ventures import VENTURES                 # noqa: E402
 from techroad import TECHROADS                # noqa: E402
+from techfigs import FIGS as TECHFIGS         # noqa: E402
+from techparams import STEP_META              # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
@@ -55,6 +57,16 @@ for _b in BOARDS:
     for _s in _tr['stages']:
         for _k in ('p', 'w', 'gap', 'do', 'need', 'gate'):
             assert _s.get(_k), f'板块 {_b["slug"]} 第 {_s.get("p")} 步缺少字段 {_k}'
+
+# 把技术参数与配图挂到每一步上（(slug, 步号) 索引；叙述与数值分开维护）
+assert len(STEP_META) == 45, f'技术参数表应有 45 项，实际 {len(STEP_META)}'
+for _b in BOARDS:
+    for _i, _s in enumerate(_b['techroad']['stages'], 1):
+        _m = STEP_META.get((_b['slug'], _i))
+        assert _m, f'板块 {_b["slug"]} 第 {_i} 步缺少技术参数与配图'
+        assert _m['params'] and _m['fig'], f'板块 {_b["slug"]} 第 {_i} 步参数或配图为空'
+        assert _m['fig'] in TECHFIGS, f'板块 {_b["slug"]} 第 {_i} 步的图键 {_m["fig"]} 不存在'
+        _s['params'], _s['fig'] = _m['params'], _m['fig']
 
 # 状态 → (标签类, 中文标签)
 CHAIN_STATUS = [
@@ -364,6 +376,36 @@ def render_techroad(b):
 
     items = []
     for s in t['stages']:
+        fig_html = ''
+        spec = TECHFIGS.get(s.get('fig'))
+        if spec:
+            fig_html = (
+                '            <figure class="trs-fig">\n'
+                '              <div class="fig-scroll">'
+                + spec['make']().svg(spec['cap']) + '</div>\n'
+                f'              <figcaption>{esc(spec["cap"])}</figcaption>\n'
+                '            </figure>\n'
+            )
+
+        prm_html = ''
+        if s.get('params'):
+            rows = []
+            for pk, pv, pn in s['params']:        # techparams 里是 (参数名, 取值, 口径) 三元组
+                rows.append(f'              <tr>\n'
+                            f'                <td class="nm" data-th="技术参数">{esc(pk)}</td>\n'
+                            f'                <td class="num" data-th="取值">{esc(pv)}</td>\n'
+                            f'                <td data-th="口径与依据">{esc(pn)}</td>\n'
+                            f'              </tr>')
+            prm_html = (
+                '            <div class="tablewrap">\n'
+                '              <table class="params">\n'
+                '                <thead><tr><th>技术参数</th><th>取值</th>'
+                '<th>口径与依据</th></tr></thead>\n'
+                '                <tbody>\n' + '\n'.join(rows) + '\n                </tbody>\n'
+                '              </table>\n'
+                '            </div>\n'
+            )
+
         items.append(
             f'        <li>\n'
             f'          <div class="trs-card">\n'
@@ -373,6 +415,7 @@ def render_techroad(b):
             f'            </div>\n'
             f'            <p class="trs-gap"><b>要跨的差距　</b>{esc(s["gap"])}</p>\n'
             f'            <p class="trs-do"><b>怎么做　</b>{esc(s["do"])}</p>\n'
+            + fig_html + prm_html +
             f'            <div class="trs-meta">\n'
             f'              <span class="trs-nd"><b>需要的条件</b>{esc(s["need"])}</span>\n'
             f'              <span class="trs-gt"><b>通过判据</b>{esc(s["gate"])}</span>\n'
