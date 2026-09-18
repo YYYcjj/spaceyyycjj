@@ -49,6 +49,7 @@
       <a class="bo active" href="06-lifespan.html"><span class="n">06</span>人类寿命延长与冬眠</a>
       <a href="#chain" data-toc>技术链路</a>
       <a href="#design" data-toc>具体设计</a>
+      <a href="#techroad" data-toc>技术怎么一步步做</a>
       <a href="#venture" data-toc>创业者路线图</a>
       <a href="#s-hypothesis" data-toc><span class="n">6.1</span>衰老可以被当成一个靶点吗</a>
       <a href="#s-data" data-toc><span class="n">6.2</span>目前有什么真实数据</a>
@@ -263,6 +264,103 @@
 
       <div class="note warn">
         设计上的关键判断：冬眠的价值不在医学，而在质量——居住舱从 20–50 吨降到 5–7 吨，按每公斤入轨数千美元算，减掉十几吨就是数亿美元。所以它首先是工程方案，其次才是医学方案。
+      </div>
+    </section>
+
+<section id="techroad">
+      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>
+      <p class="lead">下面这五步有先后依赖——前一步的通过判据不成立，后一步就无从谈起，所以顺序不能调换、也不能跳。每一步都写明「要跨的差距 / 具体怎么做 / 需要什么条件 / 通过判据」，判据是可观测的工程事实（试车时长、复用次数、回收率、σ 值），不是进度百分比。</p>
+
+      <div class="trbook">
+        <div class="trb now">
+          <b>今天在哪</b>
+          <p>表观遗传时钟已经可用作干预效果的读数；雷帕霉素等已在动物上确实延长寿命；人体试验在跑但主要终点尚未达标；冬眠在动物身上是生理事实，在人身上只走到「代谢率降 20%」的临床雏形，距船上需要的量级差得很远。</p>
+        </div>
+        <div class="trb-arw"><svg width="26" height="12" viewBox="0 0 26 12" fill="none" aria-hidden="true"><path d="M0 6h22M17 1.5 22.5 6 17 10.5" stroke="#9a9992" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="trb goal">
+          <b>要到哪</b>
+          <p>靶向衰老通路的干预（把寿命与健康期拉长） + 可诱导的冬眠（把长途航行的代谢消耗压下去）。注意这是两件事：前者应对「活得够久」，后者应对「路上耗得起」。</p>
+        </div>
+      </div>
+
+      <ol class="trs">
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">先把尺子做准</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「看活了多久」到「用生物标志物度量生物学年龄」——没有可靠的读数，任何干预都无法评估，试验也就无从设计。</p>
+            <p class="trs-do"><b>怎么做　</b>表观遗传时钟（DNA 甲基化位点的加权组合）+ 多组学标志物。这一步的真正价值是把「抗衰老」从玄学变成可测量的临床终点。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：时钟能以可接受的误差预测生理状态，并被多个独立队列验证。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">动物上验证通路</span>
+              <span class="trs-w done">已走完</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从「机制假说」到「动物寿命真的延长」。</p>
+            <p class="trs-do"><b>怎么做　</b>雷帕霉素（抑制 mTOR）、热量限制、senolytics（清除衰老细胞）都已在小鼠上显示延长寿命。这一步确认了衰老是可干预的过程，而不是自然规律。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>已具备。</span>
+              <span class="trs-gt"><b>通过判据</b>已实现：多个通路的干预在小鼠上可重复。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">人体临床试验</span>
+              <span class="trs-w">5–10 年</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从动物到人——这一步至今没跨过去。雷帕霉素主要终点未达标，TAME（二甲双胍，7,500 万美元）仍在招募、没有疗效数据。</p>
+            <p class="trs-do"><b>怎么做　</b>关键是把终点选对：不要用「更长寿」（那需要几十年随访，任何机构都撑不住），而要用具体疾病的发生率（糖尿病、心血管事件、认知衰退）。同时用生物学年龄做中间读数，这样可以大幅缩短试验周期。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>大规模长期随访 + 明确的监管路径 + 可负担的药物（二甲双胍是仿制药，这反而降低了药企的商业动力，需要公共资金进场）。</span>
+              <span class="trs-gt"><b>通过判据</b>一项大规模随机对照试验在预设的具体疾病终点上达到统计学显著。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">诱导性冬眠：从动物到人</span>
+              <span class="trs-w">10 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>人在缺氧或低温下只能短暂进入类似状态（临床低温治疗就是靠这个）；船上需要的是「数月可控、可唤醒、无明显器官损伤」。</p>
+            <p class="trs-do"><b>怎么做　</b>现实的入口不在航天而在医疗——ICU 的低温治疗与器官保护已经是成熟临床路径。先做「允许代谢率与体温可控下调」的医疗器械，把安全性验证清楚，再谈数月的长期休眠。冬眠哺乳动物（如地松鼠）的 torpor 机制提供靶点与调控思路。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>临床路径（ICU / 器官保护）+ 体温与代谢的调控手段 + 长期安全性数据。</span>
+              <span class="trs-gt"><b>通过判据</b>在人体上实现可控、可逆、持续数天的代谢率显著下调，无明显器官损伤。</span>
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="trs-card">
+            <div class="trs-h">
+              <span class="trs-t">船上冬眠舱</span>
+              <span class="trs-w">15 年以上</span>
+            </div>
+            <p class="trs-gap"><b>要跨的差距　</b>从临床的数天到任务需要的数月到数年，并且要在无人照护的飞船上自我维持。</p>
+            <p class="trs-do"><b>怎么做　</b>四件事必须同时解决：营养输注（休眠期间不能进食）+ 肌肉与骨量维持（电刺激或药物）+ 微生物与感染控制 + 自动唤醒程序。还有一个常被忽略的矛盾：休眠期间飞船出问题谁来处理？所以冬眠舱必须与星上自主系统互为前提（见板块九）——没有自主系统，乘员一旦休眠，飞船就没有人能救。</p>
+            <div class="trs-meta">
+              <span class="trs-nd"><b>需要的条件</b>前面的临床验证 + 长期生命维持 + 星上自主系统。</span>
+              <span class="trs-gt"><b>通过判据</b>一次数月量级的休眠试验（地面或近地轨道）成功并安全唤醒。</span>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <div class="note warn">
+        <b>最硬的一关：</b>第三环（从动物到人）。它的困难不在科学而在结构与时间：证明「延长寿命」所需的随访时间本身就是几十年，任何公司或基金都很难承担这个周期。所以现实路径是把终点从「长寿」换成「特定疾病的发病率」，把时间从几十年压到几年——这是做这件事能不能开始的前提，而不是可有可无的取巧。
+      </div>
+      <div class="note info">
+        干预效果与试验状态为公开资料口径；冬眠相关研究经费（TAME 7,500 万美元、TRISH 人类冬眠研究 400 万美元、NIAC torpor 舱 50 万美元/2 年）见本页成本表。
       </div>
     </section>
 
