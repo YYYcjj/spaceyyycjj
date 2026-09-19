@@ -196,7 +196,8 @@ def render_pager(cur):
         out.append(f'<a class="pg next" href="{section_filename(n)}">'
                    f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{rich(n["title"])}</span></a>')
     else:
-        out.append('<a class="pg next" href="../index.html">')
+        out.append('<a class="pg next" href="../index.html">'
+                   '<span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>')
     return '<nav class="pager">\n  ' + '\n  '.join(out) + '\n</nav>'
 
 
@@ -421,7 +422,7 @@ def render_techroad(b):
         if spec:
             fig_html = (
                 '            <figure class="trs-fig">\n'
-                '              <div class="fig-scroll">' 
+                '              <div class="fig-scroll">'
                 + spec['make']().svg(spec['cap']) + '</div>\n'
                 f'              <figcaption>{rich(spec["cap"])}</figcaption>\n'
                 '            </figure>\n'
