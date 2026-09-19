@@ -854,3 +854,28 @@ table.params td.num{font-weight:650; color:var(--ink);}
   .cl-blk p{font-size:12px; line-height:1.8;}
 }
 
+/* ==========================================================================
+   收口板块（板块十：星船总体设计）
+   ========================================================================== */
+
+/* 首页卡片：把「收口」那张与领域卡片区分开——它是综合，不是又一个领域 */
+.board-card.capstone{
+  border-color:var(--ink);
+  background:linear-gradient(180deg, #fbfbf9 0%, var(--bg) 42%);
+}
+.board-card.capstone .bc-num{color:var(--ink);}
+.board-card.capstone .bc-go{color:var(--ink); font-weight:600;}
+
+/* 要求表四列。列宽只在桌面生效——写进移动端会覆盖卡片化的 td{width:100%}，把卡片压窄 */
+@media (min-width:641px){
+  table.req th:nth-child(1), table.req td:nth-child(1){width:15%;}
+  table.req th:nth-child(2), table.req td:nth-child(2){width:25%;}
+  table.req th:nth-child(3), table.req td:nth-child(3){width:13%;}
+}
+table.req td .tag{margin-right:2px;}
+
+/* 收口板块的正文图：与别处的 .figure 同一套版式，只需给正文里多一个垂直节奏 */
+#i-layout .tablewrap,
+#i-req .tablewrap,
+#i-baseline .tablewrap{margin-top:18px;}
+
