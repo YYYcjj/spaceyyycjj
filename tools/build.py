@@ -8,12 +8,13 @@
 输入：
     tools/content_a.py       板块 1-5 内容
     tools/content_b.py       板块 6-9 内容
+    tools/content_c.py       板块 10（收口：星船总体设计）
     tools/board01_body.html  板块一正文（由旧版单页报告抽取而来，一次性素材）
     tools/board01_toc.json   板块一的目录条目
 
 输出：
-    index.html               首页（9 个板块的总览）
-    sections/*.html          9 个板块页
+    index.html               首页（10 个板块的总览）
+    sections/*.html          10 个板块页
 """
 
 import html
@@ -28,6 +29,7 @@ import sys
 sys.path.insert(0, HERE)
 from content_a import SITE, BOARDS_A          # noqa: E402
 from content_b import BOARDS_B                # noqa: E402
+from content_c import BOARDS_C                # noqa: E402
 from chains import CHAINS                     # noqa: E402
 from costs import COSTS                       # noqa: E402
 from designs import DESIGNS                   # noqa: E402
@@ -36,17 +38,22 @@ from techroad import TECHROADS                # noqa: E402
 from techfigs import FIGS as TECHFIGS         # noqa: E402
 from techparams import STEP_META              # noqa: E402
 from chainbiz import CHAIN_BIZ                # noqa: E402
+from synthfigs import SYNTH_FIGS              # noqa: E402
 
-BOARDS = BOARDS_A + BOARDS_B
-assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
+BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
+assert len(BOARDS) == 10, f'板块数应为 10，实际 {len(BOARDS)}'
 
-# 把技术链路 / 成本 / 具体设计 / 技术发展路线 / 创业者路线图挂到对应板块上（按 slug 匹配）
+# 把技术链路 / 成本 / 具体设计 / 技术发展路线 / 创业者路线图挂到对应板块上（按 slug 匹配）。
+# 收口板块（layers=False）不套用这套五层模板——它回答的是「合起来该怎么设计」，
+# 不是又补充一个领域，硬套五层只会塞一堆并不存在的内容。
 for _b in BOARDS:
     _b['chain'] = CHAINS.get(_b['slug'])
     _b['cost'] = COSTS.get(_b['slug'])
     _b['design'] = DESIGNS.get(_b['slug'])
     _b['techroad'] = TECHROADS.get(_b['slug'])
     _b['venture'] = VENTURES.get(_b['slug'])
+    if not _b.get('layers', True):
+        continue
     assert _b['chain'], f'板块 {_b["slug"]} 缺少技术链路'
     assert _b['cost'], f'板块 {_b["slug"]} 缺少成本数据'
     assert _b['design'], f'板块 {_b["slug"]} 缺少具体设计'
@@ -56,6 +63,8 @@ for _b in BOARDS:
 # 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
 _N_NODES = 0
 for _b in BOARDS:
+    if not _b.get('layers', True):
+        continue
     for _i, _n in enumerate(_b['chain']['nodes'], 1):
         _cb = CHAIN_BIZ.get((_b['slug'], _i))
         assert _cb and _cb.get('detail') and _cb.get('biz'), \
@@ -64,6 +73,8 @@ for _b in BOARDS:
 assert len(CHAIN_BIZ) == _N_NODES, \
     f'链路详解应有 {_N_NODES} 项（与各板块环节数之和一致），实际 {len(CHAIN_BIZ)}'
 for _b in BOARDS:
+    if not _b.get('layers', True):
+        continue
     _tr = _b['techroad']
     # 板块七比其他板块多一步（「解读」），所以是 5–6 步而不是恒等于 5
     assert 5 <= len(_tr['stages']) <= 6, \
@@ -73,10 +84,11 @@ for _b in BOARDS:
             assert _s.get(_k), f'板块 {_b["slug"]} 第 {_s.get("p")} 步缺少字段 {_k}'
 
 # 把技术参数与配图挂到每一步上（(slug, 步号) 索引；叙述与数值分开维护）
-_N_STEPS = sum(len(b['techroad']['stages']) for b in BOARDS)
+_LAYERED = [b for b in BOARDS if b.get('layers', True)]
+_N_STEPS = sum(len(b['techroad']['stages']) for b in _LAYERED)
 assert len(STEP_META) == _N_STEPS, \
     f'技术参数表应有 {_N_STEPS} 项（与各板块步数之和一致），实际 {len(STEP_META)}'
-for _b in BOARDS:
+for _b in _LAYERED:
     for _i, _s in enumerate(_b['techroad']['stages'], 1):
         _m = STEP_META.get((_b['slug'], _i))
         assert _m, f'板块 {_b["slug"]} 第 {_i} 步缺少技术参数与配图'
@@ -99,6 +111,7 @@ NAV_SHORT = {
     'current': '目前航天', 'rocket-tech': '火箭技术', 'starship': '星舰建造',
     'biosphere': '飞船生态圈', 'lightspeed': '光速推进', 'lifespan': '寿命与冬眠',
     'contact': '外星交流', 'resources': '宇宙资源', 'ai-robots': 'AI 与机器人',
+    'integration': '星船设计',
 }
 
 FAVICON = ("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
@@ -176,7 +189,8 @@ def render_topnav(cur):
     items = ['<a href="../index.html">首页</a>']
     for b in BOARDS:
         active = ' class="active"' if b['slug'] == cur['slug'] else ''
-        items.append(f'<a href="{section_filename(b)}"{active}>{rich(NAV_SHORT[b["slug"]])}</a>')
+        items.append(f'<a href="{section_filename(b)}"{active}>'
+                     f'{rich(NAV_SHORT.get(b["slug"], b["title"]))}</a>')
     return ('<nav class="topnav" aria-label="板块导航">\n  <div class="inner">\n    '
             + '\n    '.join(items) + '\n  </div>\n</nav>')
 
@@ -557,6 +571,42 @@ PAGE = """<!DOCTYPE html>
 """
 
 
+# ---------------------------------------------------------------- 正文内的图占位符
+FIG_RE = re.compile(r'\{\{FIG:([a-z0-9_]+)\}\}')
+
+
+def render_figs(body, num):
+    """把正文里的 {{FIG:key}} 换成 <figure>，键取自 synthfigs.SYNTH_FIGS。
+
+    收口板块的图直接长在正文中间（不像别的板块是「一层一图」），所以用占位符引用，
+    图仍然集中在 synthfigs.py 里维护。编号按出现顺序给 图 N.1 / N.2 …
+    """
+    seq = [0]
+
+    def sub(m):
+        key = m.group(1)
+        spec = SYNTH_FIGS.get(key)
+        assert spec, f'未知的图键 {key}（请检查 tools/synthfigs.py 的 SYNTH_FIGS）'
+        seq[0] += 1
+        # 必须显式调 .svg()：make() 返回的是图对象，直接插进 f-string 会渲染成
+        # `<iso.Iso object at 0x…>` 这种被浏览器当成未知标签丢掉的东西——
+        # 页面上留下一个**空图框 + 正常图注**，而且全程不报错。加断言把这条路堵死。
+        svg = spec['make']().svg(spec['cap'])
+        assert svg.lstrip().startswith('<svg'), f'图 {key} 没有产出 SVG'
+        return (
+            '<figure class="figure">\n'
+            f'        <div class="fig-scroll">{svg}</div>\n'
+            '        <p class="fig-hint">图为示意图，手机上可左右拖动查看细节。</p>\n'
+            f'        <figcaption>图 {num}.{seq[0]}　{rich(spec["cap"])}</figcaption>\n'
+            '      </figure>'
+        )
+
+    out = FIG_RE.sub(sub, body)
+    left = FIG_RE.findall(out)
+    assert not left, f'仍有未替换的图占位符：{left}'
+    return out
+
+
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
 DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='')
 TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='')
@@ -598,6 +648,8 @@ def build_section(b, board01):
             + ([dict(TECHROAD_TOC)] if techroad else [])
             + ([dict(VENTURE_TOC)] if venture else []))
     b['toc'] = head + toc_subs
+
+    body = render_figs(body, b['num'])
 
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
@@ -646,9 +698,10 @@ HUB = """<!DOCTYPE html>
     <header class="hero">
       <div class="eyebrow">{subtitle} · {date}</div>
       <h1>{site}</h1>
-      <p class="dek">九个板块，从一枚已经复用 37 次的火箭，一直问到光速飞船、冬眠舱和星际通信。
-        每个板块都尽量把三件事分开写清：<b>已经做到的</b>、<b>正在验证的</b>、<b>还只在纸上的</b>。</p>
-      <div class="meta">数据截止 2026-09-15 ｜ 9 个板块 ｜ 全部来自公开披露信息</div>
+      <p class="dek">十个板块，从一枚已经复用 37 次的火箭，一直问到光速飞船、冬眠舱和星际通信。
+        每个板块都尽量把三件事分开写清：<b>已经做到的</b>、<b>正在验证的</b>、<b>还只在纸上的</b>。
+        最后一个板块把前面九个的条件合起来，收拢成一版星船总体设计。</p>
+      <div class="meta">数据截止 2026-09-15 ｜ 10 个板块 ｜ 全部来自公开披露信息</div>
     </header>
 
     <div class="kpis">
@@ -671,9 +724,10 @@ HUB = """<!DOCTYPE html>
     </div>
 
     <section>
-      <h2>九个板块<span class="en">Contents</span></h2>
+      <h2>十个板块<span class="en">Contents</span></h2>
       <p class="lead">前三个板块是当下：已经飞起来的东西、火箭本身的物理极限、以及去火星之前必须跨过的那道坎。
-        后六个板块向外推：人在船上怎么活、船能跑多快、能不能睡过去、怎么和外面说话、去哪拿资源、谁来开船。</p>
+        中间六个板块向外推：人在船上怎么活、船能跑多快、能不能睡过去、怎么和外面说话、去哪拿资源、谁来开船。
+        最后一个板块把前面九个的条件合起来——因为放在一起看才会发现，它们之间是有先后顺序的。</p>
 
       <div class="board-grid">
 {cards}
@@ -701,14 +755,14 @@ HUB = """<!DOCTYPE html>
 </html>
 """
 
-CARD = """        <a class="board-card" href="sections/{file}">
+CARD = """        <a class="board-card{cls}" href="sections/{file}">
           <div class="bc-top"><span class="bc-num">{num}</span><span class="bc-en">{en}</span></div>
           <h3>{title}</h3>
           <p class="bc-dek">{dek}</p>
           <ul>
 {points}
           </ul>
-          <span class="bc-go">阅读板块 →</span>
+          <span class="bc-go">{go}</span>
         </a>"""
 
 
@@ -716,11 +770,15 @@ def build_hub():
     cards = []
     for b in BOARDS:
         points = '\n'.join(f'            <li>{rich(p)}</li>' for p in b['points'])
-        cards.append(CARD.format(file=section_filename(b), num=b['num'], en=esc(b['en']),
-                                 title=esc(b['title']), dek=esc(b['short']),
-                                 points=points))
+        capstone = not b.get('layers', True)
+        cards.append(CARD.format(
+            file=section_filename(b), num=b['num'], en=esc(b['en']),
+            title=esc(b['title']), dek=esc(b['short']), points=points,
+            cls=' capstone' if capstone else '',
+            go='收口 · 看整体方案 →' if capstone else '阅读板块 →'))
     desc = esc('从可回收火箭到星际航行：目前航天技术发展、航天火箭技术、星舰建造、飞船生态圈、'
-               '光速推进、寿命延长与冬眠、外星文明交流、宇宙资源获取、飞船AI与机器人。')
+               '光速推进、寿命延长与冬眠、外星文明交流、宇宙资源获取、飞船AI与机器人，'
+               '最后把九个板块的条件收拢成一版星船总体设计。')
     page = HUB.format(site=esc(SITE['title']), subtitle=esc(SITE['subtitle']), date=esc(SITE['date']),
                       desc=desc, favicon=FAVICON, cards='\n\n'.join(cards))
     out = os.path.join(ROOT, 'index.html')
