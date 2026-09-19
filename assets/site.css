@@ -831,3 +831,26 @@ table.params td.num{font-weight:650; color:var(--ink);}
   table.params th:nth-child(2), table.params td:nth-child(2){width:23%;}
 }
 
+/* ==========================================================================
+   技术链路 · 每一环的「技术详解」与「创业视角」
+   ========================================================================== */
+
+.cl-blk{
+  margin:11px 0 0; padding:11px 14px 12px;
+  background:var(--bg-sunk); border-radius:8px;
+  border-left:2px solid var(--line-strong);
+}
+.cl-blk.biz{background:#fafcff; border-left-color:var(--accent-bd);}
+.cl-cap{
+  display:block; font-size:10.5px; letter-spacing:1px; font-weight:600;
+  color:var(--faint); margin-bottom:5px;
+}
+.cl-blk.biz .cl-cap{color:var(--accent);}
+.cl-blk p{margin:0; font-size:12.5px; line-height:1.85; color:var(--text-soft);}
+.cl-blk p b{color:var(--text); font-weight:650;}
+
+@media (max-width:640px){
+  .cl-blk{padding:10px 12px 11px; margin-top:9px;}
+  .cl-blk p{font-size:12px; line-height:1.8;}
+}
+
