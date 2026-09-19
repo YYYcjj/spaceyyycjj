@@ -35,6 +35,7 @@ from ventures import VENTURES                 # noqa: E402
 from techroad import TECHROADS                # noqa: E402
 from techfigs import FIGS as TECHFIGS         # noqa: E402
 from techparams import STEP_META              # noqa: E402
+from chainbiz import CHAIN_BIZ                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B
 assert len(BOARDS) == 9, f'板块数应为 9，实际 {len(BOARDS)}'
@@ -51,6 +52,17 @@ for _b in BOARDS:
     assert _b['design'], f'板块 {_b["slug"]} 缺少具体设计'
     assert _b['techroad'], f'板块 {_b["slug"]} 缺少技术发展路线'
     assert _b['venture'], f'板块 {_b["slug"]} 缺少创业者路线图'
+
+# 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
+_N_NODES = 0
+for _b in BOARDS:
+    for _i, _n in enumerate(_b['chain']['nodes'], 1):
+        _cb = CHAIN_BIZ.get((_b['slug'], _i))
+        assert _cb and _cb.get('detail') and _cb.get('biz'), \
+            f'板块 {_b["slug"]} 第 {_i} 环缺少技术详解或创业视角'
+        _N_NODES += 1
+assert len(CHAIN_BIZ) == _N_NODES, \
+    f'链路详解应有 {_N_NODES} 项（与各板块环节数之和一致），实际 {len(CHAIN_BIZ)}'
 for _b in BOARDS:
     _tr = _b['techroad']
     # 板块七比其他板块多一步（「解读」），所以是 5–6 步而不是恒等于 5
@@ -184,8 +196,7 @@ def render_pager(cur):
         out.append(f'<a class="pg next" href="{section_filename(n)}">'
                    f'<span class="pg-d">下一板块 {n["num"]}</span><span class="pg-t">{rich(n["title"])}</span></a>')
     else:
-        out.append('<a class="pg next" href="../index.html">'
-                   '<span class="pg-d">回到</span><span class="pg-t">全部板块总览</span></a>')
+        out.append('<a class="pg next" href="../index.html">')
     return '<nav class="pager">\n  ' + '\n  '.join(out) + '\n</nav>'
 
 
@@ -199,6 +210,17 @@ def render_chain(b):
     cells, items = [], []
     for i, n in enumerate(ch['nodes'], 1):
         cls, lab = STATUS_MAP[n['s']]
+        cb = CHAIN_BIZ.get((b['slug'], i)) or {}
+        more = ''
+        if cb:
+            more = ('          <div class="cl-blk">\n'
+                    '            <span class="cl-cap">技术详解</span>\n'
+                    f'            <p>{rich(cb["detail"])}</p>\n'
+                    '          </div>\n'
+                    '          <div class="cl-blk biz">\n'
+                    '            <span class="cl-cap">创业视角</span>\n'
+                    f'            <p>{rich(cb["biz"])}</p>\n'
+                    '          </div>\n')
         cells.append(f'        <div class="cb {n["s"]}">\n'
                      f'          <span class="cb-i">{i:02d}</span>\n'
                      f'          <span class="cb-t">{rich(n["t"])}</span>\n'
@@ -207,6 +229,7 @@ def render_chain(b):
                      f'          <div class="cl-h"><span class="cl-t">{rich(n["t"])}</span>'
                      f'<span class="tag {cls}">{lab}</span></div>\n'
                      f'          <div class="cl-x">{rich(n["how"])}</div>\n'
+                     + more +
                      f'        </li>')
 
     legend = ' · '.join(
@@ -398,7 +421,7 @@ def render_techroad(b):
         if spec:
             fig_html = (
                 '            <figure class="trs-fig">\n'
-                '              <div class="fig-scroll">'
+                '              <div class="fig-scroll">' 
                 + spec['make']().svg(spec['cap']) + '</div>\n'
                 f'              <figcaption>{rich(spec["cap"])}</figcaption>\n'
                 '            </figure>\n'
