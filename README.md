@@ -8,7 +8,7 @@
 
 - https://yyycjj.github.io/spaceyyycjj/
 
-## 九个板块
+## 十个板块
 
 | # | 板块 | 主题 | 一句话 |
 |---|---|---|---|
@@ -21,36 +21,42 @@
 | 07 | [与外星人交流](sections/07-contact.html) | SETI & Alien Contact | 我们已经在听，但还没听到；发射本身是一个伦理问题 |
 | 08 | [宇宙资源获取](sections/08-resources.html) | Cosmic Resources | 小行星采矿：物理学不拦路，经济学拦路 |
 | 09 | [飞船 AI 智能与机器人](sections/09-ai-robots.html) | Autonomy & Robotics | 20 分钟通信延迟决定了深空必须自主，抗辐射是算力天花板 |
+| 10 | [星船总体设计](sections/10-integration.html) | Starship Integration | **收口**：把前九个板块的条件合起来，收拢成一版可讨论的总体设计 |
+
+板块 1–9 各自回答一个领域的问题，因此每页都套同一组分层模板（技术链路 / 具体设计 / 技术怎么一步步做 / 创业者路线图）。
+**板块 10 不套这个模板**（`layers=False`）——它回答的是「合起来该怎么设计」，硬套五层只会塞进并不存在的内容。
 
 ## 文件结构
 
 ```
-index.html                    首页：九个板块总览 + 首屏 KPI
-sections/01-current.html      … 09-ai-robots.html   九个板块页
-figures/01-current.svg        … 09-ai-robots.svg   各板块的三维设计图（独立矢量文件）
-figures/index.json            图片清单（文件名 / 标题 / 图注 / 尺寸）
-assets/site.css               设计系统（含移动端卡片化）
-assets/site.js                交互脚本（无依赖）
-tools/build.py                站点生成器
-tools/content_a.py            板块 1-5 内容
-tools/content_b.py            板块 6-9 内容
-tools/chains.py               九个板块的「技术链路」数据（54 环的标题 / 成熟度 / 一句话说明）
-tools/chainbiz.py             54 环的「技术详解」与「创业视角」（按 (slug, 环号) 索引）
-tools/costs.py                九个板块的「要花多少钱」数据
-tools/designs.py              九个板块的「具体设计」数据 + 三维等轴测场景
-tools/techroad.py             九个板块的「技术怎么一步步做」叙述（45 步）
-tools/techparams.py           45 步的技术参数表与配图引用（与 techroad 分开维护）
-tools/techfigs.py             45 步的配图（装置用等轴测、过程用二维概念图）
-tools/ventures.py             九个板块的「创业者路线图」数据
-tools/iso.py                  等轴测（isometric）SVG 生成器
-tools/dia.py                  二维概念图图元库（曲线 / 刻度 / 流程 / 堆叠柱 / 时间条 / 散点）
-tools/check_designs.py        设计图自检（文字越界 / 互相重叠）
-tools/check_figs.py           技术路线 45 张配图的自检（同上两类问题）
-tools/export_figures.py       把九张图导出成独立的 figures/*.svg
-tools/board01_body.html       板块一正文（由早期单页报告抽取，一次性素材）
-tools/board01_toc.json        板块一目录条目
-.github/workflows/pages.yml   GitHub Pages 部署工作流
-.nojekyll                     关闭 Jekyll 处理
+index.html                     首页：十个板块总览 + 首屏 KPI
+sections/01-current.html       … 10-integration.html   十个板块页
+figures/01-current.svg         … 09-ai-robots.svg   各板块的三维设计图（独立矢量文件）
+figures/index.json             图片清单（文件名 / 标题 / 图注 / 尺寸）
+assets/site.css                设计系统（含移动端卡片化）
+assets/site.js                 交互脚本（无依赖）
+tools/build.py                 站点生成器
+tools/content_a.py             板块 1-5 内容
+tools/content_b.py             板块 6-9 内容
+tools/content_c.py             板块 10 内容（收口板块，用 {{FIG:key}} 引用图）
+tools/chains.py                九个板块的「技术链路」数据（54 环的标题 / 成熟度 / 一句话说明）
+tools/chainbiz.py              54 环的「技术详解」与「创业视角」（按 (slug, 环号) 索引）
+tools/costs.py                 九个板块的「要花多少钱」数据
+tools/designs.py               九个板块的「具体设计」数据 + 三维等轴测场景
+tools/techroad.py              九个板块的「技术怎么一步步做」叙述（45 步）
+tools/techparams.py            45 步的技术参数表与配图引用（与 techroad 分开维护）
+tools/techfigs.py              45 步的配图（装置用等轴测、过程用二维概念图）
+tools/ventures.py              九个板块的「创业者路线图」数据
+tools/synthfigs.py             板块十的 5 张图（依赖链 / 总体构型 / 沿轴剖面 / 质量账 / 设计权衡）
+tools/iso.py                   等轴测（isometric）SVG 生成器
+tools/dia.py                   二维概念图图元库（曲线 / 刻度 / 流程 / 堆叠柱 / 时间条 / 散点）
+tools/check_designs.py         设计图自检（文字越界 / 互相重叠）
+tools/check_figs.py            技术路线 46 张 + 板块十 5 张配图的自检（同上两类问题）
+tools/export_figures.py        把九张图导出成独立的 figures/*.svg
+tools/board01_body.html        板块一正文（由早期单页报告抽取，一次性素材）
+tools/board01_toc.json         板块一目录条目
+.github/workflows/pages.yml    GitHub Pages 部署工作流
+.nojekyll                      关闭 Jekyll 处理
 ```
 
 ## 重新生成
@@ -58,18 +64,18 @@ tools/board01_toc.json        板块一目录条目
 ```bash
 python3 tools/build.py            # 生成 index.html 与 sections/*.html
 python3 tools/check_designs.py    # 九张设计图自检（文字越界 / 重叠）
-python3 tools/check_figs.py       # 45 张技术路线配图自检（同上）
+python3 tools/check_figs.py       # 51 张配图自检（46 张技术路线 + 5 张板块十，同上两类问题）
 python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重跑）
 ```
 
 注意：页面里每张图的右下角有一个「打开矢量原图（SVG）」链接，指向 `../figures/NN-slug.svg`。
 **改了 `designs.py` 里的图之后必须重跑 `export_figures.py`**，否则页面上的图和下载到的原图会不一致。
 
-站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py`，
+站点是「内容即数据」结构：板块内容写在 `tools/content_a.py` / `content_b.py` / `content_c.py`，
 技术链路写在 `tools/chains.py`（每一环的详解与创业视角在 `tools/chainbiz.py`），
 成本写在 `tools/costs.py`，具体设计写在 `tools/designs.py`，
 技术发展路线写在 `tools/techroad.py`（叙述）与 `tools/techparams.py`（参数 + 配图引用，图在 `techfigs.py`），
-创业者路线图写在 `tools/ventures.py`，
+创业者路线图写在 `tools/ventures.py`，板块十的图写在 `tools/synthfigs.py`，
 由 `tools/build.py` 生成 `index.html` 与 `sections/*.html`。
 **改内容只改 Python 数据文件，不要手改生成的 HTML。**
 
@@ -83,11 +89,13 @@ for _b in BOARDS:
     _b['design']   = DESIGNS.get(_b['slug'])
     _b['techroad'] = TECHROADS.get(_b['slug'])
     _b['venture']  = VENTURES.get(_b['slug'])
+    if not _b.get('layers', True):      # 收口板块（板块十）不套五层模板
+        continue
     assert all(_b[k] for k in ('chain', 'cost', 'design', 'techroad', 'venture')), \
         f'板块 {_b["slug"]} 数据缺失'
 
 # 技术路线再挂一层：按 (slug, 步号) 把参数与配图填进每一「步」
-for _b in BOARDS:
+for _b in [b for b in BOARDS if b.get('layers', True)]:
     for _i, _s in enumerate(_b['techroad']['stages'], 1):
         _m = STEP_META[(_b['slug'], _i)]
         _s['params'], _s['fig'] = _m['params'], _m['fig']
@@ -317,6 +325,36 @@ python3 tools/check_figs.py
 3. 每一步都要写「死法」。
 4. 「地面收入养航天研发」是出现频率最高的可行结构——
    航天客户预算大但节奏极慢，纯航天定位的公司活不到量产。
+
+## 星船总体设计（板块十，收口）
+
+前九个板块各自回答一个领域的问题；板块十**不引入新的外部数据**，只把前面九个的条件收拢成
+一版可讨论的总体设计。七节的行文顺序就是推导顺序：
+
+| 节 | 回答什么 |
+|---|---|
+| 10.1 从九个板块推出设计约束 | 九个板块是**依赖关系**不是并列清单；三条物理边界直接划掉整类方案 |
+| 10.2 总体构型 | 为什么必须分体串联 + 在轨加注（由 10.4 的质量比反推） |
+| 10.3 舱段布局 | 七段为什么按这个顺序排（管路要短 / 无人区与有人区要隔开 / 屏蔽质量要集中） |
+| 10.4 质量账 | 用**火箭方程算**质量比，得出「加注不是优化项而是前提」 |
+| 10.5 分系统技术要求 | 八个分系统：要求 / 依据来自哪个板块 / 今天的真实状态 |
+| 10.6 设计权衡 | 五对互相打架的要求，以及设计上实际怎么让步 |
+| 10.7 一版基准配置与三个前提 | 配置表 + 哪三个条件不成立就全盘不成立 |
+
+**这个板块的三条写法约定：**
+
+1. **不套五层模板。** 板块 1–9 是「领域页」，板块 10 是「综合页」，硬套会把并不存在的内容塞进来。
+   `build.py` 用 `layers=False` 跳过五层装配断言。
+2. **图长在正文中间。** 别的板块是「一层一图」，板块十的图属于具体小节，所以正文里写
+   `{{FIG:key}}` 占位符，`build.py` 的 `render_figs()` 按出现顺序替换成 `<figure>` 并编成
+   图 10.1 / 10.2 …；图仍然集中在 `tools/synthfigs.py` 里维护。
+3. **结尾给「条件清单」而不是「计划」。** 10.7 列出三个前提（在轨加注、冬眠、辐射防护），
+   并明说**今天一个都不成立**——把「技术不够成熟」这种模糊判断换成三条各自有明确判据的条件，
+   这才是把九个板块合起来看唯一能得到的收获。
+
+⚠️ **占位符替换必须显式调 `.svg()`。** `spec['make']()` 返回的是图对象（`Iso` / `Dia`），
+不是 SVG 字符串。直接插进 f-string 会渲染成 `<iso.Iso object at 0x…>`——被浏览器当成未知标签丢掉，
+页面上留下一个**空图框 + 正常图注**，而且全程不报错。`render_figs()` 里已加断言堵死这条路。
 
 ## 技术说明
 
