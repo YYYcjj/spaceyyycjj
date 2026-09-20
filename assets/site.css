@@ -879,3 +879,288 @@ table.req td .tag{margin-right:2px;}
 #i-req .tablewrap,
 #i-baseline .tablewrap{margin-top:18px;}
 
+/* ==========================================================================
+   舷窗（viewport）与仪器面板层
+   --------------------------------------------------------------------------
+   基调约定：**正文保持浅色**——长文、表格、打印都靠它保可读性；
+   只有「关键面」做成深色舷窗：首屏、KPI 仪表条、收口卡片、图的仪表头与顶线。
+   深色底上的文字一律用 --void-* 系列，不要在深底上复用 --text / --muted。
+   ========================================================================== */
+
+:root{
+  --void:#0a0e14;          /* 深空底 */
+  --void-2:#121a26;        /* 仪表盘 */
+  --void-3:#1a2434;        /* 抬起一层 */
+  --void-line:rgba(120,190,205,.14);
+  --void-line-2:rgba(120,190,205,.26);
+  --void-text:#e8edf4;
+  --void-soft:#aab6c6;
+  --void-muted:#8b98a8;
+  --void-faint:#78879a;    /* 深底上的最浅一档：比浅色底的同名灰要亮，否则对比度不够 */
+  --signal:#4ad9e4;        /* 数据青 */
+  --signal-soft:#8fe6ee;
+  --signal-deep:#2f8f9c;
+  --warn2:#f0b03c;         /* 约束琥珀 */
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --hero-r:18px;
+}
+
+/* ---------- 等宽数字与技术标签 ----------
+   只给「以拉丁字母/数字为主」的地方上等宽：中文标签（.tag / .clg-cap 之类）
+   走等宽会落到各平台不同的 CJK 回退字体，反而更乱。 */
+.kpi .v,
+td.num,
+.bc-num,
+.pg-d,
+.cb-i,
+.fgn,
+.metric,
+.fig-dl,
+.trs-w,
+table.cost td.num,
+table.params td.num,
+table.spec td.num{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+}
+.fgn{letter-spacing:.6px; color:var(--faint); margin-right:2px;}
+
+/* ---------- HUD 转角（可复用的四角括号）---------- */
+.hud{position:relative;}
+.hud::after{
+  content:""; position:absolute; inset:9px; pointer-events:none; border-radius:5px;
+  --c:var(--hud-c, var(--signal));
+  background-image:
+    linear-gradient(var(--c),var(--c)), linear-gradient(var(--c),var(--c)),
+    linear-gradient(var(--c),var(--c)), linear-gradient(var(--c),var(--c)),
+    linear-gradient(var(--c),var(--c)), linear-gradient(var(--c),var(--c)),
+    linear-gradient(var(--c),var(--c)), linear-gradient(var(--c),var(--c));
+  background-size:13px 1px, 1px 13px, 13px 1px, 1px 13px,
+                  13px 1px, 1px 13px, 13px 1px, 1px 13px;
+  background-position:left top, left top, right top, right top,
+                      left bottom, left bottom, right bottom, right bottom;
+  background-repeat:no-repeat;
+  opacity:.55;
+  z-index:4;
+}
+
+/* ---------- 首屏：深色舷窗 ---------- */
+.hero{
+  position:relative; overflow:hidden; isolation:isolate;
+  border:none; border-bottom:none;
+  border-radius:var(--hero-r);
+  background:var(--void);
+  padding:40px 40px 34px;
+  margin:0 0 30px;
+  box-shadow:0 26px 64px -38px rgba(6,12,20,.72);
+}
+.hero .sky{
+  position:absolute; inset:-4% -2%; z-index:0;
+  background:var(--void) url(space.svg) center right / cover no-repeat;
+}
+/* 暗角：把标题那一侧压暗，星场只在右边亮起来 */
+.hero::before{
+  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    radial-gradient(130% 104% at 8% 44%, rgba(10,14,20,.94) 0%, rgba(10,14,20,.72) 42%, rgba(10,14,20,.20) 78%, rgba(10,14,20,.55) 100%),
+    linear-gradient(180deg, rgba(10,14,20,.35), rgba(10,14,20,0) 30%);
+}
+.hero .hero-in{position:relative; z-index:2; max-width:64ch;}
+.hero .eyebrow{color:var(--signal); margin-bottom:14px; font-family:var(--mono);
+  font-size:11px; letter-spacing:1.6px;}
+.hero .eyebrow::before{background:var(--signal); opacity:.7;}
+.hero h1{color:var(--void-text); text-shadow:0 2px 24px rgba(0,0,0,.5);}
+.hero .dek{color:var(--void-soft);}
+.hero .dek b{color:var(--void-text); font-weight:600;}
+.hero .meta{
+  display:flex; flex-wrap:wrap; gap:7px; margin-top:20px;
+  color:var(--void-muted);
+}
+.hero .meta span{
+  font-family:var(--mono); font-size:10.5px; letter-spacing:.5px;
+  border:1px solid var(--void-line-2); border-radius:5px; padding:2px 9px;
+  background:rgba(120,190,205,.05);
+}
+/* 首屏底部一条信号细线，像仪表的接地轨 */
+.hero .rail-line{
+  position:absolute; left:0; right:0; bottom:0; height:2px; z-index:3;
+  background:linear-gradient(90deg, var(--signal) 0%, var(--signal-deep) 26%, rgba(120,190,205,.10) 62%, transparent 100%);
+  opacity:.85;
+}
+@media (prefers-reduced-motion: no-preference){
+  .hero .sky{animation:skyDrift 120s ease-in-out infinite;}
+}
+@keyframes skyDrift{
+  0%  {transform:translate3d(0,0,0) scale(1.05);}
+  50% {transform:translate3d(-14px,7px,0) scale(1.05);}
+  100%{transform:translate3d(0,0,0) scale(1.05);}
+}
+
+/* 首屏的转角要看得见：它不是装饰，是「这块是仪表」的提示 */
+.hero.hud::after{opacity:.72; --hud-c:var(--signal);}
+
+/* ---------- KPI：深色仪表条 ---------- */
+.kpis{
+  background-color:var(--void-2);
+  background-image:url(space-tile.svg); background-size:cover; background-position:center;
+  border:1px solid var(--void-line-2);
+  gap:1px; margin:0 0 44px;
+  box-shadow:0 18px 44px -34px rgba(6,12,20,.6);
+}
+/* 单元格要够不透明：星场是 cover 铺的，半透明会让各格采到不同的星密度，深浅不一 */
+.kpi{background:rgba(11,16,23,.88);}
+.kpi .v{color:var(--void-text);}
+.kpi .v em{color:var(--void-muted);}
+.kpi .k{color:var(--void-muted);}
+.kpi .k span{color:var(--void-faint);}
+.kpi.hi .v{color:var(--signal);}
+.kpi.zero .v{color:var(--warn2);}
+
+/* ---------- 板块卡片：HUD 细角 ---------- */
+.board-card{position:relative; overflow:hidden;}
+.board-card::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, var(--ink), rgba(120,190,205,.55) 46%, transparent 100%);
+  opacity:0; transition:opacity .22s;
+}
+.board-card:hover::before{opacity:1;}
+.board-card:hover{border-color:var(--void-line-2);}
+.board-card .bc-num{font-size:12px; letter-spacing:.8px;}
+.board-card .bc-en{font-family:var(--mono);}
+.board-card .bc-go{font-family:var(--mono); font-size:11.5px; letter-spacing:.4px;}
+
+/* 收口卡片：整块深色舷窗 */
+.board-card.capstone{
+  background:var(--void); background-image:url(space-tile.svg);
+  background-size:cover; background-position:center right;
+  border-color:rgba(120,190,205,.22);
+  box-shadow:0 24px 54px -34px rgba(6,12,20,.7);
+}
+.board-card.capstone::before{background:linear-gradient(90deg, var(--signal), rgba(120,190,205,.3) 60%, transparent);}
+.board-card.capstone:hover{border-color:var(--void-line-2);}
+.board-card.capstone h3{color:var(--void-text);}
+.board-card.capstone h3::before{background:var(--signal);}
+.board-card.capstone .bc-num{color:var(--signal);}
+.board-card.capstone .bc-en{color:var(--void-faint);}
+.board-card.capstone .bc-dek{color:var(--void-soft);}
+.board-card.capstone ul{color:var(--void-muted);}
+.board-card.capstone li::marker{color:var(--signal-deep);}
+.board-card.capstone .bc-top{border-bottom-color:var(--void-line);}
+.board-card.capstone .bc-go{color:var(--signal); border-top-color:var(--void-line);}
+
+/* ---------- 标题：发丝线 + 等宽索引 ---------- */
+h2{
+  padding-bottom:11px;
+  border-bottom:1px solid var(--line);
+}
+h2 .en{font-family:var(--mono); letter-spacing:1.8px;}
+h3:not(.chain-sub)::before{
+  content:""; display:inline-block; width:5px; height:5px; background:var(--ink);
+  transform:rotate(45deg); margin-right:9px; vertical-align:middle;
+}
+
+/* ---------- 图框：仪表化（顶线 + 四角 + 等宽图号）---------- */
+.figure{
+  position:relative; overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.figure::before{
+  content:""; position:absolute; left:0; right:0; top:0; height:2px;
+  background:linear-gradient(90deg, var(--ink) 0%, rgba(74,217,228,.75) 34%, rgba(120,190,205,.12) 72%, transparent 100%);
+}
+.figure figcaption{border-top-color:var(--line);}
+.figure .fig-dl{font-size:11px;}
+.figure .fig-dl a{color:var(--accent);}
+/* 图框的四角：::before 已用于顶线，转角用 ::after 画（图注来自四处渲染器，不适合改结构） */
+.figure::after{
+  content:""; position:absolute; inset:7px; pointer-events:none; border-radius:4px;
+  background-image:
+    linear-gradient(var(--line-strong),var(--line-strong)), linear-gradient(var(--line-strong),var(--line-strong)),
+    linear-gradient(var(--line-strong),var(--line-strong)), linear-gradient(var(--line-strong),var(--line-strong)),
+    linear-gradient(var(--line-strong),var(--line-strong)), linear-gradient(var(--line-strong),var(--line-strong)),
+    linear-gradient(var(--line-strong),var(--line-strong)), linear-gradient(var(--line-strong),var(--line-strong));
+  background-size:11px 1px, 1px 11px, 11px 1px, 1px 11px,
+                  11px 1px, 1px 11px, 11px 1px, 1px 11px;
+  background-position:left top, left top, right top, right top,
+                      left bottom, left bottom, right bottom, right bottom;
+  background-repeat:no-repeat;
+  opacity:.7;
+}
+
+/* ---------- 表格：等宽数字 + 信号色悬停 ---------- */
+th{font-family:var(--mono); letter-spacing:.9px;}
+tbody tr{transition:background .16s;}
+tbody tr:hover{background:linear-gradient(90deg, rgba(74,217,228,.07), rgba(74,217,228,0) 46%), var(--bg-sunk);}
+.tag{font-size:10.5px; letter-spacing:.2px;}
+
+/* ---------- 提示块：技术标签化 ---------- */
+.note{position:relative; border-left-width:2px;}
+.note.info{border-left-color:var(--signal-deep);}
+.note > b:first-child{letter-spacing:.3px;}
+
+/* ---------- 顶栏 / 侧栏 / 进度条：控制台化 ---------- */
+#progress{
+  height:2px;
+  background:linear-gradient(90deg, var(--signal-deep), var(--signal));
+  box-shadow:0 0 10px rgba(74,217,228,.55);
+}
+.rail nav a.active{border-left-color:var(--ink);}
+.rail .brand{padding-bottom:14px;}
+.topnav{background:rgba(245,245,242,.9);}
+.topnav a.active{
+  background:var(--void-2); color:var(--void-text); font-weight:500;
+  border-color:var(--void-line-2);
+}
+.topnav a:hover{border-color:var(--void-line-2);}
+.btn-top, #totop{border-color:var(--line-strong);}
+#totop:hover{border-color:var(--ink);}
+
+/* ---------- 轻动效：只做「进场 + 反馈」，不做循环闪烁 ---------- */
+@media (prefers-reduced-motion: no-preference){
+  .reveal{opacity:0; transform:translateY(10px);
+    transition:opacity .55s cubic-bezier(.22,.8,.3,1), transform .55s cubic-bezier(.22,.8,.3,1);}
+  .reveal.in{opacity:1; transform:none;}
+  .figure.reveal::before{transform-origin:left; transition:transform .7s .1s;}
+  .figure:not(.in)::before{transform:scaleX(.12);}
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:1080px){
+  .hero{padding:32px 26px 28px; border-radius:16px;}
+  .hero .hero-in{max-width:none;}
+}
+@media (max-width:640px){
+  .hero{padding:26px 18px 24px; margin-bottom:24px; border-radius:14px;}
+  .hero h1{font-size:clamp(23px,7vw,30px);}
+  .hero .dek{font-size:14.5px;}
+  .hero .meta{gap:6px; margin-top:16px;}
+  .hero .meta span{font-size:10px; padding:2px 7px;}
+  .hud::after{inset:6px; background-size:9px 1px, 1px 9px, 9px 1px, 1px 9px,
+                                           9px 1px, 1px 9px, 9px 1px, 1px 9px;}
+  .kpis{margin-bottom:32px;}
+  .kpi .v{font-size:23px;}
+  h2{padding-bottom:9px;}
+  .figure::before{height:2px;}
+}
+
+/* ---------- 打印：所有深色面一律还原成白底，去掉装饰 ---------- */
+@media print{
+  .hero, .kpis, .board-card.capstone,
+  .kpi, .hero .sky{background:#fff !important; background-image:none !important;}
+  .hero::before, .hero .rail-line, .hud::after,
+  .board-card::before, .figure::before{display:none !important;}
+  .hero{box-shadow:none !important; padding:0 0 12px !important; border-bottom:2px solid #000 !important;}
+  .hero h1, .hero .dek, .hero .eyebrow, .hero .meta,
+  .hero .dek b, .hero .meta span{color:#000 !important; text-shadow:none !important;}
+  .hero .meta span{border-color:#999 !important; background:none !important;}
+  .kpi .v, .kpi.hi .v, .kpi.zero .v{color:#000 !important;}
+  .kpi .k, .kpi .k span{color:#333 !important;}
+  .board-card.capstone h3, .board-card.capstone .bc-dek,
+  .board-card.capstone ul, .board-card.capstone .bc-num,
+  .board-card.capstone .bc-go{color:#000 !important;}
+  .reveal{opacity:1 !important; transform:none !important;}
+  .hero .sky{display:none !important;}
+  *{animation:none !important;}
+}
+
