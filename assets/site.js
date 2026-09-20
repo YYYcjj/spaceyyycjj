@@ -120,4 +120,41 @@
   } else {
     figs.forEach(function (f) { f.classList.add('in'); });
   }
+
+  /* ---------- 7. 进场动效（渐进增强，可关）----------
+     两条安全线：
+       · 类名是 JS 加的 —— 脚本没跑起来时页面照常全部可见；
+       · 加一个兜底定时器 —— IntersectionObserver 万一不触发，也不能把内容永久藏起来。
+     prefers-reduced-motion 下直接跳过，什么都不做。 */
+  (function () {
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq && mq.matches) return;
+    if (!('IntersectionObserver' in window)) return;
+
+    var sel = '.hero, .kpis, .figure, .note, .board-grid, ol.judge, table.req';
+    var targets = Array.prototype.slice.call(document.querySelectorAll(sel))
+      .concat(Array.prototype.slice.call(document.querySelectorAll('section > h2, section > h3')));
+    if (!targets.length) return;
+
+    targets.forEach(function (el) { el.classList.add('reveal'); });
+
+    function showAll() {
+      targets.forEach(function (el) { el.classList.add('in'); });
+    }
+
+    var io = new IntersectionObserver(function (entries, obs) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in');
+        obs.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+
+    targets.forEach(function (t) { io.observe(t); });
+
+    // 兜底：4 秒后无论如何全部显示
+    setTimeout(showAll, 4000);
+    // 打印前也全部显示，免得打出半透明的图
+    window.addEventListener('beforeprint', showAll);
+  })();
 })();
