@@ -33,9 +33,14 @@ index.html                     首页：十个板块总览 + 首屏 KPI
 sections/01-current.html       … 10-integration.html   十个板块页
 figures/01-current.svg         … 09-ai-robots.svg   各板块的三维设计图（独立矢量文件）
 figures/index.json             图片清单（文件名 / 标题 / 图注 / 尺寸）
+assets/space.svg               首屏舷窗背景（星场 / 坐标网格 / 轨道弧 / 星舰剪影）——由脚本生成
+assets/space-tile.svg          小面积深色面用的星场瓦片（KPI 条、收口卡片）
 assets/site.css                设计系统（含移动端卡片化）
 assets/site.js                 交互脚本（无依赖）
 tools/build.py                 站点生成器
+tools/spaceart.py              舷窗背景生成器（确定性种子，构建时重跑）
+tools/check_site.js            11 个页面的结构校验（需 playwright）
+tools/check_visual.js          视觉专项校验：对比度 / 背景图 / 动效残留（需 playwright）
 tools/content_a.py             板块 1-5 内容
 tools/content_b.py             板块 6-9 内容
 tools/content_c.py             板块 10 内容（收口板块，用 {{FIG:key}} 引用图）
@@ -62,11 +67,20 @@ tools/board01_toc.json         板块一目录条目
 ## 重新生成
 
 ```bash
-python3 tools/build.py            # 生成 index.html 与 sections/*.html
+python3 tools/build.py            # 生成 assets/space*.svg + index.html + sections/*.html
 python3 tools/check_designs.py    # 九张设计图自检（文字越界 / 重叠）
 python3 tools/check_figs.py       # 51 张配图自检（46 张技术路线 + 5 张板块十，同上两类问题）
-python3 tools/export_figures.py   # 导出 figures/*.svg（改了图之后要重跑）
+python3 tools/export_figures.py   # 导出 figures/*.svg（改了 designs.py 的图之后要重跑）
+
+# 页面级校验需要 playwright（先把站点起在本地：python3 -m http.server 4321 --bind 127.0.0.1）
+NODE_PATH=<node-workspace>/node_modules node tools/check_site.js   http://127.0.0.1:4321/
+NODE_PATH=<node-workspace>/node_modules node tools/check_visual.js http://127.0.0.1:4321/
 ```
+
+- `check_site.js`：11 个页面的结构校验——横向溢出、侧栏/顶部导航切换、移动端表格转卡片、
+  页内锚点、跨页链接 HTTP 200、控制台错误与资源加载失败。
+- `check_visual.js`：视觉专项校验——关键文字在深色面上的**对比度**（按 WCAG AA 阈值）、
+  舷窗背景图是否真的加载、进场动效有没有把内容留在不可见状态、首屏数字动画有没有卡在 0。
 
 注意：页面里每张图的右下角有一个「打开矢量原图（SVG）」链接，指向 `../figures/NN-slug.svg`。
 **改了 `designs.py` 里的图之后必须重跑 `export_figures.py`**，否则页面上的图和下载到的原图会不一致。
@@ -355,6 +369,51 @@ python3 tools/check_figs.py
 ⚠️ **占位符替换必须显式调 `.svg()`。** `spec['make']()` 返回的是图对象（`Iso` / `Dia`），
 不是 SVG 字符串。直接插进 f-string 会渲染成 `<iso.Iso object at 0x…>`——被浏览器当成未知标签丢掉，
 页面上留下一个**空图框 + 正常图注**，而且全程不报错。`render_figs()` 里已加断言堵死这条路。
+
+## 视觉设计：舷窗（viewport）+ 仪器面板
+
+设计语言是**两套底色分工**，这条分工是整套视觉的地基，改样式前先认清它：
+
+| | 用途 | 底色 | 文字色 |
+|---|---|---|---|
+| 浅色面 | 正文、表格、长文、图注、打印 | `--page` / `--bg` | `--text` / `--muted` |
+| 深色「舷窗」 | 只给**关键面**：首屏、KPI 仪表条、收口卡片、图框顶线与四角 | `--void*` | `--void-text` / `--void-soft` / `--void-muted` |
+
+⚠️ **不要在深色底上复用浅色面的文字色**（`--text` / `--muted` / `--faint`）——
+它们在深底上的对比度不够。深色面有自己的一套 `--void-*`，其中 `--void-faint` 比浅色面的
+`--faint` **更亮**，就是为了保证最小号文字也读得出来。`tools/check_visual.js` 会按 WCAG AA
+逐个核关键文字的对比度，改完颜色一定要跑一遍——屏幕上看「还行」和真的达标是两回事。
+
+### 舷窗背景是生成出来的，不是手画的
+
+`tools/spaceart.py` 用**固定种子的 LCG**（不用 `random`）生成 `assets/space.svg` 与
+`assets/space-tile.svg`：星场、坐标网格、轨道弧、一艘极简星舰剪影 + 它的虚线轨迹。
+
+两条约束：
+
+1. **必须确定性。** 星位每次构建都要一模一样，否则「构建产物可复现、按字节比对校验」
+   这条流水线直接失效。
+2. **输出成独立文件，由 CSS 的 `background-image` 引用，不要内联。**
+   CSS 里的 `url(space.svg)` 相对 site.css 解析，所以首页与板块页拿到的是同一个文件；
+   内联的话 11 个页面各背一份十几 KB 的星场，白涨 150KB。
+
+星场里有一块**文字安全区**（`safe=` 参数）：落在标题区域的星被压暗到 0.26 不透明度，
+保证深底上的文字不被亮点干扰。
+
+### 动效只有三种，都挂在 `prefers-reduced-motion` 上
+
+1. **进场**：`site.js` 给 `.hero / .kpis / .figure / .note / section > h2,h3` 加 `.reveal` 类，
+   IntersectionObserver 进视口后加 `.in`。**类名由 JS 加**，所以脚本没跑起来时页面照常全可见；
+   另有 4 秒兜底定时器与 `beforeprint` 兜底，防止 IO 不触发把内容永久藏起来。
+2. **星场极慢漂移**：120 秒一个来回，只动背景层，不动内容。
+3. **悬停反馈**：卡片顶线、表格行信号色浸染、导航胶囊。
+
+系统开了「减少动态效果」时，三者全部跳过（JS 直接 return，CSS 的 `@media` 也不生效）。
+
+### 深色面在打印时必须还原
+
+`@media print` 里把所有深色面板改回白底黑字、隐藏星场与 HUD 转角、关掉全部动画。
+这份报告的用途之一就是打印，**任何新增的深色面都要同步补一条打印还原规则**。
 
 ## 技术说明
 
