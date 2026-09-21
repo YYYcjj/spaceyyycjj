@@ -78,6 +78,22 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         bg: cs(document.body).backgroundColor,
         fg: cs(document.body).color,
         cards: document.querySelectorAll('.board-card').length,
+        venture: (() => {
+          const sec = q('#venture');
+          if (!sec) return null;
+          // 「块级 + 内容长」= 正文加粗被误当标签渲染（标签必须用 .lb 且是短文本）。
+          // 曾经踩过：标签写成 <b>、CSS 给了 display:block，正文里的加粗也跟着独占一行。
+          const orphan = [...sec.querySelectorAll('.vs-meta b, .vs-st b')]
+            .filter(b => cs(b).display === 'block' && b.textContent.trim().length > 12).length;
+          return {
+            track: sec.querySelectorAll('.vt-i').length,
+            steps: sec.querySelectorAll('.vs > li').length,
+            meta: sec.querySelectorAll('.vs-meta > span').length,
+            stop: sec.querySelectorAll('.vs-st').length,
+            lb: sec.querySelectorAll('.lb').length,
+            orphan,
+          };
+        })(),
       };
     });
 
@@ -95,6 +111,18 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
     if (desk.tdNoTh) bad(p, '表格 td 均有 data-th', desk.tdNoTh); else good(p, '表格 td 均有 data-th');
     if (desk.kpi.some(v => v === '0' || v === '')) bad(p, 'KPI 计数动画完成', desk.kpi);
     else if (desk.kpi.length) good(p, `KPI 计数动画完成 (${desk.kpi.join(' / ')})`);
+
+    // 创业者路线图的结构（板块 1–9 有，收口页没有，所以以元素存在为准）
+    if (desk.venture) {
+      const v = desk.venture;
+      if (v.track !== 6) bad(p, '赛道判断 6 格', v.track); else good(p, '赛道判断 6 格');
+      if (v.steps !== 5) bad(p, '路线图 5 个阶段', v.steps); else good(p, '路线图 5 个阶段');
+      if (v.meta !== 20) bad(p, '每阶段 4 项元数据 × 5 阶段', v.meta); else good(p, '每阶段 4 项元数据 × 5 阶段');
+      if (v.stop !== 5) bad(p, '5 条止损线', v.stop); else good(p, '5 条止损线');
+      if (v.lb !== 25) bad(p, '标签共 25 个（.lb）', v.lb); else good(p, '标签共 25 个（.lb）');
+      if (v.orphan) bad(p, '正文加粗被渲染成块级（标签用了 <b>）', v.orphan);
+      else good(p, '标签与正文加粗未混淆');
+    }
 
     // 跨页相对链接 HTTP 探测
     for (const rel of desk.cross) {
