@@ -17,11 +17,11 @@ import math
 import os
 
 # 深色面的调色（与 site.css 里的 --void* / --signal* 保持一致）
-VOID = '#0a0e14'
-SIGNAL = '#4ad9e4'
-SIGNAL_DIM = '#2f8f9c'
-AMBER = '#f0b03c'
-STAR = '#dce6f2'
+VOID = '#2b3a4b'
+SIGNAL = '#63d8e4'
+SIGNAL_DIM = '#3d9aa6'
+AMBER = '#f2bd63'
+STAR = '#f0f6fc'
 
 # 画布。给足尺寸后由 CSS 的 background-size:cover 去裁，圆形不会被拉成椭圆。
 W, H = 1600, 560
@@ -71,9 +71,9 @@ def _stars(rng, n=230, safe=None):
     for _ in range(n):
         x, y = rng.f(0, W), rng.f(0, H)
         r = rng.f(0.5, 1.5)
-        op = rng.f(0.22, 0.82)
+        op = rng.f(0.30, 0.88)
         if safe and safe[0] < x < safe[2] and safe[1] < y < safe[3]:
-            op = min(op, 0.26)
+            op = min(op, 0.34)
         if r > 1.32:
             bright.append((x, y, r, min(op + 0.15, 0.95)))
         else:
