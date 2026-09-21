@@ -39,6 +39,7 @@ from techfigs import FIGS as TECHFIGS         # noqa: E402
 from techparams import STEP_META              # noqa: E402
 from chainbiz import CHAIN_BIZ                # noqa: E402
 from synthfigs import SYNTH_FIGS              # noqa: E402
+import spaceart                                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
 assert len(BOARDS) == 10, f'板块数应为 10，实际 {len(BOARDS)}'
@@ -539,11 +540,15 @@ PAGE = """<!DOCTYPE html>
   <!-- ================= 正文 ================= -->
   <main class="main">
 
-    <header class="hero">
-      <div class="eyebrow">板块 {num} / 09 · {en}</div>
-      <h1>{h1}</h1>
-      <p class="dek">{dek}</p>
-      <div class="meta">{meta}</div>
+    <header class="hero hud">
+      <div class="sky" aria-hidden="true"></div>
+      <div class="hero-in">
+        <div class="eyebrow">板块 {num} / 10 · {en}</div>
+        <h1>{h1}</h1>
+        <p class="dek">{dek}</p>
+        <div class="meta">{meta}</div>
+      </div>
+      <div class="rail-line" aria-hidden="true"></div>
     </header>
 
 {body}
@@ -569,6 +574,30 @@ PAGE = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+
+# ---------------------------------------------------------------- 首屏与仪表化
+def render_meta(meta):
+    """首屏底部的「遥测条」：把用 ｜ 分隔的元信息拆成等宽小标签。
+
+    段数在 2–4 之间才拆——只有一段（或特别多段）时拆了反而难看，直接原样输出。
+    """
+    parts = [p.strip() for p in meta.split('｜') if p.strip()]
+    if 2 <= len(parts) <= 4:
+        return '\n          '.join(f'<span>{esc(p)}</span>' for p in parts)
+    return esc(meta)
+
+
+FIG_NUM_RE = re.compile(r'<figcaption>(图\s*[0-9][0-9.]*)')
+
+
+def decorate_captions(body):
+    """把图注里的「图 05」包成等宽小标签。
+
+    在**最终 HTML 上做正则**，而不是改各个渲染函数——图注来自四处渲染器
+    加上板块一那份静态素材，逐个改容易漏，正则一处收口。
+    """
+    return FIG_NUM_RE.sub(r'<figcaption><span class="fgn">\1</span>', body)
 
 
 # ---------------------------------------------------------------- 正文内的图占位符
@@ -650,6 +679,7 @@ def build_section(b, board01):
     b['toc'] = head + toc_subs
 
     body = render_figs(body, b['num'])
+    body = decorate_captions(body)
 
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
@@ -660,7 +690,7 @@ def build_section(b, board01):
         topnav=render_topnav(b),
         rail=render_rail(b),
         num=b['num'], en=esc(b.get('eyebrow') or b['en']),
-        h1=esc(h1), dek=esc(b['dek']), meta=esc(b['meta']),
+        h1=esc(h1), dek=esc(b['dek']), meta=render_meta(b['meta']),
         body=body,
         pager=render_pager(b),
         site=esc(SITE['title']), subtitle=esc(SITE['subtitle']),
@@ -695,31 +725,35 @@ HUB = """<!DOCTYPE html>
 
   <main class="main">
 
-    <header class="hero">
-      <div class="eyebrow">{subtitle} · {date}</div>
-      <h1>{site}</h1>
-      <p class="dek">十个板块，从一枚已经复用 37 次的火箭，一直问到光速飞船、冬眠舱和星际通信。
-        每个板块都尽量把三件事分开写清：<b>已经做到的</b>、<b>正在验证的</b>、<b>还只在纸上的</b>。
-        最后一个板块把前面九个的条件合起来，收拢成一版星船总体设计。</p>
-      <div class="meta">数据截止 2026-09-15 ｜ 10 个板块 ｜ 全部来自公开披露信息</div>
+    <header class="hero hud">
+      <div class="sky" aria-hidden="true"></div>
+      <div class="hero-in">
+        <div class="eyebrow">{subtitle} · {date}</div>
+        <h1>{site}</h1>
+        <p class="dek">十个板块，从一枚已经复用 37 次的火箭，一直问到光速飞船、冬眠舱和星际通信。
+          每个板块都尽量把三件事分开写清：<b>已经做到的</b>、<b>正在验证的</b>、<b>还只在纸上的</b>。
+          最后一个板块把前面九个的条件合起来，收拢成一版星船总体设计。</p>
+        <div class="meta">{meta}</div>
+      </div>
+      <div class="rail-line" aria-hidden="true"></div>
     </header>
 
     <div class="kpis">
       <div class="kpi hi">
         <div class="v"><span data-count="37">0</span><em>次</em></div>
-        <div class="k">单枚猎鹰9 最高复用次数<br><span style="color:var(--faint)">板块一 · 已实现</span></div>
+        <div class="k">单枚猎鹰9 最高复用次数<br><span>板块一 · 已实现</span></div>
       </div>
       <div class="kpi">
         <div class="v"><span data-count="98">0</span><em>%</em></div>
-        <div class="k">ISS 水回收闭环率<br><span style="color:var(--faint)">板块四 · 已实现</span></div>
+        <div class="k">ISS 水回收闭环率<br><span>板块四 · 已实现</span></div>
       </div>
       <div class="kpi">
         <div class="v">0.2<em>c</em></div>
-        <div class="k">光帆推进的目标速度<br><span style="color:var(--faint)">板块五 · 未实现</span></div>
+        <div class="k">光帆推进的目标速度<br><span>板块五 · 未实现</span></div>
       </div>
       <div class="kpi zero">
         <div class="v"><span data-count="20">0</span><em>分</em></div>
-        <div class="k">火星与地球单程通信延迟<br><span style="color:var(--faint)">板块九 · 改不了</span></div>
+        <div class="k">火星与地球单程通信延迟<br><span>板块九 · 改不了</span></div>
       </div>
     </div>
 
@@ -780,13 +814,19 @@ def build_hub():
                '光速推进、寿命延长与冬眠、外星文明交流、宇宙资源获取、飞船AI与机器人，'
                '最后把九个板块的条件收拢成一版星船总体设计。')
     page = HUB.format(site=esc(SITE['title']), subtitle=esc(SITE['subtitle']), date=esc(SITE['date']),
-                      desc=desc, favicon=FAVICON, cards='\n\n'.join(cards))
+                      desc=desc, favicon=FAVICON, cards='\n\n'.join(cards),
+                      meta=render_meta('数据截止 2026-09-15 ｜ 10 个板块 ｜ 全部来自公开披露信息'))
     out = os.path.join(ROOT, 'index.html')
     open(out, 'w', encoding='utf-8').write(page)
     return out, len(page.encode())
 
 
 if __name__ == '__main__':
+    # 舷窗背景（星场/网格/轨道弧）每次构建都重生成，保证与代码同步、且结果确定
+    print('=== 舷窗背景 ===')
+    for _p, _n in spaceart.write_assets(os.path.join(ROOT, 'assets')):
+        print(f'  {os.path.relpath(_p, ROOT):<34} {_n:>7,} B')
+
     b01 = load_board01()
     total = 0
     print('=== 板块页 ===')
