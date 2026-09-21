@@ -42,6 +42,10 @@ const TARGETS = [
   ['.board-card.capstone .bc-dek', '收口卡片描述', 'hub'],
   ['.board-card.capstone .bc-num', '收口卡片编号', 'hub'],
   ['.board-card.capstone .bc-go', '收口卡片入口', 'hub'],
+  ['.vt-i dt', '赛道判断标签', 'opt'],
+  ['.vt-i dd', '赛道判断正文', 'opt'],
+  ['.vs-md .lb', '阶段元数据标签', 'opt'],
+  ['.vs-st .lb', '止损线标签', 'opt'],
 ];
 
 let fail = 0;
