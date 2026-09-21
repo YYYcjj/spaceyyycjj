@@ -61,6 +61,21 @@ for _b in BOARDS:
     assert _b['techroad'], f'板块 {_b["slug"]} 缺少技术发展路线'
     assert _b['venture'], f'板块 {_b["slug"]} 缺少创业者路线图'
 
+# 创业者路线图：九个板块都要有「赛道判断」六项、每一步都要有八个字段
+_V_TRACK = ('customer', 'money', 'market', 'rivals', 'moat', 'fatal')
+_V_STEP = ('p', 'w', 'do', 'mode', 'gate', 'burn', 'kill', 'stop')
+for _b in BOARDS:
+    if not _b.get('layers', True):
+        continue
+    _v = _b['venture']
+    for _k in _V_TRACK:
+        assert _v['track'].get(_k), f'板块 {_b["slug"]} 的赛道判断缺少 {_k}'
+    assert len(_v['steps']) == 5, \
+        f'板块 {_b["slug"]} 的创业者路线图应为 5 个阶段，实际 {len(_v["steps"])}'
+    for _i, _s in enumerate(_v['steps'], 1):
+        for _k in _V_STEP:
+            assert _s.get(_k), f'板块 {_b["slug"]} 第 {_i} 个阶段缺少 {_k}'
+
 # 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
 _N_NODES = 0
 for _b in BOARDS:
@@ -359,11 +374,29 @@ def render_design(b, num):
 
 
 # ---------------------------------------------------------------- 创业者路线图
+# 赛道判断六项的显示顺序与标签（顺序即阅读顺序，不要改成 dict 的插入序）
+TRACK_FIELDS = (
+    ('customer', '客户与付款方'),
+    ('money',    '钱从哪来'),
+    ('market',   '市场量级'),
+    ('rivals',   '竞争格局'),
+    ('moat',     '护城河'),
+    ('fatal',    '这类公司的整体死因'),
+)
+
+
 def render_venture(b):
-    """把 venture 数据渲染成：切入点 → 五个阶段（含里程碑与死法）→ 最该避免的事。"""
+    """把 venture 数据渲染成：切入点 → 赛道判断 → 五个阶段（八字段）→ 最该避免的事。"""
     v = b.get('venture')
     if not v:
         return ''
+
+    track = '\n'.join(
+        f'        <div class="vt-i">\n'
+        f'          <dt>{lab}</dt>\n'
+        f'          <dd>{rich(v["track"][key])}</dd>\n'
+        f'        </div>'
+        for key, lab in TRACK_FIELDS)
 
     items = []
     for i, s in enumerate(v['steps'], 1):
@@ -376,12 +409,15 @@ def render_venture(b):
             f'          </div>\n'
             f'          <p class="vs-do">{rich(s["do"])}</p>\n'
             f'          <div class="vs-meta">\n'
-            f'            <span class="vs-mk"><b>里程碑</b>{rich(s["mile"])}</span>\n'
-            f'            <span class="vs-rk"><b>这一步的死法</b>{rich(s["risk"])}</span>\n'
+            f'            <span class="vs-md"><span class="lb">卖什么给谁</span>{rich(s["mode"])}</span>\n'
+            f'            <span class="vs-bn"><span class="lb">这一步要投多少</span>{rich(s["burn"])}</span>\n'
+            f'            <span class="vs-gt"><span class="lb">通过判据</span>{rich(s["gate"])}</span>\n'
+            f'            <span class="vs-kk"><span class="lb">这一步的死法</span>{rich(s["kill"])}</span>\n'
             f'          </div>\n'
+            f'          <p class="vs-st"><span class="lb">止损线</span>{rich(s["stop"])}</p>\n'
             f'        </li>')
 
-    return (
+    html = (
         '<section id="venture">\n'
         '      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>\n'
         f'      <p class="lead">{rich(v["lead"])}</p>\n'
@@ -391,6 +427,10 @@ def render_venture(b):
         f'        <span class="en-t">{rich(v["entry"])}</span>\n'
         '      </div>\n'
         '\n'
+        '      <h3>赛道判断<span class="h3-en">Track Check</span></h3>\n'
+        '      <dl class="vt">\n' + track + '\n      </dl>\n'
+        '\n'
+        '      <h3>五个阶段<span class="h3-en">Five Stages</span></h3>\n'
         '      <ol class="vs">\n' + '\n'.join(items) + '\n      </ol>\n'
         '\n'
         '      <div class="note warn">\n'
@@ -401,6 +441,13 @@ def render_venture(b):
         '      </div>\n'
         '    </section>'
     )
+    # 标签必须用 .lb，不能用 <b>：正文加粗也是 <b>，
+    # 一旦给 <b> 配上 display:block，正文里的加粗就会独占一行、标点被甩下去。
+    _n_lb = html.count('class="lb"')
+    _want = len(v['steps']) * 5
+    assert _n_lb == _want, \
+        f'板块 {b["slug"]} 路线图的标签数应为 {_want}，实际 {_n_lb}'
+    return html
 
 
 # ---------------------------------------------------------------- 技术发展路线
