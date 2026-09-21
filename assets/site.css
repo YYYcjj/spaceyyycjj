@@ -4,30 +4,32 @@
    ========================================================================== */
 
 :root{
-  --page:#f5f5f2;
+  /* 浅色面：冷中性（原本是暖中性）。与深色面同色温，两者放在一起才像一套东西，
+     而不是「白纸上贴了块黑」——这是「整体感」的关键，改配色时不要往回改暖。 */
+  --page:#edf1f5;
   --bg:#ffffff;
-  --bg-sunk:#fafaf8;
-  --text:#1c1c1a;
-  --text-soft:#4a4a45;
-  --muted:#6f6f69;
-  --faint:#9a9992;
-  --line:#e6e5e0;
-  --line-strong:#cfcec8;
-  --ink:#111110;
+  --bg-sunk:#f5f8fa;
+  --text:#1a1f28;
+  --text-soft:#464e5b;
+  --muted:#69717f;
+  --faint:#97a0ae;
+  --line:#e1e7ee;
+  --line-strong:#c5cfdb;
+  --ink:#151a22;
 
-  --accent:#1d4e89;
-  --accent-bg:#eef3fa;
-  --accent-bd:#b8cde6;
+  --accent:#1a5a94;
+  --accent-bg:#eaf2fa;
+  --accent-bd:#b3cee8;
 
-  --green-bg:#eaf3de; --green-tx:#3b6d11; --green-bd:#97c459;
-  --blue-bg:#e6f1fb;  --blue-tx:#185fa5;  --blue-bd:#85b7eb;
+  --green-bg:#e9f2de; --green-tx:#3d6d14; --green-bd:#97c459;
+  --blue-bg:#e6effa;  --blue-tx:#1a5f9c;  --blue-bd:#85b7eb;
   --amber-bg:#faeeda; --amber-tx:#854f0b; --amber-bd:#ef9f27;
   --red-bg:#fcebeb;   --red-tx:#a32d2d;   --red-bd:#f09595;
-  --gray-bg:#f1efe8;  --gray-tx:#5f5e5a;  --gray-bd:#b4b2a9;
+  --gray-bg:#edf0f4;  --gray-tx:#5c6472;  --gray-bd:#aeb7c3;
 
   --rail:264px;
   --radius:12px;
-  --shadow:0 1px 2px rgba(20,20,18,.04), 0 8px 24px -16px rgba(20,20,18,.18);
+  --shadow:0 1px 2px rgba(22,28,38,.04), 0 8px 24px -16px rgba(22,28,38,.18);
 }
 
 *{box-sizing:border-box;}
@@ -36,7 +38,11 @@ html{scroll-behavior:smooth; scroll-padding-top:78px;}
 
 body{
   margin:0;
-  background:var(--page);
+  background-color:var(--page);
+  /* 页面顶部一抹极淡的石板色：让深色控制台是「沉进页面」而不是「贴在页面上」。
+     这一点点渐变是整体感的关键——没有它，控制台下沿就是一条生硬的分界线。 */
+  background-image:linear-gradient(180deg, rgba(43,58,75,.06), rgba(43,58,75,0) 340px);
+  background-repeat:no-repeat;
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
   font-size:15px;
@@ -214,8 +220,8 @@ td.num{font-variant-numeric:tabular-nums; white-space:nowrap;}
   border-left:3px solid var(--line-strong); border-radius:0 var(--radius) var(--radius) 0;
   padding:14px 18px; margin:20px 0; font-size:13.5px; box-shadow:var(--shadow);
 }
-.note.warn{border-left-color:var(--amber-bd); background:#fffdf8;}
-.note.good{border-left-color:var(--green-bd); background:#fcfef8;}
+.note.warn{border-left-color:var(--amber-bd); background:#fdfaf4;}
+.note.good{border-left-color:var(--green-bd); background:#f8fbf4;}
 .note.info{border-left-color:var(--accent-bd); background:#fafcff;}
 .note b{font-weight:650;}
 
@@ -299,7 +305,7 @@ footer b{color:var(--muted); font-weight:600;}
 /* ---------- 顶部移动导航 ---------- */
 .topnav{
   position:sticky; top:0; z-index:40;
-  background:rgba(245,245,242,.92); backdrop-filter:blur(12px);
+  background:rgba(237,241,245,.92); backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line);
   margin:0 -28px; padding:0 28px;
@@ -314,7 +320,7 @@ footer b{color:var(--muted); font-weight:600;}
 /* 右侧渐隐，提示可横向滚动 */
 .topnav::after{
   content:""; position:absolute; top:0; right:0; bottom:1px; width:44px;
-  background:linear-gradient(to right, rgba(245,245,242,0), rgba(245,245,242,.96));
+  background:linear-gradient(to right, rgba(237,241,245,0), rgba(237,241,245,.96));
   pointer-events:none;
 }
 .topnav a{
@@ -859,10 +865,7 @@ table.params td.num{font-weight:650; color:var(--ink);}
    ========================================================================== */
 
 /* 首页卡片：把「收口」那张与领域卡片区分开——它是综合，不是又一个领域 */
-.board-card.capstone{
-  border-color:var(--ink);
-  background:linear-gradient(180deg, #fbfbf9 0%, var(--bg) 42%);
-}
+.board-card.capstone{border-color:var(--line-strong);}
 .board-card.capstone .bc-num{color:var(--ink);}
 .board-card.capstone .bc-go{color:var(--ink); font-weight:600;}
 
@@ -888,19 +891,21 @@ table.req td .tag{margin-right:2px;}
    ========================================================================== */
 
 :root{
-  --void:#0a0e14;          /* 深空底 */
-  --void-2:#121a26;        /* 仪表盘 */
-  --void-3:#1a2434;        /* 抬起一层 */
-  --void-line:rgba(120,190,205,.14);
-  --void-line-2:rgba(120,190,205,.26);
-  --void-text:#e8edf4;
-  --void-soft:#aab6c6;
-  --void-muted:#8b98a8;
-  --void-faint:#78879a;    /* 深底上的最浅一档：比浅色底的同名灰要亮，否则对比度不够 */
-  --signal:#4ad9e4;        /* 数据青 */
-  --signal-soft:#8fe6ee;
-  --signal-deep:#2f8f9c;
-  --warn2:#f0b03c;         /* 约束琥珀 */
+  /* 深色面：石板蓝灰，**刻意不用近黑**。近黑会让它读成「白纸上贴了一块黑」，
+     和浅色面割裂；抬到石板色之后两者同色温，整页才是一个整体。 */
+  --void:#2b3a4b;
+  --void-2:#35465a;
+  --void-3:#40536a;
+  --void-line:rgba(186,212,235,.20);
+  --void-line-2:rgba(186,212,235,.34);
+  --void-text:#eef3f8;
+  --void-soft:#ccd8e4;
+  --void-muted:#b3c1cf;
+  --void-faint:#a6b6c4;    /* 深底上的最浅一档：比浅色面的 --faint 亮得多，保证小字达标 */
+  --signal:#63d8e4;        /* 数据青 */
+  --signal-soft:#a5eaf1;
+  --signal-deep:#3d9aa6;
+  --warn2:#f2bd63;         /* 约束琥珀 */
   --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
   --hero-r:18px;
 }
@@ -953,24 +958,25 @@ table.spec td.num{
   background:var(--void);
   padding:40px 40px 34px;
   margin:0 0 30px;
-  box-shadow:0 26px 64px -38px rgba(6,12,20,.72);
+  box-shadow:0 20px 48px -34px rgba(28,42,58,.55);
 }
 .hero .sky{
   position:absolute; inset:-4% -2%; z-index:0;
   background:var(--void) url(space.svg) center right / cover no-repeat;
 }
-/* 暗角：把标题那一侧压暗，星场只在右边亮起来 */
+/* 暗角：只把标题那一侧压暗一档，不再做成「黑洞」。石板底本身够亮，
+   暗角过度就会又回到「白纸上贴一块黑」的割裂感。 */
 .hero::before{
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
-    radial-gradient(130% 104% at 8% 44%, rgba(10,14,20,.94) 0%, rgba(10,14,20,.72) 42%, rgba(10,14,20,.20) 78%, rgba(10,14,20,.55) 100%),
-    linear-gradient(180deg, rgba(10,14,20,.35), rgba(10,14,20,0) 30%);
+    radial-gradient(130% 104% at 8% 44%, rgba(28,40,54,.90) 0%, rgba(28,40,54,.58) 44%, rgba(28,40,54,.10) 78%, rgba(28,40,54,.34) 100%),
+    linear-gradient(180deg, rgba(28,40,54,.26), rgba(28,40,54,0) 32%);
 }
 .hero .hero-in{position:relative; z-index:2; max-width:64ch;}
 .hero .eyebrow{color:var(--signal); margin-bottom:14px; font-family:var(--mono);
   font-size:11px; letter-spacing:1.6px;}
-.hero .eyebrow::before{background:var(--signal); opacity:.7;}
-.hero h1{color:var(--void-text); text-shadow:0 2px 24px rgba(0,0,0,.5);}
+.hero .eyebrow::before{background:var(--signal); opacity:.8;}
+.hero h1{color:var(--void-text); text-shadow:0 1px 14px rgba(20,30,42,.35);}
 .hero .dek{color:var(--void-soft);}
 .hero .dek b{color:var(--void-text); font-weight:600;}
 .hero .meta{
@@ -1000,16 +1006,30 @@ table.spec td.num{
 /* 首屏的转角要看得见：它不是装饰，是「这块是仪表」的提示 */
 .hero.hud::after{opacity:.72; --hud-c:var(--signal);}
 
+/* 首屏 + KPI 合成**一整块**控制台。
+   之前这是两块各自带圆角的深色面板、中间还有 18px 缝，读起来像「贴了两次深色」；
+   把相邻边缘的圆角与间距去掉之后，它就成一个面了，页面从「三块拼」变成「一块控制台 + 正文」。
+   `:has()` 不被支持时会退回原来的两块式样，不影响可用性。 */
+.hero:has(+ .kpis){
+  border-bottom-left-radius:0; border-bottom-right-radius:0;
+  margin-bottom:0;
+}
+.hero:has(+ .kpis) .rail-line{display:none;}
+.hero + .kpis{
+  border-radius:0 0 var(--radius) var(--radius);
+  border-top:0; margin-top:0;
+}
+
 /* ---------- KPI：深色仪表条 ---------- */
 .kpis{
   background-color:var(--void-2);
   background-image:url(space-tile.svg); background-size:cover; background-position:center;
   border:1px solid var(--void-line-2);
   gap:1px; margin:0 0 44px;
-  box-shadow:0 18px 44px -34px rgba(6,12,20,.6);
+  box-shadow:0 18px 40px -32px rgba(28,42,58,.5);
 }
 /* 单元格要够不透明：星场是 cover 铺的，半透明会让各格采到不同的星密度，深浅不一 */
-.kpi{background:rgba(11,16,23,.88);}
+.kpi{background:rgba(43,58,75,.62);}
 .kpi .v{color:var(--void-text);}
 .kpi .v em{color:var(--void-muted);}
 .kpi .k{color:var(--void-muted);}
@@ -1021,7 +1041,7 @@ table.spec td.num{
 .board-card{position:relative; overflow:hidden;}
 .board-card::before{
   content:""; position:absolute; left:0; right:0; top:0; height:2px;
-  background:linear-gradient(90deg, var(--ink), rgba(120,190,205,.55) 46%, transparent 100%);
+  background:linear-gradient(90deg, var(--void), rgba(99,216,228,.7) 46%, transparent 100%);
   opacity:0; transition:opacity .22s;
 }
 .board-card:hover::before{opacity:1;}
@@ -1034,8 +1054,8 @@ table.spec td.num{
 .board-card.capstone{
   background:var(--void); background-image:url(space-tile.svg);
   background-size:cover; background-position:center right;
-  border-color:rgba(120,190,205,.22);
-  box-shadow:0 24px 54px -34px rgba(6,12,20,.7);
+  border-color:var(--void-line-2);
+  box-shadow:0 20px 46px -32px rgba(28,42,58,.5);
 }
 .board-card.capstone::before{background:linear-gradient(90deg, var(--signal), rgba(120,190,205,.3) 60%, transparent);}
 .board-card.capstone:hover{border-color:var(--void-line-2);}
@@ -1067,7 +1087,7 @@ h3:not(.chain-sub)::before{
 }
 .figure::before{
   content:""; position:absolute; left:0; right:0; top:0; height:2px;
-  background:linear-gradient(90deg, var(--ink) 0%, rgba(74,217,228,.75) 34%, rgba(120,190,205,.12) 72%, transparent 100%);
+  background:linear-gradient(90deg, var(--void) 0%, rgba(99,216,228,.75) 34%, rgba(99,216,228,.14) 72%, transparent 100%);
 }
 .figure figcaption{border-top-color:var(--line);}
 .figure .fig-dl{font-size:11px;}
@@ -1103,11 +1123,11 @@ tbody tr:hover{background:linear-gradient(90deg, rgba(74,217,228,.07), rgba(74,2
 #progress{
   height:2px;
   background:linear-gradient(90deg, var(--signal-deep), var(--signal));
-  box-shadow:0 0 10px rgba(74,217,228,.55);
+  box-shadow:0 0 10px rgba(99,216,228,.5);
 }
 .rail nav a.active{border-left-color:var(--ink);}
 .rail .brand{padding-bottom:14px;}
-.topnav{background:rgba(245,245,242,.9);}
+.topnav{background:rgba(237,241,245,.9);}
 .topnav a.active{
   background:var(--void-2); color:var(--void-text); font-weight:500;
   border-color:var(--void-line-2);
@@ -1146,6 +1166,8 @@ tbody tr:hover{background:linear-gradient(90deg, rgba(74,217,228,.07), rgba(74,2
 
 /* ---------- 打印：所有深色面一律还原成白底，去掉装饰 ---------- */
 @media print{
+  /* 页面顶部那抹石板渐变也要去掉，否则打印会带出一层淡色带 */
+  body{background:#fff !important; background-image:none !important;}
   .hero, .kpis, .board-card.capstone,
   .kpi, .hero .sky{background:#fff !important; background-image:none !important;}
   .hero::before, .hero .rail-line, .hud::after,
