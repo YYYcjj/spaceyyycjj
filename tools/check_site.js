@@ -91,6 +91,7 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
             meta: sec.querySelectorAll('.vs-meta > span').length,
             stop: sec.querySelectorAll('.vs-st').length,
             lb: sec.querySelectorAll('.lb').length,
+            figs: sec.querySelectorAll('.trs-fig').length,
             orphan,
           };
         })(),
@@ -120,6 +121,7 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
       if (v.meta !== 20) bad(p, '每阶段 4 项元数据 × 5 阶段', v.meta); else good(p, '每阶段 4 项元数据 × 5 阶段');
       if (v.stop !== 5) bad(p, '5 条止损线', v.stop); else good(p, '5 条止损线');
       if (v.lb !== 25) bad(p, '标签共 25 个（.lb）', v.lb); else good(p, '标签共 25 个（.lb）');
+      if (v.figs !== 6) bad(p, '创业者路线图 6 张理论图', v.figs); else good(p, '创业者路线图 6 张理论图（图都有 SVG）');
       if (v.orphan) bad(p, '正文加粗被渲染成块级（标签用了 <b>）', v.orphan);
       else good(p, '标签与正文加粗未混淆');
     }

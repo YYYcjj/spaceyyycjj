@@ -39,6 +39,7 @@ from techfigs import FIGS as TECHFIGS         # noqa: E402
 from techparams import STEP_META              # noqa: E402
 from chainbiz import CHAIN_BIZ                # noqa: E402
 from synthfigs import SYNTH_FIGS              # noqa: E402
+from theoryfigs import THEORY_FIGS            # noqa: E402
 import spaceart                                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
@@ -75,6 +76,17 @@ for _b in BOARDS:
     for _i, _s in enumerate(_v['steps'], 1):
         for _k in _V_STEP:
             assert _s.get(_k), f'板块 {_b["slug"]} 第 {_i} 个阶段缺少 {_k}'
+
+# 创业者路线图的理论图：九个板块 × 6 张（赛道判断 1 张 + 五个阶段各 1 张）
+_V_PARTS = ('track', 1, 2, 3, 4, 5)
+for _b in BOARDS:
+    if not _b.get('layers', True):
+        continue
+    for _part in _V_PARTS:
+        assert (_b['slug'], _part) in THEORY_FIGS, \
+            f'板块 {_b["slug"]} 的「{_part}」缺少理论图'
+assert len(THEORY_FIGS) == len(_V_PARTS) * 9, \
+    f'理论图应为 {len(_V_PARTS) * 9} 张（九板块 × 6），实际 {len(THEORY_FIGS)}'
 
 # 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
 _N_NODES = 0
@@ -385,6 +397,28 @@ TRACK_FIELDS = (
 )
 
 
+def render_theory_fig(slug, part, num, indent='      '):
+    """渲染一张理论图。
+
+    没有配图时返回空串——54 张要分批补，所以这里不做「必须有图」的断言；
+    等补齐之后再在构建入口加一次总数断言。
+    """
+    spec = THEORY_FIGS.get((slug, part))
+    if not spec:
+        return ''
+    svg = spec['make']().svg(spec['cap'])
+    # 堵死「忘了调 .svg()」那条路：对象直接塞进 HTML 会被浏览器丢掉，
+    # 页面上留下一个空图框 + 完全正常的图注，而构建不报错。
+    assert svg.lstrip().startswith('<svg'), f'{slug}.{part} 的理论图没有生成 SVG'
+    return (
+        f'{indent}<figure class="trs-fig">\n'
+        f'{indent}  <div class="fig-scroll">{svg}</div>\n'
+        f'{indent}  <figcaption><span class="fgn">理论图 {num}</span>'
+        f'　{rich(spec["cap"])}</figcaption>\n'
+        f'{indent}</figure>\n'
+    )
+
+
 def render_venture(b):
     """把 venture 数据渲染成：切入点 → 赛道判断 → 五个阶段（八字段）→ 最该避免的事。"""
     v = b.get('venture')
@@ -399,7 +433,9 @@ def render_venture(b):
         for key, lab in TRACK_FIELDS)
 
     items = []
+    num = 1                       # 理论图在层内统一编号：赛道判断 = 1，五个阶段 = 2..6
     for i, s in enumerate(v['steps'], 1):
+        num += 1
         items.append(
             f'        <li>\n'
             f'          <div class="vs-h">\n'
@@ -414,6 +450,7 @@ def render_venture(b):
             f'            <span class="vs-gt"><span class="lb">通过判据</span>{rich(s["gate"])}</span>\n'
             f'            <span class="vs-kk"><span class="lb">这一步的死法</span>{rich(s["kill"])}</span>\n'
             f'          </div>\n'
+            + render_theory_fig(b['slug'], i, num, '          ') +
             f'          <p class="vs-st"><span class="lb">止损线</span>{rich(s["stop"])}</p>\n'
             f'        </li>')
 
@@ -429,6 +466,7 @@ def render_venture(b):
         '\n'
         '      <h3>赛道判断<span class="h3-en">Track Check</span></h3>\n'
         '      <dl class="vt">\n' + track + '\n      </dl>\n'
+        + render_theory_fig(b['slug'], 'track', 1) +
         '\n'
         '      <h3>五个阶段<span class="h3-en">Five Stages</span></h3>\n'
         '      <ol class="vs">\n' + '\n'.join(items) + '\n      </ol>\n'

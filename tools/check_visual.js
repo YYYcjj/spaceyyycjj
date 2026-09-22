@@ -46,6 +46,8 @@ const TARGETS = [
   ['.vt-i dd', '赛道判断正文', 'opt'],
   ['.vs-md .lb', '阶段元数据标签', 'opt'],
   ['.vs-st .lb', '止损线标签', 'opt'],
+  ['.trs-fig figcaption', '配图图注', 'opt'],
+  ['.figure figcaption', '大图图注', 'opt'],
 ];
 
 let fail = 0;
