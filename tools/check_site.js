@@ -78,6 +78,10 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         bg: cs(document.body).backgroundColor,
         fg: cs(document.body).color,
         cards: document.querySelectorAll('.board-card').length,
+        chainfigs: (() => {
+          const sec = q('#chain');
+          return sec ? sec.querySelectorAll('.trs-fig').length : null;
+        })(),
         intro: (() => {
           const sec = q('#intro');
           if (!sec) return null;
@@ -122,6 +126,12 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
     if (desk.tdNoTh) bad(p, '表格 td 均有 data-th', desk.tdNoTh); else good(p, '表格 td 均有 data-th');
     if (desk.kpi.some(v => v === '0' || v === '')) bad(p, 'KPI 计数动画完成', desk.kpi);
     else if (desk.kpi.length) good(p, `KPI 计数动画完成 (${desk.kpi.join(' / ')})`);
+
+    // 技术链路的每一环都要有配图（九板块 × 6 环）
+    if (desk.chainfigs !== null) {
+      if (desk.chainfigs !== 6) bad(p, '技术链路 6 张链路图', desk.chainfigs);
+      else good(p, '技术链路 6 张链路图');
+    }
 
     // 板块开头的导览区（十个板块都有；首页没有，所以以元素存在为准）
     if (desk.intro) {

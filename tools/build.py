@@ -41,6 +41,7 @@ from chainbiz import CHAIN_BIZ                # noqa: E402
 from synthfigs import SYNTH_FIGS              # noqa: E402
 from theoryfigs import THEORY_FIGS            # noqa: E402
 from introfigs import INTRO_FIGS              # noqa: E402
+from chainfigs import CHAIN_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
@@ -95,6 +96,18 @@ for _b in BOARDS:
         assert (_b['slug'], _i) in INTRO_FIGS, \
             f'板块 {_b["slug"]} 缺少导览图 {_i}'
 assert len(INTRO_FIGS) == 20, f'导览图应为 20 张（十板块 × 2），实际 {len(INTRO_FIGS)}'
+
+# 技术链路的每一环都要有一张「链路图」（九板块 × 6 环 = 54 张）
+_N_CHAIN_FIGS = 0
+for _b in BOARDS:
+    if not _b.get('layers', True):
+        continue
+    for _i, _n in enumerate(_b['chain']['nodes'], 1):
+        assert (_b['slug'], _i) in CHAIN_FIGS, \
+            f'板块 {_b["slug"]} 第 {_i} 环缺少链路图'
+        _N_CHAIN_FIGS += 1
+assert len(CHAIN_FIGS) == _N_CHAIN_FIGS == 54, \
+    f'链路图应为 54 张（九板块 × 6 环），实际 {len(CHAIN_FIGS)}'
 
 # 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
 _N_NODES = 0
@@ -252,6 +265,23 @@ def render_pager(cur):
 
 
 # ---------------------------------------------------------------- 技术链路
+def render_chain_fig(slug, idx, indent='          '):
+    """渲染一环保的「链路图」；没配图时返回空串（54 环分批补）。"""
+    spec = CHAIN_FIGS.get((slug, idx))
+    if not spec:
+        return ''
+    svg = spec['make']().svg(spec['cap'])
+    assert svg.lstrip().startswith('<svg'), \
+        f'板块 {slug} 第 {idx} 环的链路图没有生成 SVG'
+    return (
+        f'{indent}<figure class="trs-fig">\n'
+        f'{indent}  <div class="fig-scroll">{svg}</div>\n'
+        f'{indent}  <figcaption><span class="fgn">链路图 {idx}</span>'
+        f'　{rich(spec["cap"])}</figcaption>\n'
+        f'{indent}</figure>\n'
+    )
+
+
 def render_chain(b):
     """把板块的 chain 数据渲染成：最先进的方法 → 环节概览 → 逐环实现路径 → 最难的一环。"""
     ch = b.get('chain')
@@ -280,7 +310,8 @@ def render_chain(b):
                      f'          <div class="cl-h"><span class="cl-t">{rich(n["t"])}</span>'
                      f'<span class="tag {cls}">{lab}</span></div>\n'
                      f'          <div class="cl-x">{rich(n["how"])}</div>\n'
-                     + more +
+                     + render_chain_fig(b['slug'], i) +
+                     more +
                      f'        </li>')
 
     legend = ' · '.join(
