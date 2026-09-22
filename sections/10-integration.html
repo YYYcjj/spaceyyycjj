@@ -52,6 +52,7 @@
       <a class="bo" href="08-resources.html"><span class="n">08</span>宇宙资源获取</a>
       <a class="bo" href="09-ai-robots.html"><span class="n">09</span>飞船AI智能与机器人</a>
       <a class="bo active" href="10-integration.html"><span class="n">10</span>星船总体设计</a>
+      <a href="#intro" data-toc>先看两张图</a>
       <a href="#i-constraints" data-toc><span class="n">10.1</span>从九个板块推出设计约束</a>
       <a href="#i-config" data-toc><span class="n">10.2</span>总体构型：为什么必须是分体串联</a>
       <a href="#i-layout" data-toc><span class="n">10.3</span>舱段布局：七段各干什么</a>
@@ -76,6 +77,20 @@
       </div>
       <div class="rail-line" aria-hidden="true"></div>
     </header>
+
+<section id="intro">
+      <h2>先看两张图<span class="en">Start Here</span></h2>
+      <p class="lead">第一次接触这个领域的话，先看这两张图。第一张说清「它在解决什么问题」，第二张说清「现在走到哪一步了」——本页后面所有细节，都挂在这两张图上。</p>
+
+      <figure class="trs-fig">
+        <div class="fig-scroll"><svg viewBox="0 0 680 202" role="img" aria-label="这一页在做什么：把前面九个板块的限制合起来，推出一版「可以讨论」的整体方案。"><defs><marker id="da" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#6f6f69" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><rect x="24" y="46" width="146" height="54" rx="7" fill="#e6f1fb" stroke="#85b7eb" stroke-width="1"/><text x="97" y="64" fill="#185fa5" font-size="11.5" font-weight="600" text-anchor="middle">九个板块的条件</text><text x="97" y="79" fill="#6f6f69" font-size="10" font-weight="400" text-anchor="middle">各说各的限制</text><line x1="173" y1="73" x2="183" y2="73" stroke="#cfcec8" stroke-width="1.4" marker-end="url(#da)" stroke-linecap="round"/><rect x="186" y="46" width="146" height="54" rx="7" fill="#faeeda" stroke="#ef9f27" stroke-width="1"/><text x="259" y="64" fill="#854f0b" font-size="11.5" font-weight="600" text-anchor="middle">推出设计约束</text><text x="259" y="79" fill="#6f6f69" font-size="10" font-weight="400" text-anchor="middle">哪些改不了</text><line x1="335" y1="73" x2="345" y2="73" stroke="#cfcec8" stroke-width="1.4" marker-end="url(#da)" stroke-linecap="round"/><rect x="348" y="46" width="146" height="54" rx="7" fill="#eaf3de" stroke="#97c459" stroke-width="1"/><text x="421" y="64" fill="#3b6d11" font-size="11.5" font-weight="600" text-anchor="middle">总体构型与布局</text><text x="421" y="79" fill="#6f6f69" font-size="10" font-weight="400" text-anchor="middle">分体串联七段</text><line x1="497" y1="73" x2="507" y2="73" stroke="#cfcec8" stroke-width="1.4" marker-end="url(#da)" stroke-linecap="round"/><rect x="510" y="46" width="146" height="54" rx="7" fill="#ffffff" stroke="#1c1c1a" stroke-width="1"/><text x="583" y="64" fill="#1c1c1a" font-size="11.5" font-weight="600" text-anchor="middle">一版基准配置</text><text x="583" y="79" fill="#6f6f69" font-size="10" font-weight="400" text-anchor="middle">挂着三个前提</text><text x="24" y="152" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">这一页不引入新数据，只做推导：前面九页给出的限制，会怎样决定一艘船的整体样子。</text><text x="24" y="174" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">所以它给的是「条件清单」，不是「一份计划」。</text></svg></div>
+        <figcaption><span class="fgn">导览图 1</span>　这一页在做什么：把前面九个板块的限制合起来，推出一版「可以讨论」的整体方案。</figcaption>
+      </figure>
+      <figure class="trs-fig">
+        <div class="fig-scroll"><svg viewBox="0 0 680 218" role="img" aria-label="这版方案的三个前提：今天一个都不成立——这就是为什么它只是一份条件清单。"><defs><marker id="da" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M1 1 L7 4 L1 7" fill="none" stroke="#6f6f69" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></marker></defs><text x="30" y="44" fill="#1c1c1a" font-size="11.5" font-weight="400" text-anchor="start">在轨加注必须成立</text><rect x="180" y="34" width="396" height="14" rx="3" fill="#fafaf8" stroke="#e6e5e0" stroke-width="1"/><rect x="180" y="34" width="19.8" height="14" rx="3" fill="#fcebeb" stroke="#f09595" stroke-width="1"/><text x="650" y="44.5" fill="#a32d2d" font-size="11.5" font-weight="600" text-anchor="end">一次都没做过</text><text x="30" y="60" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">它是整个方案的质量前提：加注做不到，质量比 11 倍这道墙就翻不过去</text><text x="30" y="96" fill="#1c1c1a" font-size="11.5" font-weight="400" text-anchor="start">冬眠必须可用</text><rect x="180" y="86" width="396" height="14" rx="3" fill="#fafaf8" stroke="#e6e5e0" stroke-width="1"/><rect x="180" y="86" width="39.6" height="14" rx="3" fill="#fcebeb" stroke="#f09595" stroke-width="1"/><text x="650" y="96.5" fill="#a32d2d" font-size="11.5" font-weight="600" text-anchor="end">只到临床试验</text><text x="30" y="112" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">能把居住舱从 20–50 吨压到 5–7 吨，省下来的就是发射费</text><text x="30" y="148" fill="#1c1c1a" font-size="11.5" font-weight="400" text-anchor="start">辐射防护必须达标</text><rect x="180" y="138" width="396" height="14" rx="3" fill="#fafaf8" stroke="#e6e5e0" stroke-width="1"/><rect x="180" y="138" width="15.84" height="14" rx="3" fill="#fcebeb" stroke="#f09595" stroke-width="1"/><text x="650" y="148.5" fill="#a32d2d" font-size="11.5" font-weight="600" text-anchor="end">技术路线未定</text><text x="30" y="164" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">做不出可接受的屏蔽，就只能压缩任务时长，而时长又被轨道窗口锁住</text><text x="30" y="190" fill="#9a9992" font-size="10.5" font-weight="400" text-anchor="start">三个前提的成熟度都在零附近——这不是「待突破」，是「还不知道能不能突破」。</text></svg></div>
+        <figcaption><span class="fgn">导览图 2</span>　这版方案的三个前提：今天一个都不成立——这就是为什么它只是一份条件清单。</figcaption>
+      </figure>
+    </section>
 
 <section id="i-constraints">
     <h2>10.1 从九个板块推出设计约束</h2>

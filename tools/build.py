@@ -40,6 +40,7 @@ from techparams import STEP_META              # noqa: E402
 from chainbiz import CHAIN_BIZ                # noqa: E402
 from synthfigs import SYNTH_FIGS              # noqa: E402
 from theoryfigs import THEORY_FIGS            # noqa: E402
+from introfigs import INTRO_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
 
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
@@ -87,6 +88,13 @@ for _b in BOARDS:
             f'板块 {_b["slug"]} 的「{_part}」缺少理论图'
 assert len(THEORY_FIGS) == len(_V_PARTS) * 9, \
     f'理论图应为 {len(_V_PARTS) * 9} 张（九板块 × 6），实际 {len(THEORY_FIGS)}'
+
+# 每个板块开头的两张导览图（含收口页，共十个板块）
+for _b in BOARDS:
+    for _i in (1, 2):
+        assert (_b['slug'], _i) in INTRO_FIGS, \
+            f'板块 {_b["slug"]} 缺少导览图 {_i}'
+assert len(INTRO_FIGS) == 20, f'导览图应为 20 张（十板块 × 2），实际 {len(INTRO_FIGS)}'
 
 # 技术链路的每一环都要有「技术详解」与「创业视角」（54 环）
 _N_NODES = 0
@@ -395,6 +403,37 @@ TRACK_FIELDS = (
     ('moat',     '护城河'),
     ('fatal',    '这类公司的整体死因'),
 )
+
+
+# ---------------------------------------------------------------- 板块开头的导览
+INTRO_TOC = dict(id='intro', title='先看两张图', sub=False, n='')
+
+INTRO_LEAD = ('第一次接触这个领域的话，先看这两张图。第一张说清「它在解决什么问题」，'
+              '第二张说清「现在走到哪一步了」——本页后面所有细节，都挂在这两张图上。')
+
+
+def render_intro(b):
+    """板块开头的导览：给第一次接触这个领域的人两张图。"""
+    figs = []
+    for i in (1, 2):
+        spec = INTRO_FIGS.get((b['slug'], i))
+        if not spec:
+            return ''
+        svg = spec['make']().svg(spec['cap'])
+        assert svg.lstrip().startswith('<svg'), \
+            f'板块 {b["slug"]} 的导览图 {i} 没有生成 SVG'
+        figs.append(
+            '      <figure class="trs-fig">\n'
+            f'        <div class="fig-scroll">{svg}</div>\n'
+            f'        <figcaption><span class="fgn">导览图 {i}</span>'
+            f'　{rich(spec["cap"])}</figcaption>\n'
+            '      </figure>')
+    return (
+        '<section id="intro">\n'
+        '      <h2>先看两张图<span class="en">Start Here</span></h2>\n'
+        f'      <p class="lead">{INTRO_LEAD}</p>\n'
+        '\n' + '\n'.join(figs) + '\n    </section>'
+    )
 
 
 def render_theory_fig(slug, part, num, indent='      '):
@@ -729,11 +768,12 @@ VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='')
 
 def build_section(b, board01):
     legacy = b.get('legacy')
+    intro = render_intro(b)
     chain = render_chain(b)
     design = render_design(b, b['num'])
     techroad = render_techroad(b)
     venture = render_venture(b)
-    front = '\n\n'.join(x for x in (chain, design, techroad, venture) if x)
+    front = '\n\n'.join(x for x in (intro, chain, design, techroad, venture) if x)
 
     if legacy:
         body = board01[0]
@@ -756,8 +796,9 @@ def build_section(b, board01):
         toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
                     for i, s in enumerate(b['subs'])]
 
-    # 侧栏目录：这四项概览排在最前面，且不带编号
-    head = (([dict(CHAIN_TOC)] if chain else [])
+    # 侧栏目录：这几项概览排在最前面（导览在最上），且不带编号
+    head = (([dict(INTRO_TOC)] if intro else [])
+            + ([dict(CHAIN_TOC)] if chain else [])
             + ([dict(DESIGN_TOC)] if design else [])
             + ([dict(TECHROAD_TOC)] if techroad else [])
             + ([dict(VENTURE_TOC)] if venture else []))

@@ -78,6 +78,16 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         bg: cs(document.body).backgroundColor,
         fg: cs(document.body).color,
         cards: document.querySelectorAll('.board-card').length,
+        intro: (() => {
+          const sec = q('#intro');
+          if (!sec) return null;
+          const main = sec.closest('main') || document.body;
+          const secs = [...main.querySelectorAll('section[id]')];
+          return {
+            figs: sec.querySelectorAll('.trs-fig').length,
+            first: secs.length > 0 && secs[0].id === 'intro',
+          };
+        })(),
         venture: (() => {
           const sec = q('#venture');
           if (!sec) return null;
@@ -112,6 +122,14 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
     if (desk.tdNoTh) bad(p, '表格 td 均有 data-th', desk.tdNoTh); else good(p, '表格 td 均有 data-th');
     if (desk.kpi.some(v => v === '0' || v === '')) bad(p, 'KPI 计数动画完成', desk.kpi);
     else if (desk.kpi.length) good(p, `KPI 计数动画完成 (${desk.kpi.join(' / ')})`);
+
+    // 板块开头的导览区（十个板块都有；首页没有，所以以元素存在为准）
+    if (desk.intro) {
+      if (desk.intro.figs !== 2) bad(p, '导览区 2 张图', desk.intro.figs);
+      else good(p, '导览区 2 张图');
+      if (!desk.intro.first) bad(p, '导览区必须排在所有章节之前', desk.intro.first);
+      else good(p, '导览区排在所有章节之前');
+    }
 
     // 创业者路线图的结构（板块 1–9 有，收口页没有，所以以元素存在为准）
     if (desk.venture) {
