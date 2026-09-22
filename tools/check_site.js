@@ -92,6 +92,31 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
             first: secs.length > 0 && secs[0].id === 'intro',
           };
         })(),
+        // 层级路标：五层「概览栏目」（带层序号块）+ 一个「正文」分组标题。
+        // 这两个东西原来都没有——层与编号小节在视觉上完全同位，长页里找不到路标。
+        layers: (() => {
+          const main = document.querySelector('main') || document.body;
+          const secs = [...main.querySelectorAll('section[id]')];
+          const ly = secs.filter(s => s.classList.contains('layer'));
+          const g = main.querySelector('.grp-hd');
+          return {
+            count: ly.length,
+            chips: ly.filter(s => s.querySelector('.ly')).length,
+            nums: ly.map(s => {
+              const c = s.querySelector('.ly');
+              return c ? (c.textContent.match(/\d+/) || [''])[0] : '';
+            }),
+            grp: main.querySelectorAll('.grp-hd').length,
+            // 分组标题必须在所有层之后（跑到层前面，「正文」这个词就没有意义了）
+            grpOrdered: g ? ly.every(s => (s.compareDocumentPosition(g) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) : null,
+          };
+        })(),
+        // 注意：不能用 rail 这个键——上面已经用它存「侧栏 display」了，
+        // 同名的后一个键会静默覆盖前一个，结果「桌面显示侧栏目录」这条断言直接挂掉。
+        railGroups: (() => {
+          const r = document.querySelector('.rail nav');
+          return r ? { lyLinks: r.querySelectorAll('a.toc-ly').length, grp: r.querySelectorAll('.rail-grp').length } : null;
+        })(),
         venture: (() => {
           const sec = q('#venture');
           if (!sec) return null;
@@ -131,6 +156,28 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
     if (desk.chainfigs !== null) {
       if (desk.chainfigs !== 6) bad(p, '技术链路 6 张链路图', desk.chainfigs);
       else good(p, '技术链路 6 张链路图');
+    }
+
+    // 层级路标（板块页才有；首页没有 rail 也没有层）
+    if (desk.layers && (desk.layers.count || desk.layers.grp)) {
+      const L = desk.layers;
+      if (L.chips !== L.count) bad(p, '每个层都要有层序号块', { chips: L.chips, layers: L.count });
+      else good(p, `层级路标完整（${L.count} 层，各有层序号块）`);
+      if (L.count !== 5 && L.count !== 1) bad(p, '概览层应为 5 层（收口页只有导览 1 层）', L.count);
+      const want = L.nums.map((_, i) => String(i + 1).padStart(2, '0')).join(',');
+      if (L.nums.join(',') !== want) bad(p, '层序号从 01 连续递增', L.nums);
+      else good(p, '层序号从 01 连续递增');
+      if (L.grp !== 1) bad(p, '正文分组标题恰好 1 个', L.grp);
+      else good(p, '正文分组标题恰好 1 个');
+      if (L.grpOrdered === false) bad(p, '正文分组标题必须排在所有层之后', L.grpOrdered);
+      else good(p, '正文分组标题排在所有层之后');
+    }
+    if (desk.railGroups && desk.railGroups.grp) {
+      if (desk.railGroups.grp !== 1) bad(p, '侧栏有 1 个分组标签', desk.railGroups.grp);
+      else good(p, '侧栏有 1 个分组标签');
+      if (desk.layers && desk.railGroups.lyLinks !== desk.layers.count) {
+        bad(p, '侧栏层项数与页面层数一致', { rail: desk.railGroups.lyLinks, page: desk.layers.count });
+      } else good(p, '侧栏层项数与页面层数一致');
     }
 
     // 板块开头的导览区（十个板块都有；首页没有，所以以元素存在为准）

@@ -8,10 +8,12 @@
      而不是「白纸上贴了块黑」——这是「整体感」的关键，改配色时不要往回改暖。 */
   --page:#edf1f5;
   --bg:#ffffff;
-  --bg-sunk:#f5f8fa;
+  --bg-sunk:#f0f5fa;
   --text:#1a1f28;
   --text-soft:#464e5b;
-  --muted:#69717f;
+  /* 次级文字。压深过一档（原 #69717f）：下沉底调深之后，11px 的图注在它上面
+     只有 4.48:1，不到 WCAG AA 的 4.5。顺带全站的小字都更实一点。 */
+  --muted:#636c7a;
   --faint:#97a0ae;
   --line:#e1e7ee;
   --line-strong:#c5cfdb;
@@ -26,6 +28,16 @@
   --amber-bg:#faeeda; --amber-tx:#854f0b; --amber-bd:#ef9f27;
   --red-bg:#fcebeb;   --red-tx:#a32d2d;   --red-bd:#f09595;
   --gray-bg:#edf0f4;  --gray-tx:#5c6472;  --gray-bd:#aeb7c3;
+
+  /* 层色阶：五个概览栏目的「位置」标识。**刻意不用绿/蓝/琥珀/红**——那四个是
+     「状态」语义色（已实现 / 在验证 / 待突破 / 物理约束），层色再借用它们会撞车。
+     这里是一条从石板蓝到青的同族色阶，明度接近、深浅一致，所以每一档的对比度都够；
+     区分主要靠层序号，颜色只负责「这是一族、按顺序推进」。 */
+  --ly1:#4a6b83;
+  --ly2:#356b8a;
+  --ly3:#256b7e;
+  --ly4:#1c6a72;
+  --ly5:#1a6a68;
 
   --rail:264px;
   --radius:12px;
@@ -146,7 +158,7 @@ h2{
   font-size:22px; font-weight:650; letter-spacing:-.5px;
   margin:0 0 6px; padding-left:13px; border-left:3px solid var(--ink); line-height:1.3;
 }
-h2 .en{font-size:11.5px; font-weight:400; letter-spacing:1.2px; text-transform:uppercase; color:var(--faint); margin-left:10px;}
+h2 .en{font-size:11.5px; font-weight:400; letter-spacing:1.2px; text-transform:uppercase; color:var(--muted); margin-left:10px;}
 h3{font-size:15.5px; font-weight:650; margin:34px 0 10px;}
 .lead{color:var(--muted); font-size:13.5px; margin:10px 0 20px; max-width:70ch;}
 p{margin:11px 0;}
@@ -538,7 +550,7 @@ footer b{color:var(--muted); font-weight:600;}
   display:flex; flex-wrap:wrap; align-items:center; gap:13px;
   margin:11px 0 0; font-size:11.5px; color:var(--muted);
 }
-.chain-legend .clg-cap{color:var(--faint); letter-spacing:.6px;}
+.chain-legend .clg-cap{color:var(--muted); letter-spacing:.6px;}
 .chain-legend .lg{display:inline-flex; align-items:center; gap:6px;}
 .chain-legend .lg i{
   display:block; width:10px; height:3px; border-radius:2px; background:var(--gray-bd);
@@ -1179,6 +1191,99 @@ tbody tr:hover{background:linear-gradient(90deg, rgba(74,217,228,.07), rgba(74,2
   .reveal.in{opacity:1; transform:none;}
   .figure.reveal::before{transform-origin:left; transition:transform .7s .1s;}
   .figure:not(.in)::before{transform:scaleX(.12);}
+}
+
+/* ==========================================================================
+   层级路标：五层概览 vs 板块正文
+   --------------------------------------------------------------------------
+   每个板块页的九个小节其实是两类东西：
+     ① 五层「概览栏目」——导览 / 链路 / 设计 / 技术路线 / 创业者路线图（全场通用）
+     ② 带编号的「正文小节」——2.1 / 2.2 …（这个板块自己的细节）
+   原来两者用同一套 section + h2，在近两万像素的长页里读者分不清「栏目」与「小节」。
+   现在用三件事分开：层序号（层 01–05）、层色（--ly*）、以及正文区之前的分组标题。
+   ========================================================================== */
+
+.ly-1{--ly:var(--ly1);}
+.ly-2{--ly:var(--ly2);}
+.ly-3{--ly:var(--ly3);}
+.ly-4{--ly:var(--ly4);}
+.ly-5{--ly:var(--ly5);}
+
+/* 层与层之间用通栏细线切开；线左端一小段层色，代替长的分节横幅 */
+section.layer{
+  position:relative;
+  margin-top:86px; padding-top:26px;
+  border-top:1px solid var(--line);
+}
+section.layer::before{
+  content:""; position:absolute; left:0; top:-1px; width:56px; height:2px;
+  background:var(--ly);
+}
+/* 第一层紧跟在首屏控制台之后，不要再画一条线把控制台和内容割开 */
+section.layer:first-of-type{margin-top:56px; padding-top:0; border-top:none;}
+section.layer:first-of-type::before{display:none;}
+
+/* 层的标题比正文小节的标题大一号，左竖线取层色 */
+section.layer > h2{font-size:24px; border-left-color:var(--ly);}
+
+/* 层序号：描边小方块。用描边不用实底，五个实底块连成一路会太重 */
+.ly{
+  display:inline-flex; align-items:baseline; gap:3px;
+  font-family:var(--mono); font-size:11.5px; font-weight:600; letter-spacing:.3px;
+  color:var(--ly); border:1px solid currentColor; border-radius:4px;
+  padding:1px 6px 2px; margin-right:10px; vertical-align:2px;
+}
+/* 「层」这个中文字不要走等宽——等宽栈没有 CJK，会落到各平台不同的回退字体 */
+.ly i{
+  font-style:normal; font-size:10px; letter-spacing:.5px;
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+
+/* 正文小节的标题回到墨黑竖线、小一号字 —— 读音上「层」是栏目、「2.1」是小节。
+   用 `.grp-hd ~ section` 定位而不是 `section:not(.layer)`：后者会把首页那个
+   「十个板块」的标题也一起缩小（首页没有层，但也没有分组标题，不该受影响）。 */
+.grp-hd ~ section > h2{font-size:19px;}
+
+/* 正文区之前的分组标题 */
+.grp-hd{
+  position:relative;
+  display:flex; align-items:baseline; gap:11px;
+  margin:96px 0 0; padding-top:26px;
+  border-top:1px solid var(--line);
+}
+.grp-hd::before{
+  content:""; position:absolute; left:0; top:-1px; width:56px; height:2px;
+  background:var(--ink);
+}
+.grp-hd b{font-size:15px; font-weight:650; letter-spacing:-.2px;}
+.grp-hd .en{font-family:var(--mono); font-size:10.5px; letter-spacing:1.7px;
+  text-transform:uppercase; color:var(--muted);}
+/* 分组标题自己带足了上间距，紧跟其后的第一个小节要收一收 */
+.grp-hd + section{margin-top:34px;}
+
+/* ---------- 侧栏：层与正文也分两组 ---------- */
+.rail nav a.toc-ly{
+  display:flex; align-items:baseline; gap:8px;
+  font-size:12.5px; color:var(--text-soft);
+}
+.rail nav a.toc-ly .dot{
+  flex:0 0 auto; width:6px; height:6px; border-radius:2px;
+  background:var(--ly); transform:translateY(-1px);
+}
+.rail nav a.toc-ly:hover{color:var(--text);}
+.rail nav a.toc-ly.active{color:var(--text); font-weight:600; border-left-color:var(--ly);}
+.rail-grp{
+  display:block; margin:17px 0 5px 12px; padding-top:13px;
+  border-top:1px solid var(--line);
+  font-size:10px; letter-spacing:1.3px; color:var(--muted); text-transform:uppercase;
+}
+
+@media (max-width:640px){
+  section.layer{margin-top:58px; padding-top:20px;}
+  section.layer > h2{font-size:20px;}
+  .grp-hd ~ section > h2{font-size:17.5px;}
+  .grp-hd{margin-top:64px; padding-top:20px;}
+  .ly{margin-right:8px; font-size:11px;}
 }
 
 /* ---------- 响应式 ---------- */

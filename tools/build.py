@@ -225,7 +225,18 @@ def render_rail(cur):
         parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
                      f'<span class="n">{b["num"]}</span>{rich(b["title"])}</a>')
         if b['slug'] == cur['slug']:
+            # 侧栏分两组：「五层概览」（带层色点与序号）与「正文小节」（带编号）。
+            # 分组的依据是 TOC 里的 layer 字段，不能靠「有没有编号」判断——
+            # 板块一的正文小节本来就没有编号，会把它们误判成层。
+            grp_done = False
             for s in cur['toc']:
+                if s.get('layer'):
+                    parts.append(f'      <a class="toc-ly ly-{s["layer"]}" href="#{s["id"]}" data-toc>'
+                                 f'<i class="dot"></i>{rich(s["title"])}</a>')
+                    continue
+                if not grp_done:
+                    parts.append('      <span class="rail-grp">正文 · 板块细节</span>')
+                    grp_done = True
                 cls = ' class="sub"' if s['sub'] else ''
                 num = '' if (s['sub'] or not s.get('n')) else f'<span class="n">{s["n"]}</span>'
                 parts.append(f'      <a{cls} href="#{s["id"]}" data-toc>{num}{rich(s["title"])}</a>')
@@ -318,8 +329,8 @@ def render_chain(b):
         f'<span class="lg {k}"><i></i>{lab}</span>' for k, _cls, lab in CHAIN_STATUS)
 
     return (
-        '<section id="chain">\n'
-        '      <h2>技术链路<span class="en">Technology Chain</span></h2>\n'
+        '<section id="chain" class="layer ly-2">\n'
+        f'      {layer_h2(2, "技术链路", "Technology Chain")}\n'
         f'      <p class="lead">{rich(ch["lead"])}</p>\n'
         '\n'
         '      <div class="frontier">\n'
@@ -393,8 +404,8 @@ def render_design(b, num):
         f'        </div>' for s in d['subs'])
 
     return (
-        '<section id="design">\n'
-        '      <h2>具体设计<span class="en">Design</span></h2>\n'
+        '<section id="design" class="layer ly-3">\n'
+        f'      {layer_h2(3, "具体设计", "Design")}\n'
         f'      <p class="lead">{rich(d["headline"])}</p>\n'
         '\n'
         '      <figure class="figure">\n'
@@ -436,8 +447,25 @@ TRACK_FIELDS = (
 )
 
 
+# ---------------------------------------------------------------- 层级路标
+# 每个板块页有五层「概览栏目」（导览 / 链路 / 设计 / 技术路线 / 创业者路线图），
+# 后面才是带编号的正文小节。两者原来在视觉上完全同位，读者在近两万像素的长页里
+# 找不到路标，所以给层加序号 + 层色（--ly1..--ly5），并给正文区加分组标题。
+LAYER_NO = {'intro': 1, 'chain': 2, 'design': 3, 'techroad': 4, 'venture': 5}
+
+
+def layer_h2(no, title, en):
+    """层标题：等宽层序号 + 中文标题 + 英文标签（层序号由 CSS 上色）"""
+    return (f'<h2><span class="ly"><i>层</i>{no:02d}</span>{title}'
+            f'<span class="en">{en}</span></h2>')
+
+
+# 正文区（带编号的小节）之前的分组标题——把「五层概览」与「板块正文」分开
+GRP_HD = ('<div class="grp-hd"><b>正文</b><span class="en">In Detail</span></div>')
+
+
 # ---------------------------------------------------------------- 板块开头的导览
-INTRO_TOC = dict(id='intro', title='先看两张图', sub=False, n='')
+INTRO_TOC = dict(id='intro', title='先看两张图', sub=False, n='', layer=1)
 
 INTRO_LEAD = ('第一次接触这个领域的话，先看这两张图。第一张说清「它在解决什么问题」，'
               '第二张说清「现在走到哪一步了」——本页后面所有细节，都挂在这两张图上。')
@@ -460,8 +488,8 @@ def render_intro(b):
             f'　{rich(spec["cap"])}</figcaption>\n'
             '      </figure>')
     return (
-        '<section id="intro">\n'
-        '      <h2>先看两张图<span class="en">Start Here</span></h2>\n'
+        '<section id="intro" class="layer ly-1">\n'
+        f'      {layer_h2(1, "先看两张图", "Start Here")}\n'
         f'      <p class="lead">{INTRO_LEAD}</p>\n'
         '\n' + '\n'.join(figs) + '\n    </section>'
     )
@@ -525,8 +553,8 @@ def render_venture(b):
             f'        </li>')
 
     html = (
-        '<section id="venture">\n'
-        '      <h2>创业者路线图<span class="en">Founder Roadmap</span></h2>\n'
+        '<section id="venture" class="layer ly-5">\n'
+        f'      {layer_h2(5, "创业者路线图", "Founder Roadmap")}\n'
         f'      <p class="lead">{rich(v["lead"])}</p>\n'
         '\n'
         '      <div class="entry">\n'
@@ -635,8 +663,8 @@ def render_techroad(b):
             f'        </li>')
 
     return (
-        '<section id="techroad">\n'
-        '      <h2>技术怎么一步步做<span class="en">Technology Roadmap</span></h2>\n'
+        '<section id="techroad" class="layer ly-4">\n'
+        f'      {layer_h2(4, "技术怎么一步步做", "Technology Roadmap")}\n'
         f'      <p class="lead">{TECHROAD_LEAD}</p>\n'
         '\n'
         '      <div class="trbook">\n'
@@ -791,10 +819,10 @@ def render_figs(body, num):
     return out
 
 
-CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='')
-DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='')
-TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='')
-VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='')
+CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='', layer=2)
+DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='', layer=3)
+TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='', layer=4)
+VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='', layer=5)
 
 
 def build_section(b, board01):
@@ -809,9 +837,9 @@ def build_section(b, board01):
     if legacy:
         body = board01[0]
         if front:
-            # 插在 KPI 之后、第一个正式章节之前
+            # 插在 KPI 之后、第一个正式章节之前（正文分组标题也跟着插在这里）
             m = re.search(r'\n<section id=', body)
-            body = body[:m.start()] + '\n\n' + front + body[m.start():]
+            body = body[:m.start()] + '\n\n' + front + '\n\n' + GRP_HD + body[m.start():]
         toc_subs = board01[1]
     else:
         n = int(b['num'])
@@ -823,7 +851,7 @@ def build_section(b, board01):
                           f'</section>')
         body = '\n\n'.join(blocks)
         if front:
-            body = front + '\n\n' + body
+            body = front + '\n\n' + GRP_HD + '\n\n' + body
         toc_subs = [dict(id=s['id'], title=s['title'], sub=False, n=f'{n}.{i + 1}')
                     for i, s in enumerate(b['subs'])]
 

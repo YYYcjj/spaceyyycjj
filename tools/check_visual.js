@@ -48,6 +48,13 @@ const TARGETS = [
   ['.vs-st .lb', '止损线标签', 'opt'],
   ['.trs-fig figcaption', '配图图注', 'opt'],
   ['.figure figcaption', '大图图注', 'opt'],
+  ['.ly', '层序号块', 'opt'],
+  ['.grp-hd b', '正文分组标题', 'opt'],
+  ['.grp-hd .en', '正文分组英文标签', 'opt'],
+  ['.rail-grp', '侧栏分组标签', 'opt'],
+  ['.rail nav a.toc-ly', '侧栏层项', 'opt'],
+  ['h2 .en', '标题英文标签', 'opt'],
+  ['.chain-legend .clg-cap', '链路图例标题', 'opt'],
 ];
 
 let fail = 0;
