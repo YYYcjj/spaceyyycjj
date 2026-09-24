@@ -66,6 +66,30 @@ body{
 a{color:var(--accent); text-decoration:none;}
 a:hover{text-decoration:underline;}
 
+/* ---------- 跳转链接与键盘焦点 ----------
+   1) 跳转链接：键盘用户不必 Tab 过十几个导航项才能到正文。平时藏起来，
+      获得焦点时浮在最上层（用的是深色面板的一套色，和顶栏同一个语言）。
+   2) 焦点环：原来完全依赖浏览器默认 outline，在圆角和浅底上很难看清。
+      用 :focus-visible 而不是 :focus —— 鼠标点击不该看到焦点环。 */
+.skip{
+  position:fixed; top:8px; left:8px; z-index:80;
+  padding:9px 15px; border-radius:8px;
+  background:var(--void-2); color:var(--void-text);
+  font-size:13px; font-weight:500; text-decoration:none;
+  box-shadow:0 10px 28px -14px rgba(6,12,20,.6);
+  transform:translateY(-160%);
+  transition:transform .16s ease;
+}
+.skip:focus-visible{transform:none; outline:2px solid var(--signal); outline-offset:2px;}
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible{
+  outline:2px solid var(--signal-deep);
+  outline-offset:2px;
+  border-radius:3px;
+}
+.topnav a:focus-visible{outline-offset:3px;}
+
 /* ---------- 顶部进度条 ---------- */
 #progress{
   position:fixed; top:0; left:0; height:2px; width:0;
@@ -320,11 +344,17 @@ footer b{color:var(--muted); font-weight:600;}
   background:rgba(237,241,245,.92); backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
   border-bottom:1px solid var(--line);
-  margin:0 -28px; padding:0 28px;
+  margin:0; padding:0;
+  /* ⚠️ 这里原来写的是 `margin:0 -28px; padding:0 28px`（负 margin 出血到屏幕边缘）。
+     负 margin 撑宽的是 **nav 自身的盒子**，而 overflow:clip 只裁子元素、不改盒子宽度，
+     所以它同时把文档撑宽了：≤1080px 时整页能左右拖动（手机 +16px、平板 +22px）。
+     正确做法是让内边距进入滚动内容（写在 .inner 上）：
+     滚到最左时首项仍有内缩，向右滚时胶囊照样滑到边缘之下，而 nav 本身恰好等于视口宽。 */
+  overflow-x:clip;      /* 兜底：以后若再加出血元素，也不会撑宽文档 */
   display:none;
 }
 .topnav .inner{
-  display:flex; gap:4px; overflow-x:auto; padding:9px 0;
+  display:flex; gap:4px; overflow-x:auto; padding:9px 28px;
   scrollbar-width:none;
   -webkit-overflow-scrolling:touch;
 }
@@ -356,7 +386,8 @@ footer b{color:var(--muted); font-weight:600;}
 @media (max-width:1080px){
   .shell{grid-template-columns:minmax(0,1fr); gap:0; padding:0 22px 80px;}
   .rail{display:none;}
-  .topnav{display:block; margin:0 -22px; padding:0 22px;}
+  .topnav{display:block;}
+  .topnav .inner{padding:9px 22px;}
   .main{padding-top:26px;}
   html{scroll-padding-top:62px;}
   .kpis{grid-template-columns:repeat(2,1fr);}
@@ -366,7 +397,7 @@ footer b{color:var(--muted); font-weight:600;}
 @media (max-width:640px){
   body{font-size:14.5px;}
   .shell{padding:0 16px 64px;}
-  .topnav{margin:0 -16px; padding:0 16px;}
+  .topnav .inner{padding:9px 16px;}
   h2{font-size:19px;}
   h2 .en{display:none;}
   .kpi{padding:15px 14px 13px;}

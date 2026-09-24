@@ -221,8 +221,10 @@ def render_rail(cur):
         f'    <nav aria-label="目录">',
     ]
     for b in BOARDS:
-        active = ' active' if b['slug'] == cur['slug'] else ''
-        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}">'
+        on = b['slug'] == cur['slug']
+        active = ' active' if on else ''
+        cur_attr = ' aria-current="page"' if on else ''
+        parts.append(f'      <a class="bo{active}" href="{section_filename(b)}"{cur_attr}>'
                      f'<span class="n">{b["num"]}</span>{rich(b["title"])}</a>')
         if b['slug'] == cur['slug']:
             # 侧栏分两组：「五层概览」（带层色点与序号）与「正文小节」（带编号）。
@@ -248,8 +250,10 @@ def render_rail(cur):
 def render_topnav(cur):
     items = ['<a href="../index.html">首页</a>']
     for b in BOARDS:
-        active = ' class="active"' if b['slug'] == cur['slug'] else ''
-        items.append(f'<a href="{section_filename(b)}"{active}>'
+        on = b['slug'] == cur['slug']
+        # 当前板块同时给 class 与 aria-current：读屏用户也要知道「你在这一页」
+        attr = ' class="active" aria-current="page"' if on else ''
+        items.append(f'<a href="{section_filename(b)}"{attr}>'
                      f'{rich(NAV_SHORT.get(b["slug"], b["title"]))}</a>')
     return ('<nav class="topnav" aria-label="板块导航">\n  <div class="inner">\n    '
             + '\n    '.join(items) + '\n  </div>\n</nav>')
@@ -699,7 +703,7 @@ PAGE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>{title}</title>
 <meta name="description" content="{desc}">
-<meta name="theme-color" content="#f5f5f2">
+<meta name="theme-color" content="#edf1f5">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:locale" content="zh_CN">
@@ -708,6 +712,8 @@ PAGE = """<!DOCTYPE html>
 <link rel="stylesheet" href="../assets/site.css">
 </head>
 <body>
+
+<a class="skip" href="#main">跳到正文</a>
 
 <div id="progress"></div>
 
@@ -721,7 +727,7 @@ PAGE = """<!DOCTYPE html>
   </aside>
 
   <!-- ================= 正文 ================= -->
-  <main class="main">
+  <main class="main" id="main">
 
     <header class="hero hud">
       <div class="sky" aria-hidden="true"></div>
@@ -894,7 +900,7 @@ HUB = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>{site} · {date}</title>
 <meta name="description" content="{desc}">
-<meta name="theme-color" content="#f5f5f2">
+<meta name="theme-color" content="#edf1f5">
 <meta property="og:title" content="{site} · {date}">
 <meta property="og:description" content="{desc}">
 <meta property="og:locale" content="zh_CN">
@@ -904,11 +910,13 @@ HUB = """<!DOCTYPE html>
 </head>
 <body>
 
+<a class="skip" href="#main">跳到正文</a>
+
 <div id="progress"></div>
 
 <div class="shell hub">
 
-  <main class="main">
+  <main class="main" id="main">
 
     <header class="hero hud">
       <div class="sky" aria-hidden="true"></div>

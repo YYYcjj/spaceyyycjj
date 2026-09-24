@@ -21,6 +21,8 @@
 图注（caption）不要画进 SVG——放到 <figcaption> 里让浏览器自动换行。
 """
 
+import itertools
+
 import math
 
 CO = math.cos(math.radians(30))      # 0.8660
@@ -57,6 +59,10 @@ def _tw(text, size):
     for ch in text:
         u += 1.0 if ord(ch) > 0x2E7F else 0.55
     return u * size
+
+
+# 同 dia.py：每张图一个唯一后缀
+_SEQ = itertools.count(1)
 
 
 class Iso:
@@ -277,9 +283,12 @@ class Iso:
     def svg(self, aria=''):
         self.auto_fit()
         objs = [fn() for _k, _s, fn in sorted(self._ops, key=lambda o: (o[0], o[1]))]
-        defs = ('<defs><marker id="ar" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" '
+        # 同 dia.svg()：marker id 必须每张图唯一（一页里会内联多张图）
+        uid = f'ar{next(_SEQ)}'
+        defs = (f'<defs><marker id="{uid}" viewBox="0 0 8 8" refX="4" refY="4" markerWidth="5" '
                 'markerHeight="5" orient="auto-start-reverse">'
                 f'<path d="M1 1 L7 4 L1 7" fill="none" stroke="{MUTED}" stroke-width="1.1" '
                 'stroke-linecap="round" stroke-linejoin="round"/></marker></defs>')
+        body = ''.join(objs).replace('url(#ar)', f'url(#{uid})')
         return (f'<svg viewBox="0 0 {self.w} {self.h}" role="img" aria-label="{aria}">'
-                + defs + ''.join(objs) + '</svg>')
+                + defs + body + '</svg>')

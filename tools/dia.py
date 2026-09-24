@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """二维概念图图元库。
 
+
 和 iso.py 的分工：
     iso.py   画**立体**（装置、结构）——等轴测投影
     dia.py   画**关系**（过程、数值、层级）——二维示意
@@ -17,6 +18,8 @@
        「出框」与「互相重叠」——**手写像素坐标时最容易出的就是这两种错**。
     4. 图注不画进 SVG，放到外面的 <figcaption>（浏览器会换行，SVG 里不会）。
 """
+
+import itertools
 
 MUTED = '#6f6f69'
 INK = '#1c1c1a'
@@ -51,6 +54,10 @@ def tw(text, size):
     for ch in text:
         u += 1.0 if ord(ch) > 0x2E7F else 0.55
     return u * size
+
+
+# 每张图一个唯一后缀，避免内联多张图时 marker / id 重名
+_SEQ = itertools.count(1)
 
 
 class Dia:
@@ -335,12 +342,18 @@ class Dia:
 
     # ------------------------------------------------------------ 输出
     def svg(self, aria=''):
-        defs = ('<defs><marker id="da" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="5.5" '
+        # 箭头 marker 的 id 必须**每张图唯一**：一页里会内联二十多张图，
+        # 都用 id="da" 的话既产生重复 id（HTML 非法），也让 `url(#da)` 只命中
+        # 文档里第一个 marker——现在因为所有箭头长得一样才没露馅，
+        # 哪天某个图换了箭头样式，全页箭头会一起变成那一个。
+        uid = f'da{next(_SEQ)}'
+        defs = (f'<defs><marker id="{uid}" viewBox="0 0 8 8" refX="6.5" refY="4" markerWidth="5.5" '
                 'markerHeight="5.5" orient="auto-start-reverse">'
                 f'<path d="M1 1 L7 4 L1 7" fill="none" stroke="{MUTED}" stroke-width="1.2" '
                 'stroke-linecap="round" stroke-linejoin="round"/></marker></defs>')
+        body = ''.join(self._ops).replace('url(#da)', f'url(#{uid})')
         return (f'<svg viewBox="0 0 {self.w} {self.h}" role="img" aria-label="{aria}">'
-                + defs + ''.join(self._ops) + '</svg>')
+                + defs + body + '</svg>')
 
 
 def _sup(n):

@@ -69,7 +69,12 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         h1: q('h1') ? q('h1').textContent.trim() : null,
         sections: document.querySelectorAll('main section').length,
         tables: document.querySelectorAll('table').length,
-        hScroll: document.documentElement.scrollWidth > window.innerWidth + 1,
+        // ⚠️ 必须跟 clientWidth 比，不能跟 window.innerWidth 比：
+        // isMobile 模拟下 innerWidth 会被撑成内容宽（= scrollWidth），
+        // 于是「有横向溢出」永远判成 false —— 这个漏报让「手机上整页能左右拖」
+        // 一直没被抓到（真因是顶部胶囊导航用负 margin 出血撑宽了文档）。
+        hScroll: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        hScrollNum: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         rail: cs(q('.rail')) ? cs(q('.rail')).display : null,
         topnav: cs(q('.topnav')) ? cs(q('.topnav')).display : null,
         tableDisp: cs(q('table')) ? cs(q('table')).display : null,
@@ -78,6 +83,18 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         bg: cs(document.body).backgroundColor,
         fg: cs(document.body).color,
         cards: document.querySelectorAll('.board-card').length,
+        // 重复 id：内联 SVG 的 marker/gradient 很容易全页重名（本次修的就是这个），
+        // 重名既让 HTML 非法，也让 url(#id) 只命中文档里第一个，图形会串。
+        dupIds: (() => {
+          const seen = new Set(), dup = new Set();
+          document.querySelectorAll('[id]').forEach(e => { if (seen.has(e.id)) dup.add(e.id); seen.add(e.id); });
+          return [...dup];
+        })(),
+        skip: (() => {
+          const a = document.querySelector('a.skip');
+          return a ? { href: a.getAttribute('href'), target: !!document.querySelector(a.getAttribute('href')) } : null;
+        })(),
+        ariaCurrent: document.querySelectorAll('[aria-current="page"]').length,
         chainfigs: (() => {
           const sec = q('#chain');
           return sec ? sec.querySelectorAll('.trs-fig').length : null;
@@ -137,7 +154,19 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
       };
     });
 
-    if (desk.hScroll) bad(p, '桌面无横向溢出', desk.hScroll); else good(p, '桌面无横向溢出');
+    if (desk.dupIds && desk.dupIds.length) bad(p, '全页无重复 id', desk.dupIds.slice(0, 5));
+    else good(p, '全页无重复 id');
+    if (desk.skip) {
+      if (!desk.skip.target) bad(p, '跳转链接指向存在的锚点', desk.skip.href);
+      else good(p, '跳转链接指向 #main');
+    }
+    // 板块页上「当前页」有两处：侧栏板块列表 + 顶部胶囊导航，所以是 2；
+    // 首页不是任何板块，所以是 0。
+    const wantCur = isHub ? 0 : 2;
+    if (desk.ariaCurrent !== wantCur) bad(p, `当前页标记 aria-current 应为 ${wantCur} 处`, desk.ariaCurrent);
+    else good(p, `当前页标记 aria-current（${wantCur} 处）`);
+    if (desk.hScroll) bad(p, '桌面无横向溢出', { 超出: desk.hScrollNum });
+    else good(p, '桌面无横向溢出');
     if (isHub) {
       if (desk.cards !== 10) bad(p, '首页 10 张板块卡片', desk.cards); else good(p, '首页 10 张板块卡片');
       if (desk.rail !== null) bad(p, '首页无侧栏', desk.rail); else good(p, '首页无侧栏（单列）');
@@ -233,7 +262,12 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         });
       });
       return {
-        hScroll: document.documentElement.scrollWidth > window.innerWidth + 1,
+        // ⚠️ 必须跟 clientWidth 比，不能跟 window.innerWidth 比：
+        // isMobile 模拟下 innerWidth 会被撑成内容宽（= scrollWidth），
+        // 于是「有横向溢出」永远判成 false —— 这个漏报让「手机上整页能左右拖」
+        // 一直没被抓到（真因是顶部胶囊导航用负 margin 出血撑宽了文档）。
+        hScroll: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        hScrollNum: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         rail: cs(q('.rail')) ? cs(q('.rail')).display : null,
         topnav: cs(q('.topnav')) ? cs(q('.topnav')).display : null,
         table: cs(q('table')) ? cs(q('table')).display : null,
@@ -246,7 +280,7 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
         minRatio: Number(minRatio.toFixed(3)),
       };
     });
-    if (mob.hScroll) bad(p, '移动端无横向溢出', mob.hScroll); else good(p, '移动端无横向溢出');
+    if (mob.hScroll) bad(p, '移动端无横向溢出', { 超出: mob.hScrollNum }); else good(p, '移动端无横向溢出');
     if (isHub) {
       if (mob.rail !== null) bad(p, '首页移动端无侧栏', mob.rail); else good(p, '首页移动端无侧栏');
       if (mob.topnav !== null) bad(p, '首页移动端无顶部胶囊', mob.topnav); else good(p, '首页移动端无顶部胶囊');
@@ -269,6 +303,29 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
     if (failedReq.length) bad(p, '无资源加载失败', failedReq); else good(p, '无资源加载失败');
     console.log('');
   }
+
+  // ---------------- 中间宽度带扫描 ----------------
+  // 原来的校验只测 1366（桌面）与 390（手机）两个宽度，而「显示切换」的断点在
+  // 641–1080（侧栏隐藏、胶囊导航出现）——这一整段从没被测过，横向溢出就藏在这里。
+  const SWEEP = [700, 900, 1024];
+  const SWEEP_PAGES = ['sections/02-rocket-tech.html', 'index.html'];
+  for (const sp of SWEEP_PAGES) {
+    for (const w of SWEEP) {
+      const c = await browser.newContext({ viewport: { width: w, height: 820 } });
+      const pg = await c.newPage();
+      await pg.goto(BASE + sp, { waitUntil: 'load' });
+      await pg.waitForTimeout(900);
+      const r = await pg.evaluate(() => ({
+        over: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        nav: (() => { const n = document.querySelector('.topnav'); return n ? getComputedStyle(n).display : null; })(),
+        rail: (() => { const n = document.querySelector('.rail'); return n ? getComputedStyle(n).display : null; })(),
+      }));
+      if (r.over > 1) bad(sp, `${w}px 无横向溢出`, { 超出: r.over });
+      else good(sp, `${w}px 无横向溢出（nav ${r.nav} / 侧栏 ${r.rail}）`);
+      await c.close();
+    }
+  }
+  console.log('');
 
   await browser.close();
   console.log(fail ? `==> 失败 ${fail} 项` : `==> 全部 ${PAGES.length} 个页面通过`);
