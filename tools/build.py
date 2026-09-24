@@ -41,8 +41,14 @@ from chainbiz import CHAIN_BIZ                # noqa: E402
 from synthfigs import SYNTH_FIGS              # noqa: E402
 from theoryfigs import THEORY_FIGS            # noqa: E402
 from introfigs import INTRO_FIGS              # noqa: E402
+from boardskin import SKINS, DEFAULT, css_vars   # noqa: E402
 from chainfigs import CHAIN_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
+
+# 板块配色：构建期先校验对比度，不达标就别构建
+import boardskin                               # noqa: E402
+for _row in boardskin.check():
+    pass
 
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
 assert len(BOARDS) == 10, f'板块数应为 10，实际 {len(BOARDS)}'
@@ -710,8 +716,13 @@ PAGE = """<!DOCTYPE html>
 <meta property="og:type" content="article">
 <link rel="icon" href="{favicon}">
 <link rel="stylesheet" href="../assets/site.css">
+<!-- 板块配色必须放在样式表**之后**：两者都是 :root，同优先级下后写的赢。
+     放在前面会被 site.css 里的默认值覆盖掉（踩过：十个板块的首屏长得一模一样）。 -->
+<style>
+{vars}
+</style>
 </head>
-<body>
+<body data-board="{board}">
 
 <a class="skip" href="#main">跳到正文</a>
 
@@ -886,7 +897,10 @@ def build_section(b, board01):
 
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
+    # 这一页的板块配色 + 该板块专属的星场（url 相对文档解析，所以带 ../assets/ 前缀）
+    skin = SKINS[b['slug']]
     page = PAGE.format(
+        vars=css_vars(skin, ''), board=b['slug'],
         title=esc(f'{b["title"]} · {SITE["title"]}'),
         desc=desc,
         favicon=FAVICON,
@@ -919,8 +933,13 @@ HUB = """<!DOCTYPE html>
 <meta property="og:type" content="website">
 <link rel="icon" href="{favicon}">
 <link rel="stylesheet" href="assets/site.css">
+<!-- 板块配色必须放在样式表**之后**：两者都是 :root，同优先级下后写的赢。
+     放在前面会被 site.css 里的默认值覆盖掉（踩过：十个板块的首屏长得一模一样）。 -->
+<style>
+{vars}
+</style>
 </head>
-<body>
+<body data-board="{board}">
 
 <a class="skip" href="#main">跳到正文</a>
 
@@ -994,7 +1013,7 @@ HUB = """<!DOCTYPE html>
 </html>
 """
 
-CARD = """        <a class="board-card{cls}" href="sections/{file}">
+CARD = """        <a class="board-card{cls}" data-board="{slug}" style="--bd-ink:{ink}" href="sections/{file}">
           <div class="bc-top"><span class="bc-num">{num}</span><span class="bc-en">{en}</span></div>
           <h3>{title}</h3>
           <p class="bc-dek">{dek}</p>
@@ -1011,7 +1030,8 @@ def build_hub():
         points = '\n'.join(f'            <li>{rich(p)}</li>' for p in b['points'])
         capstone = not b.get('layers', True)
         cards.append(CARD.format(
-            file=section_filename(b), num=b['num'], en=esc(b['en']),
+            file=section_filename(b), num=b['num'], en=esc(b['en']), slug=b['slug'],
+            ink=SKINS[b['slug']]['ink'],
             title=esc(b['title']), dek=esc(b['short']), points=points,
             cls=' capstone' if capstone else '',
             go='收口 · 看整体方案 →' if capstone else '阅读板块 →'))
@@ -1019,6 +1039,7 @@ def build_hub():
                '光速推进、寿命延长与冬眠、外星文明交流、宇宙资源获取、飞船AI与机器人，'
                '最后把九个板块的条件收拢成一版星船总体设计。')
     page = HUB.format(site=esc(SITE['title']), subtitle=esc(SITE['subtitle']), date=esc(SITE['date']),
+                      vars=css_vars(DEFAULT, ''), board='hub',
                       desc=desc, favicon=FAVICON, cards='\n\n'.join(cards),
                       meta=render_meta('数据截止 2026-09-15 ｜ 10 个板块 ｜ 全部来自公开披露信息'))
     out = os.path.join(ROOT, 'index.html')
@@ -1028,8 +1049,13 @@ def build_hub():
 
 if __name__ == '__main__':
     # 舷窗背景（星场/网格/轨道弧）每次构建都重生成，保证与代码同步、且结果确定
+    print('=== 板块配色自检 ===')
+    for _slug, _name, _a, _b, _c, _d in boardskin.check():
+        print(f'  {_slug:<12} {_name:<6} ink {_a:5.2f}  栏目色阶最低 {_b:5.2f}  '
+              f'深底亮色 {_c:5.2f}  深底正文 {_d:5.2f}')
+
     print('=== 舷窗背景 ===')
-    for _p, _n in spaceart.write_assets(os.path.join(ROOT, 'assets')):
+    for _p, _n in spaceart.write_assets(os.path.join(ROOT, 'assets'), SKINS):
         print(f'  {os.path.relpath(_p, ROOT):<34} {_n:>7,} B')
 
     b01 = load_board01()

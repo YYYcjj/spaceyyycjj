@@ -31,8 +31,15 @@
 
   /* 层色阶：五个概览栏目的「位置」标识。**刻意不用绿/蓝/琥珀/红**——那四个是
      「状态」语义色（已实现 / 在验证 / 待突破 / 物理约束），层色再借用它们会撞车。
-     这里是一条从石板蓝到青的同族色阶，明度接近、深浅一致，所以每一档的对比度都够；
-     区分主要靠层序号，颜色只负责「这是一族、按顺序推进」。 */
+     下面这组只是**默认值**（首页与兜底用）：每个板块页会用它自己那条色族覆盖，
+     色相跟着板块走，但「同族、明度接近、靠序号区分」这条不变量不变。见 tools/boardskin.py。
+
+     板块色（--bd-*）同理：它只出现在「环境」上——页面底色的一抹渐变、深色舷窗的星云、
+     眉标与进度条、栏目色阶。**绝不进小标签**：一枚绿标签必须永远是「已实现」。 */
+  --bd-ink:#3e6283;
+  --bd-deep:#2b3a4b;
+  --bd-wash:#e5ebef;
+  --bd-glow:#63d8e4;
   --ly1:#4a6b83;
   --ly2:#356b8a;
   --ly3:#256b7e;
@@ -51,9 +58,9 @@ html{scroll-behavior:smooth; scroll-padding-top:78px;}
 body{
   margin:0;
   background-color:var(--page);
-  /* 页面顶部一抹极淡的石板色：让深色控制台是「沉进页面」而不是「贴在页面上」。
-     这一点点渐变是整体感的关键——没有它，控制台下沿就是一条生硬的分界线。 */
-  background-image:linear-gradient(180deg, rgba(43,58,75,.06), rgba(43,58,75,0) 340px);
+  /* 页面顶部一抹极淡的**板块色**：让深色控制台是「沉进页面」而不是「贴在页面上」，
+     同时让每个板块从第一屏起就有自己的色温。这一点点渐变是整体感的关键。 */
+  background-image:linear-gradient(180deg, var(--bd-wash), transparent 340px);
   background-repeat:no-repeat;
   color:var(--text);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
@@ -475,6 +482,7 @@ footer b{color:var(--muted); font-weight:600;}
 .rail nav a.bo:first-child{margin-top:0;}
 .rail nav a.bo:hover{color:var(--text);}
 .rail nav a.bo .n{font-weight:600; color:var(--faint);}
+.rail nav a.bo.active{border-left-color:var(--bd-ink, var(--ink));}
 
 /* ---------- 首页：单列布局与板块卡片网格 ---------- */
 .shell.hub{
@@ -975,7 +983,8 @@ table.params td.num{font-weight:650; color:var(--ink);}
 
 /* 首页卡片：把「收口」那张与领域卡片区分开——它是综合，不是又一个领域 */
 .board-card.capstone{border-color:var(--line-strong);}
-.board-card.capstone .bc-num{color:var(--ink);}
+.board-card .bc-num{color:var(--bd-ink, var(--ink));}
+.board-card.capstone .bc-num{color:var(--bd-ink, var(--ink));}
 .board-card.capstone .bc-go{color:var(--ink); font-weight:600;}
 
 /* 要求表四列。列宽只在桌面生效——写进移动端会覆盖卡片化的 td{width:100%}，把卡片压窄 */
@@ -1064,27 +1073,30 @@ table.spec td.num{
   position:relative; overflow:hidden; isolation:isolate;
   border:none; border-bottom:none;
   border-radius:var(--hero-r);
-  background:var(--void);
+  background:var(--bd-deep, var(--void));   /* 板块专属深色（星场图加载前也一致） */
   padding:40px 40px 34px;
   margin:0 0 30px;
   box-shadow:0 20px 48px -34px rgba(28,42,58,.55);
 }
 .hero .sky{
   position:absolute; inset:-4% -2%; z-index:0;
-  background:var(--void) url(space.svg) center right / cover no-repeat;
+  background:var(--bd-deep, var(--void)) var(--sky, url(space.svg)) center right / cover no-repeat;
 }
 /* 暗角：只把标题那一侧压暗一档，不再做成「黑洞」。石板底本身够亮，
    暗角过度就会又回到「白纸上贴一块黑」的割裂感。 */
 .hero::before{
   content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
   background:
-    radial-gradient(130% 104% at 8% 44%, rgba(28,40,54,.90) 0%, rgba(28,40,54,.58) 44%, rgba(28,40,54,.10) 78%, rgba(28,40,54,.34) 100%),
-    linear-gradient(180deg, rgba(28,40,54,.26), rgba(28,40,54,0) 32%);
+    radial-gradient(130% 104% at 8% 44%, color-mix(in srgb, var(--bd-deep, #2b3a4b) 92%, #000) 0%,
+                    color-mix(in srgb, var(--bd-deep, #2b3a4b) 68%, transparent) 44%,
+                    color-mix(in srgb, var(--bd-deep, #2b3a4b) 12%, transparent) 78%,
+                    color-mix(in srgb, var(--bd-deep, #2b3a4b) 40%, transparent) 100%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bd-deep, #2b3a4b) 30%, transparent), transparent 32%);
 }
 .hero .hero-in{position:relative; z-index:2; max-width:64ch;}
-.hero .eyebrow{color:var(--signal); margin-bottom:14px; font-family:var(--mono);
+.hero .eyebrow{color:var(--bd-glow, var(--signal)); margin-bottom:14px; font-family:var(--mono);
   font-size:11px; letter-spacing:1.6px;}
-.hero .eyebrow::before{background:var(--signal); opacity:.8;}
+.hero .eyebrow::before{background:var(--bd-glow, var(--signal)); opacity:.8;}
 .hero h1{color:var(--void-text); text-shadow:0 1px 14px rgba(20,30,42,.35);}
 .hero .dek{color:var(--void-soft);}
 .hero .dek b{color:var(--void-text); font-weight:600;}
@@ -1150,7 +1162,7 @@ table.spec td.num{
 .board-card{position:relative; overflow:hidden;}
 .board-card::before{
   content:""; position:absolute; left:0; right:0; top:0; height:2px;
-  background:linear-gradient(90deg, var(--void), rgba(99,216,228,.7) 46%, transparent 100%);
+  background:linear-gradient(90deg, var(--bd-ink, var(--void)), rgba(99,216,228,.35) 46%, transparent 100%);
   opacity:0; transition:opacity .22s;
 }
 .board-card:hover::before{opacity:1;}
@@ -1231,7 +1243,7 @@ tbody tr:hover{background:linear-gradient(90deg, rgba(74,217,228,.07), rgba(74,2
 /* ---------- 顶栏 / 侧栏 / 进度条：控制台化 ---------- */
 #progress{
   height:2px;
-  background:linear-gradient(90deg, var(--signal-deep), var(--signal));
+  background:linear-gradient(90deg, var(--bd-ink), var(--bd-glow, var(--signal)));
   box-shadow:0 0 10px rgba(99,216,228,.5);
 }
 .rail nav a.active{border-left-color:var(--ink);}
@@ -1388,3 +1400,12 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   *{animation:none !important;}
 }
 
+/* ---------- 窄屏首屏的星场取景 ----------
+   ⚠️ 必须写在这里：媒体查询不增加优先级，而视觉层里 `.hero .sky` 用的是 `background`
+   简写（含 position）。写在前面会被那条简写覆盖——踩过一次，规则改了但数字一点没动。
+   为什么必须改：窄屏下首屏很窄，cover 只露出星场图的约 1/3 宽，星云（光斑）在图的右侧，
+   沿用 center right 就会把光斑垫在文字底下，文字区最亮的块只有 3.95:1（阈值 4.5）。
+   取左侧那一带是纯暗底 + 星点，正文回到 5.7:1 以上。 */
+@media (max-width:1080px){
+  .hero .sky{background-position:left center;}
+}

@@ -12,8 +12,25 @@
 <meta property="og:type" content="article">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/site.css">
+<!-- 板块配色必须放在样式表**之后**：两者都是 :root，同优先级下后写的赢。
+     放在前面会被 site.css 里的默认值覆盖掉（踩过：十个板块的首屏长得一模一样）。 -->
+<style>
+:root{
+  --bd-ink:#2e6a48;
+  --bd-deep:#19412a;
+  --bd-wash:#dfeee5;
+  --bd-glow:#49d787;
+  --ly1:#216f43;
+  --ly2:#227148;
+  --ly3:#23744e;
+  --ly4:#237653;
+  --ly5:#247759;
+  --sky:url(space-biosphere.svg);
+  --tile:url(space-tile-biosphere.svg);
+}
+</style>
 </head>
-<body>
+<body data-board="biosphere">
 
 <a class="skip" href="#main">跳到正文</a>
 

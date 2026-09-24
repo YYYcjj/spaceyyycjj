@@ -12,8 +12,25 @@
 <meta property="og:type" content="article">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c1c1a'/%3E%3Ccircle cx='16' cy='16' r='7.5' fill='none' stroke='%23fff' stroke-width='2'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4.6' fill='none' stroke='%23fff' stroke-width='1.6' transform='rotate(-28 16 16)'/%3E%3Ccircle cx='27' cy='9.5' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="../assets/site.css">
+<!-- 板块配色必须放在样式表**之后**：两者都是 :root，同优先级下后写的赢。
+     放在前面会被 site.css 里的默认值覆盖掉（踩过：十个板块的首屏长得一模一样）。 -->
+<style>
+:root{
+  --bd-ink:#984830;
+  --bd-deep:#5b2b1d;
+  --bd-wash:#f2e8e4;
+  --bd-glow:#edaf9b;
+  --ly1:#a24529;
+  --ly2:#a14b28;
+  --ly3:#9f4f28;
+  --ly4:#9d5527;
+  --ly5:#9b5927;
+  --sky:url(space-rocket-tech.svg);
+  --tile:url(space-tile-rocket-tech.svg);
+}
+</style>
 </head>
-<body>
+<body data-board="rocket-tech">
 
 <a class="skip" href="#main">跳到正文</a>
 

@@ -61,7 +61,8 @@ let fail = 0;
 const bad = (p, t, d) => { console.log(`  FAIL  [${p}] ${t} ${JSON.stringify(d)}`); fail++; };
 const good = (p, t) => console.log(`  PASS  [${p}] ${t}`);
 
-const IN_PAGE = (TARGETS) => {
+const IN_PAGE = async (TARGETS) => {
+
   const parse = (c) => {
     const m = /rgba?\(([^)]+)\)/.exec(c || '');
     if (!m) return null;
@@ -146,6 +147,86 @@ const IN_PAGE = (TARGETS) => {
   return out;
 };
 
+
+// 星场亮度：把背景图按页面里的同一底色合成，再按 32×32 区块取平均，量**文字所在区域**里
+// 最亮的块与最弱那档文字色的对比度。
+//
+// ⚠️ 三个关键点，都踩过：
+//  1. 逐像素取高分位是错的——那样抓到的是几颗亮星（点可以到 1.0），而文字并不会正好压在星点上。
+//     真正决定可读性的是「那一带的底色有多亮」，所以要按区块取平均。
+//  2. **必须按真实的 background-position 取景。** 窄屏下 cover 只露出星场图的约 1/3 宽，
+//     取错了区域会量到星云那一侧，得出「窄屏只有 3.95:1」的假结论——实际文字坐的是纯暗底 6:1。
+//     CSS 会把 left 算成 "0% 50%"，所以不能按字符串匹配 left/right，要按百分比语义还原。
+//  3. 所以这个函数要在**多个宽度**上跑：桌面取景和窄屏取景完全是两块区域。
+const SKY_IN_PAGE = async () => {
+  const lin = (v) => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const lumRGB = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const parse = (c) => {
+    const m = /rgba?\(([^)]+)\)/.exec(c || '');
+    if (!m) return null;
+    const q = m[1].split(',').map(Number);
+    return { r: q[0], g: q[1], b: q[2], a: q.length > 3 ? q[3] : 1 };
+  };
+  const hero = document.querySelector('.hero');
+  const sky = document.querySelector('.hero .sky');
+  if (!hero || !sky) return null;
+  const cs = getComputedStyle(sky);
+  const mm = /url\(["']?([^"')]+)["']?\)/.exec(cs.backgroundImage || '');
+  if (!mm) return null;
+  const img = new Image();
+  img.src = mm[1];
+  await img.decode();
+  const box = hero.getBoundingClientRect();
+  const cv = document.createElement('canvas');
+  cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+  const g = cv.getContext('2d');
+  g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, cv.width, cv.height).data;
+  const W = cv.width, H = cv.height;
+  const scale = Math.max(box.width / W, box.height / H);
+  const dw = W * scale, dh = H * scale;
+  // 百分比语义：pos 形如 "0% 50%" / "100% 50%"
+  const frac = (t) => (t === 'left' || t === 'top') ? 0 : (t === 'right' || t === 'bottom') ? 1
+    : (t === 'center') ? 0.5 : (parseFloat(t) || 0) / 100;
+  const [pf, qf] = (cs.backgroundPosition || '50% 50%').split(/\s+/).map(frac);
+  const ox = pf * (box.width - dw);
+  const oy = qf * (box.height - dh);
+
+  const ti = hero.querySelector('.hero-in').getBoundingClientRect();
+  const base = parse(getComputedStyle(hero).backgroundColor) || { r: 43, g: 58, b: 75 };
+  const textEl = hero.querySelector('.meta span') || hero.querySelector('.dek') || hero;
+  const tc = parse(getComputedStyle(textEl).color) || { r: 238, g: 243, b: 248 };
+
+  const x0 = Math.max(0, Math.round((ti.left - box.left - ox) / scale));
+  const y0 = Math.max(0, Math.round((ti.top - box.top - oy) / scale));
+  const x1 = Math.min(W, Math.round((ti.right - box.left - ox) / scale));
+  const y1 = Math.min(H, Math.round((ti.bottom - box.top - oy) / scale));
+  const B = 32, blocks = [];
+  for (let by = y0; by + B <= y1; by += B) {
+    for (let bx = x0; bx + B <= x1; bx += B) {
+      let sum = 0, n = 0;
+      for (let y = by; y < by + B; y += 2) {
+        for (let x = bx; x < bx + B; x += 2) {
+          const i = (y * W + x) * 4;
+          const a = d[i + 3] / 255;
+          sum += lumRGB(d[i] * a + base.r * (1 - a),
+                        d[i + 1] * a + base.g * (1 - a),
+                        d[i + 2] * a + base.b * (1 - a));
+          n++;
+        }
+      }
+      blocks.push(sum / n);
+    }
+  }
+  blocks.sort((x, y) => x - y);
+  const lt = lumRGB(tc.r, tc.g, tc.b);
+  const R = (l) => (Math.max(l, lt) + 0.05) / (Math.min(l, lt) + 0.05);
+  const at = (q) => blocks[Math.min(Math.floor(q * blocks.length), blocks.length - 1)];
+  return { src: mm[1].split('/').pop(), blocks: blocks.length, pos: cs.backgroundPosition,
+           p50: +R(at(0.5)).toFixed(2), p99: +R(at(0.99)).toFixed(2),
+           max: +R(blocks[blocks.length - 1]).toFixed(2) };
+};
+
 (async () => {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: { width: 1366, height: 900 }, deviceScaleFactor: 2 });
@@ -181,6 +262,15 @@ const IN_PAGE = (TARGETS) => {
       const resp = await page.request.get(b.url.startsWith('http') ? b.url : new URL(b.url, page.url()).href);
       if (!resp.ok()) bad(p, b.who + ' 背景图加载失败', { url: b.url, status: resp.status() });
       else good(p, `${b.who} 背景图 ${resp.status()} ${b.url.split('/').pop()}`);
+    }
+    // 星场亮度：桌面取景与窄屏取景是两块完全不同的区域，两个宽度都要量
+    for (const [w, h, who] of [[1366, 900, '桌面'], [390, 844, '窄屏']]) {
+      await page.setViewportSize({ width: w, height: h });
+      await page.waitForTimeout(350);
+      const sc = await page.evaluate(SKY_IN_PAGE);
+      if (!sc) { bad(p, `${who}星场取不到`, sc); continue; }
+      if (sc.p99 < 4.5) bad(p, `${who}星场文字区对比度不足`, sc);
+      else good(p, `${who}星场亮度安全（${sc.src} 取景 ${sc.pos} 区块 50% ${sc.p50}:1 / 99% ${sc.p99}:1）`);
     }
 
     await page.close();
