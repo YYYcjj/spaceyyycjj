@@ -374,12 +374,42 @@ footer b{color:var(--muted); font-weight:600;}
 
 /* ---------- 打印 ---------- */
 @media print{
-  #progress,#totop,.topnav,.rail{display:none!important;}
+  /* 一份 A4 默认留白。用浏览器直接打印时这是唯一的边距控制点。 */
+  @page{margin:12mm;}
+
+  #progress,#totop,.topnav,.rail,.skip{display:none!important;}
   .shell{display:block; max-width:none; padding:0;}
   .main{padding-top:0;}
   body{background:#fff; font-size:11pt;}
-  section{page-break-inside:avoid;}
   .figure,.tier,.route,.note{box-shadow:none;}
+
+  /* ---------- 分页控制 ----------
+     原来这里是 `section{page-break-inside:avoid}`。一个栏目节高 2,000–5,000px，
+     远超一页，浏览器对「高过一页的元素」只能忽略该规则——等于没写。
+     分页控制必须下沉到**原子块**这一级，分三类： */
+  /* ① 标题绝不留在页底（孤儿标题） */
+  h1,h2,h3,.grp-hd,.chain-sub{break-after:avoid; page-break-after:avoid;}
+  /* ② 只保护「切开会真的难看」的原子块：图、表、提示块、小卡片。
+     ⚠️ 不要把高大的容器（.trs > li / .vs > li，单个 600–800px）也加进来：
+     实测那样做会让填充率中位数从 97% 掉到 77%、总页数 +3，为了「卡片边框不被切」
+     而空掉三分之一页不划算。让它们拆开，但内部的图和表仍然不被切。 */
+  /* ⚠️ 表格**不放进**这一组。实测对照：整表保护时，板块十那张 588pt 高的基准表
+     装不进上一页剩余空间，整块搬走 → 上一页几乎全空（11 页里有 1 页只 153 字）；
+     允许拆分则是 25/11 页、无空白页，板块二还少一页。
+     允许拆分的前提在 ③：行不切开、表头重复，所以跨页的表仍然好读。 */
+  figure,.note,.frontier,.trbook,.chain-bar,
+  .cb,.vt-i,.entry,.trb,.board-card,.kpi{
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  /* 首页卡片（约 330px 高）值得保护：不保护时卡片会被页边切开，
+     上一页只剩一个空框的圆角顶边——实测加上之后页数不变（3 页），所以是白赚的。
+     板块页的步骤卡（.trs > li / .vs > li，单个 600–800px）**不能**保护：
+     那样会让填充率中位数从 96% 掉到 77%、总页数 +3，不值得。 */
+  /* ③ 表格：允许跨页，但行不切开、表头每页重复（这是印刷品的通行做法） */
+  tr{break-inside:avoid; page-break-inside:avoid;}
+  thead{display:table-header-group;}
+  tfoot{display:table-footer-group;}
+  p{orphans:2; widows:2;}
 }
 
 /* ---------- 响应式 ---------- */

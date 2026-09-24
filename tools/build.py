@@ -831,6 +831,17 @@ TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, 
 VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='', layer=5)
 
 
+def tag_th_scope(html):
+    """给所有表头补 scope="col"。
+
+    表格来自四处（生成器 3 张 + board01_body.html + content_c.py），逐个改容易漏，
+    所以在渲染的最后统一补一次。读屏软件靠 scope 把表头与数据单元格关联起来，
+    没有它的表格只能靠位置猜列意。
+    模式要卡住 `<th` 后面必须是空白或 `>`——否则会误伤 `<thead>`。
+    """
+    return re.sub(r'<th(?=[\s>])(?![^>]*\bscope=)', '<th scope="col"', html)
+
+
 def build_section(b, board01):
     legacy = b.get('legacy')
     intro = render_intro(b)
@@ -871,6 +882,7 @@ def build_section(b, board01):
 
     body = render_figs(body, b['num'])
     body = decorate_captions(body)
+    body = tag_th_scope(body)
 
     h1 = b.get('h1') or b['title']
     desc = esc(b['short'] + '。' + b['dek'][:70])
