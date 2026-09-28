@@ -92,6 +92,11 @@ RX_DEF, RY_DEF = -18.0, -32.0
 
 PIN_D = 20            # 编号点直径（px），构建期按它断言「不重叠」
 
+# 「点一下放大」时，被聚焦的部件要占到台面的多大。0.62 是留白后的手感值：
+# 再大就会顶到台面边缘（旋转时一旦有透视放大就出框），再小又看不出「放大」。
+FOCUS_W, FOCUS_H = STAGE_W * 0.62, STAGE_H * 0.62
+FOCUS_MAX = 6.0       # 放大倍数上限：极小的部件（栅格舵之类）不要放到离谱
+
 
 def _rgb(h):
     h = h.lstrip('#')
@@ -232,10 +237,77 @@ class M3D:
         return self.box(x - w / 2, y, z - d / 2, w, t, d, c, op)
 
     # ------------------------------------------------------------ 编号点
-    def pin(self, n, x, y, z, label=''):
-        """编号点。位置要落在部件**外面**——它在覆盖层上，压在模型中间会看不清指向谁。"""
-        self._pins.append(dict(n=n, at=(x, y, z), label=label))
+    def pin(self, n, x, y, z, part=None):
+        """编号点（可点击，点了就放大它指向的那个部件）。
+
+        位置要落在部件**外面**——它是 2D 覆盖层，压在模型中间会看不清指向谁。
+
+        `part` 是「这个点指向第几个部件」，不填就按「到部件包围盒的距离」自动判定。
+        自动判定在大多数情况下对，但当 pin 摆在一个大部件和小部件之间时会认错
+        （实测 55 个点里错了 10 个），所以这几处显式指定。
+        ⚠️ 显式指定的是**部件在建模代码里的调用序号**——调整几何顺序时这里要跟着改，
+        构建期会校验序号不越界，但顺序对不对只能靠人看。
+        """
+        self._pins.append(dict(n=n, at=(x, y, z), part=part))
         return self
+
+    # ------------------------------------------------------------ 聚焦
+    def _nearest_part(self, at):
+        """编号点归属哪个部件：取「到部件包围盒」距离最小的那个。
+
+        用 AABB 距离而不是中心距离——编号点都放在部件**外侧**，
+        到盒面的距离才反映它贴着谁（用中心距离时，小部件经常被旁边的大部件抢走）。
+        """
+        best, bi = 1e18, 0
+        for i, part in enumerate(self._parts):
+            xs = [p[0] for p in part['pts']]
+            ys = [p[1] for p in part['pts']]
+            zs = [p[2] for p in part['pts']]
+            d = 0.0
+            for v, lo, hi in ((at[0], min(xs), max(xs)), (at[1], min(ys), max(ys)),
+                              (at[2], min(zs), max(zs))):
+                d += (lo - v) ** 2 if v < lo else (v - hi) ** 2 if v > hi else 0.0
+            if d < best:
+                best, bi = d, i
+        return bi
+
+    def _focus(self, i, k):
+        """带缓存地取聚焦参数——渲染、自检、反解校验都会反复要同一批值。"""
+        if getattr(self, '_fc_k', None) != k:
+            self._fc, self._fc_k = {}, k
+        if i not in self._fc:
+            self._fc[i] = self._focus_of(i, k)
+        return self._fc[i]
+
+    def _pin_parts(self):
+        """每个编号点归属的部件索引。"""
+        return [p['part'] if p.get('part') is not None else self._nearest_part(p['at'])
+                for p in self._pins]
+
+    def _focus_of(self, i, k):
+        """聚焦第 i 个部件时需要的「平移量」与「放大倍数」。
+
+        放大倍数不是拍脑袋的常数：对**该部件自己**的极值点再跑一遍旋转采样，
+        保证它转到任何角度都还装得进聚焦框。所以扁平的部件能放得更大，细长的部件小一些。
+        """
+        o, part = self.origin, self._parts[i]
+        xs = [p[0] for p in part['pts']]
+        ys = [p[1] for p in part['pts']]
+        zs = [p[2] for p in part['pts']]
+        cx, cy, cz = ((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2,
+                      (min(zs) + max(zs)) / 2)
+        c = ((cx - o[0]) * k, -(cy - o[1]) * k, (cz - o[2]) * k)
+        pts = [((p[0] - o[0]) * k - c[0], -(p[1] - o[1]) * k - c[1],
+                (p[2] - o[2]) * k - c[2]) for p in part['pts']]
+        mx = my = 1e-6
+        for a in range(int((RX_MAX - RX_MIN) / 8) + 1):
+            rx = RX_MIN + a * 8
+            for b in range(0, 360, 8):
+                for v in pts:
+                    sx, sy = _proj(v, rx, b)
+                    mx, my = max(mx, abs(sx)), max(my, abs(sy))
+        f = min(FOCUS_W / 2 / mx, FOCUS_H / 2 / my)
+        return c, min(max(f, 1.0), FOCUS_MAX)
 
     # ------------------------------------------------------------ 自适配
     def _fit(self):
@@ -266,6 +338,9 @@ class M3D:
 
     # ------------------------------------------------------------ 断言
     _RE_PART = re.compile(r'translate3d\(([-\d.]+)px,([-\d.]+)px,([-\d.]+)px\)')
+    # 聚焦参数：从生成的容器标签里反解（自检只认吐出来的文本，理由见 _emitted_bbox）
+    _RE_HDR = re.compile(
+        r'data-i="(\d+)" data-f="([-\d.]+)" data-c="([-\d.]+),([-\d.]+),([-\d.]+)"')
     _RE_FACE = re.compile(
         r'width:([-\d.]+)px;height:([-\d.]+)px;margin:([-\d.]+)px 0 0 ([-\d.]+)px;'
         r'(?:border-radius:50%;)?transform:(?:rotate([XY])\(([-\d.]+)deg\) )?'
@@ -288,8 +363,12 @@ class M3D:
         lo, hi = [1e9] * 3, [-1e9] * 3
         bad_center = 0
         seen = 0                     # 反解到的面片数，必须与几何定义对得上
-        for part in self._parts:
-            chunk = self._faces_html(part, k)
+        self._seen_focus = []        # 顺带把聚焦参数采集出来给 problems() 校验
+        for i, part in enumerate(self._parts):
+            chunk = self._faces_html(part, k, i)
+            h = self._RE_HDR.search(chunk)
+            if h:
+                self._seen_focus.append(h.groups())
             m = self._RE_PART.search(chunk)
             if not m:
                 return None, None, ['部件容器没有 translate3d']
@@ -371,6 +450,49 @@ class M3D:
             max(abs(elo[i] - min(p[i] for p in pts)), abs(ehi[i] - max(p[i] for p in pts)))
             for i in range(3))
 
+        # ---- 「点一下放大」的端到端校验 ----
+        # 同样只认反解出来的 data-f / data-c：放大倍数算错、中心写错、或倍数被上限截断到
+        # 部件装不下台面，都要在这里拦住——这些在默认视角的截图上完全看不出来。
+        seen = getattr(self, '_seen_focus', [])
+        if len(seen) != len(self._parts):
+            out.append(f'{self.title}：{len(self._parts)} 个部件里只反解到 {len(seen)} 个'
+                       f'带聚焦参数的容器（改了 .m3d-p 的写法会让放大功能静默失效）')
+        else:
+            for i, (si, sf, sx, sy, sz) in enumerate(seen):
+                if int(si) != i:
+                    out.append(f'{self.title}：第 {i} 个部件容器写着 data-i="{si}"')
+                    continue
+                f = float(sf)
+                c = (float(sx), float(sy), float(sz))
+                part = self._parts[i]
+                xs = [q[0] for q in part['pts']]
+                ys = [q[1] for q in part['pts']]
+                zs = [q[2] for q in part['pts']]
+                want = (((min(xs) + max(xs)) / 2 - self.origin[0]) * self.k,
+                        -((min(ys) + max(ys)) / 2 - self.origin[1]) * self.k,
+                        ((min(zs) + max(zs)) / 2 - self.origin[2]) * self.k)
+                if max(abs(c[j] - want[j]) for j in range(3)) > 0.6:
+                    out.append(f'{self.title}：部件 {i} 的 data-c {c} 与它真实的中心 {want} 不符')
+                    continue
+                if f < 1.0:
+                    out.append(f'{self.title}：部件 {i} 的放大倍数 {f:.2f} 小于 1（点开会变小）')
+                    continue
+                over = 0.0
+                for rx in range(int(RX_MIN), int(RX_MAX) + 1, 6):
+                    for ry in range(0, 360, 6):
+                        for q in part['pts']:
+                            v = (((q[0] - self.origin[0]) * self.k - c[0]) * f,
+                                 (-(q[1] - self.origin[1]) * self.k - c[1]) * f,
+                                 ((q[2] - self.origin[2]) * self.k - c[2]) * f)
+                            px, py = _proj(v, rx, ry)
+                            over = max(over, abs(px) - (STAGE_W / 2 - 8),
+                                       abs(py) - (STAGE_H / 2 - 8))
+                if over > 0:
+                    out.append(f'{self.title}：放大部件 {i} 后转出台面 {over:.1f}px'
+                               f'（倍数 {f:.2f} 太大，或该部件本身就装不下）')
+        self.focus_zoom = [float(x[1]) for x in seen] if seen else []
+        self.pin_parts = self._pin_parts()
+
         for i in range(int((RX_MAX - RX_MIN) / 6) + 1):
             rx = RX_MIN + i * 6
             for j in range(0, 360, 6):
@@ -405,12 +527,17 @@ class M3D:
         return out
 
     # ------------------------------------------------------------ 渲染
-    def _faces_html(self, part, k):
+    def _faces_html(self, part, k, idx=0):
         o = self.origin
         ax = (part['anchor'][0] - o[0]) * k
         ay = -(part['anchor'][1] - o[1]) * k
         az = (part['anchor'][2] - o[2]) * k
-        out = [f'<span class="m3d-p" style="transform:translate3d('
+        # data-f / data-c 是「点一下放大」要用的：放大倍数与「把部件中心平移到台面中心」
+        # 需要的位移。都由生成期按旋转范围采样解出来，运行期只读不算。
+        c, f = self._focus(idx, k)
+        out = [f'<span class="m3d-p" data-i="{idx}" data-f="{_f(f)}" '
+               f'data-c="{_f(c[0])},{_f(c[1])},{_f(c[2])}" '
+               f'style="transform:translate3d('
                f'{_f(ax)}px,{_f(ay)}px,{_f(az)}px)">']
         op = part['op']
         for fc in part['faces']:
@@ -430,16 +557,43 @@ class M3D:
         return ''.join(out)
 
     def _pins_html(self, k):
+        """编号点。
+
+        做成 <button> 而不是 <span>：点了要放大某个部件，那它本身就是个可操作控件，
+        用按钮就白拿键盘可达与焦点环。所以容器不能再写 role=\"img\"（图片里放按钮是非法的），
+        改成 role=\"group\"。
+        """
         o = self.origin
+        names = getattr(self, '_pin_names', {})
         out = []
-        for p in self._pins:
+        for p, pi in zip(self._pins, self._pin_parts()):
             v = ((p['at'][0] - o[0]) * k, -(p['at'][1] - o[1]) * k, (p['at'][2] - o[2]) * k)
             sx, sy = _proj(v, RX_DEF, RY_DEF)
+            nm = names.get(p['n']) or f'编号 {p["n"]}'
             out.append(
-                f'<span class="m3d-pin" data-a="{_f(v[0])},{_f(v[1])},{_f(v[2])}" '
+                f'<button type="button" class="m3d-pin" '
+                f'data-a="{_f(v[0])},{_f(v[1])},{_f(v[2])}" data-part="{pi}" '
                 f'style="left:calc(50% + {_f(sx)}px);top:calc(50% + {_f(sy)}px)" '
-                f'aria-hidden="true">{p["n"]}</span>')
+                f'title="放大：{nm}" aria-label="放大并查看：{nm}" '
+                f'aria-pressed="false">{p["n"]}</button>')
         return ''.join(out)
+
+    def legend(self, items):
+        """编号图例。每一项都带着对应的部件索引——点图例与点编号点是同一个操作。
+
+        顺手把编号→名称记下来给 _pins_html 用（按钮的 aria-label 要念得出「放大什么」，
+        光念「1」对读屏用户没有意义）。
+        """
+        pp = dict(zip([p['n'] for p in self._pins], self._pin_parts()))
+        self._pin_names = {n: t for n, t, _d in items}
+        out = ['<ol class="m3d-lg">']
+        for n, t, d in items:
+            pi = pp.get(n, 0)
+            out.append(f'  <li><button type="button" class="m3d-lb" data-part="{pi}" '
+                       f'aria-pressed="false"><i>{n}</i><b>{t}</b>'
+                       f'<span>{d}</span></button></li>')
+        out.append('  </ol>')
+        return '\n'.join(out)
 
     def html(self, legend='', hint=''):
         """产出模型 + 图例 + 拖拽提示。
@@ -448,14 +602,16 @@ class M3D:
         窄屏时退回单列，顺序正好是「模型 → 图例 → 提示」——这也是手机上更顺的读法。
         """
         k = self.k = self._fit()
-        body = ''.join(self._faces_html(p, k) for p in self._parts)
+        body = ''.join(self._faces_html(p, k, i) for i, p in enumerate(self._parts))
         pins = self._pins_html(k)
         return (
             f'<div class="m3d" data-m3d>\n'
-            f'  <div class="m3d-stage" role="img" aria-label="{self.aria}" tabindex="0">\n'
-            f'    <div class="m3d-world" style="--rx:{_f(RX_DEF)}deg;--ry:{_f(RY_DEF)}deg">'
-            f'{body}</div>\n'
+            # role=group 而不是 img：里面有编号点按钮，role=img 会把它整棵子树当图片读掉
+            f'  <div class="m3d-stage" role="group" aria-label="{self.aria}" tabindex="0">\n'
+            f'    <div class="m3d-world" style="--rx:{_f(RX_DEF)}deg;--ry:{_f(RY_DEF)}deg;'
+            f'--m3d-f:1;--m3d-tx:0px;--m3d-ty:0px;--m3d-tz:0px">{body}</div>\n'
             f'    <div class="m3d-pins">{pins}</div>\n'
+            f'    <button type="button" class="m3d-back" hidden>返回全貌</button>\n'
             f'  </div>\n'
             f'  {legend}\n'
             f'  {hint}\n'
@@ -470,5 +626,6 @@ def legend_html(items):
 
 
 HINT = ('<p class="m3d-hint"><span>拖动旋转</span><span class="sep">·</span>'
-        '<span>方向键微调</span><span class="sep">·</span><span>手机上左右拖动</span>'
+        '<span>点编号或部件放大</span><span class="sep">·</span>'
+        '<span>方向键微调</span><span class="sep">·</span><span>Esc 返回全貌</span>'
         '<button type="button" class="m3d-reset">重置视角</button></p>')

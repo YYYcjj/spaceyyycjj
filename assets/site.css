@@ -1450,7 +1450,16 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   position:relative; width:100%; max-width:460px; height:400px; margin:0 auto;
   grid-column:1;
   perspective:1500px; perspective-origin:50% 50%;
+  /* 裁剪是必须的，不只是为了好看——聚焦时整个世界会放大 6 倍并溢出，
+     而 .m3d-stage 是**定位元素**（perspective 也让它建了层叠上下文），
+     绘制层级高于后面那些未定位的 .m3d-lg / .m3d-hint，会整块盖住图例把点击吃掉
+     （实测点图例时 elementFromPoint 返回 m3d-world）。裁掉之后既不挡点击，
+     溢出的部分也不会糊到图例上——顺带成了「镜头取景」的观感。
+     ⚠️ overflow:hidden 会把 transform-style 强制成 flat，但那只影响 .m3d-stage 自身；
+     它的 preserve-3d 子树在 .m3d-world 上，透视照旧生效。 */
+  overflow:hidden;
   cursor:grab; touch-action:pan-y;      /* 竖向留给页面滚动，横向拖动用来转模型 */
+  user-select:none; -webkit-user-select:none;   /* 拖动时不选中文字（替代 pointerdown 里的 preventDefault） */
   border-radius:10px;
   /* 台面：一层假的地面阴影 + 一层中心提亮。都在 stage 自己的背景上，
      天然在 3D 内容的下面，不用去和 preserve-3d 抢层级 */
@@ -1465,9 +1474,16 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
 .m3d-world{
   position:absolute; inset:0; z-index:1;
   transform-style:preserve-3d;
-  transform:scale3d(var(--m3d-k),var(--m3d-k),var(--m3d-k))
+  transform:scale3d(var(--m3d-k,1),var(--m3d-k,1),var(--m3d-k,1))
             rotateX(var(--rx,-18deg)) rotateY(var(--ry,-32deg));
 }
+/* 「点一下放大」是**改目标部件自己的 transform**，不动世界：部件几何是以自身原点为中心的，
+   所以把它的 translate3d(自己的位置) 换成 scale3d(f) 就等于「飞到台面中心并放大」，
+   而其余部件原地不动（只被压暗）。
+   一开始试的是「整个世界一起放大再平移」，结果邻居跟着一起放大、糊成一片拖影——
+   部件级变换才是对的做法。
+   过渡只在切换聚焦的那一下打开：常驻会让拖动时每帧都追一个 0.5s 动画，手感发黏。 */
+.m3d.anim .m3d-p.on{transition:transform .52s cubic-bezier(.22,.7,.28,1);}
 
 /* 部件容器：0×0，中心即部件原点 */
 .m3d-p{position:absolute; left:50%; top:50%; width:0; height:0; transform-style:preserve-3d;}
@@ -1476,7 +1492,15 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
 .m3d-f{
   position:absolute; left:50%; top:50%; display:block;
   border:1px solid transparent; border-radius:2px;
+  cursor:zoom-in;                 /* 悬停在模型上就说明「这里可以点开看」 */
+  transition:opacity .32s;
 }
+.m3d-stage.dragging .m3d-f{cursor:grabbing;}
+/* 聚焦时把其它部件压暗当背景板。
+   ⚠️ 只能压**面片**的不透明度，不能压 .m3d-p —— opacity 是 grouping property，
+   会给部件建一个 stacking context 并把它那棵 preserve-3d 子树**压平**，整个部件会塌掉。 */
+.m3d.focus .m3d-p:not(.on) .m3d-f{opacity:.13;}
+@media print{ .m3d.focus .m3d-p:not(.on) .m3d-f{opacity:.2;} }
 
 .m3d-pins{
   position:absolute; inset:0; z-index:2; pointer-events:none;
@@ -1489,10 +1513,23 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   color:#fff; background:var(--bd-ink, #3e6283);
   border:1.5px solid var(--bg);
   box-shadow:0 1px 4px rgba(22,28,38,.30);
-  transition:opacity .18s;
+  transition:opacity .18s, background-color .18s, transform .18s;
+  /* 编号点是可以点的（点了放大它指向的部件），所以它必须是真按钮：
+     白拿键盘可达、焦点环与读屏播报；容器那层的 pointer-events:none 要在这里放开。 */
+  pointer-events:auto; cursor:zoom-in; appearance:none; padding:0;
+  font-family:var(--mono); font-size:11px; font-weight:600; line-height:1;
+}
+.m3d-pin:hover{background:var(--accent); transform:scale(1.14);}
+.m3d-pin:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.m3d-pin.on{
+  background:var(--accent); transform:scale(1.18);
+  box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent),
+             0 1px 4px rgba(22,28,38,.30);
 }
 /* 转到互压的角度时淡出（序号小的优先留下）。自由旋转下这一定会发生，见 models3d.py */
-.m3d-pin.off{opacity:0;}
+.m3d-pin.off,
+/* 聚焦某个部件时，其余编号点会跟着放大后的模型乱飘，直接收起来 */
+.m3d-pin.hid{opacity:0; pointer-events:none;}
 
 /* 编号图例：和模型上的圆点一一对应 */
 .m3d-lg{
@@ -1500,15 +1537,40 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   display:grid; grid-template-columns:repeat(auto-fit,minmax(232px,1fr));
   gap:9px 22px;
 }
-.m3d-lg li{display:grid; grid-template-columns:20px 1fr; column-gap:9px;}
-.m3d-lg i{
+.m3d-lg li{margin:0;}
+/* 整项做成按钮：点图例与点编号点是同一个操作（聚焦到某个部件），
+   所以两边用同一个 data-part、同一套 aria-pressed 状态。 */
+.m3d-lb{
+  display:grid; grid-template-columns:20px 1fr; column-gap:9px;
+  width:100%; text-align:left; cursor:pointer;
+  appearance:none; font:inherit;
+  padding:5px 8px; border:1px solid transparent; border-radius:8px;
+  background:none; color:inherit;
+  transition:background-color .16s, border-color .16s;
+}
+.m3d-lb:hover{background:var(--bg-sunk); border-color:var(--line);}
+.m3d-lb[aria-pressed="true"]{background:var(--accent-bg); border-color:var(--accent-bd);}
+.m3d-lb:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.m3d-lb i{
   grid-column:1; grid-row:1/3; width:20px; height:20px;
   display:grid; place-items:center; border-radius:50%;
   font-family:var(--mono); font-size:11px; font-weight:600; font-style:normal;
   color:#fff; background:var(--bd-ink, #3e6283);
 }
-.m3d-lg b{grid-column:2; font-size:12.5px; font-weight:650; color:var(--text);}
-.m3d-lg span{grid-column:2; font-size:11.5px; line-height:1.6; color:var(--muted);}
+.m3d-lb b{grid-column:2; font-size:12.5px; font-weight:650; color:var(--text);}
+.m3d-lb span{grid-column:2; font-size:11.5px; line-height:1.6; color:var(--muted);}
+
+/* 聚焦时浮在台面左上角的「返回全貌」。用 hidden 属性控制，没 JS 时压根不会出现 */
+.m3d-back{
+  position:absolute; left:12px; top:12px; z-index:3;
+  appearance:none; cursor:pointer; font:inherit; font-size:11.5px;
+  padding:4px 12px; border-radius:999px;
+  color:var(--accent); background:var(--accent-bg);
+  border:1px solid var(--accent-bd);
+  box-shadow:0 1px 3px rgba(22,28,38,.10);
+}
+.m3d-back:hover{background:var(--bg);}
+.m3d-back:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 
 .m3d-hint{
   display:flex; flex-wrap:wrap; align-items:center; gap:4px 9px;

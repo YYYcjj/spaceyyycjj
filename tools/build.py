@@ -42,7 +42,7 @@ from synthfigs import SYNTH_FIGS              # noqa: E402
 from theoryfigs import THEORY_FIGS            # noqa: E402
 from introfigs import INTRO_FIGS              # noqa: E402
 from boardskin import SKINS, DEFAULT, css_vars   # noqa: E402
-from modelrigs import RIGS, legend_html, HINT   # noqa: E402
+from modelrigs import RIGS, HINT                # noqa: E402
 from virtualviews import VIEWS                  # noqa: E402
 from chainfigs import CHAIN_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
@@ -885,11 +885,17 @@ def render_model(b):
 
     blocks = []
     for i, spec in enumerate(rigs or []):
-        model = spec['build']().html(legend_html(spec['legend']), HINT)
+        # 图例由模型对象自己生成：它才知道每个编号指向哪个部件（点图例要聚焦到那个部件）
+        g = spec['build']()
+        model = g.html(g.legend(spec['legend']), HINT)
         assert model.lstrip().startswith('<div class="m3d"'), \
             f'板块 {b["slug"]} 的模型 {i} 没有生成 HTML'
-        assert 'm3d-stage' in model and 'm3d-lg' in model and 'm3d-hint' in model, \
-            f'板块 {b["slug"]} 的模型 {i} 结构不完整'
+        for _k in ('m3d-stage', 'm3d-lg', 'm3d-hint', 'm3d-pins', 'm3d-back',
+                   'data-part=', 'data-f=', 'data-c='):
+            assert _k in model, f'板块 {b["slug"]} 的模型 {i} 缺少 {_k}'
+        # 编号点与图例项必须一一对应（点图例 = 点编号点，两边靠 data-part 对上）
+        assert model.count('class="m3d-lb"') == model.count('class="m3d-pin"'), \
+            f'板块 {b["slug"]} 的模型 {i}：图例项与编号点数量不一致'
         blocks.append(
             '      <figure class="figure m3d-fig">\n'
             f'        <div class="figtitle">{rich(spec["title"])}</div>\n'

@@ -330,6 +330,78 @@ const SKY_IN_PAGE = async () => {
       bad(p, '板块页缺少可旋转模型（#model .m3d-stage）', {});
     }
 
+    // ---- 「点一下放大」的交互 ----
+    // 几何能不能装下由构建期的 Python 自检保证（那里能按旋转范围采样，比这里测得更全）；
+    // 这里只查**状态机**：点了要进聚焦、只亮一个部件、其余编号点收起、Esc 要能还原。
+    // 这几条正是最容易改坏的（比如 preventDefault 吃掉 click、capture 让 click 目标变成台面）。
+    if (r.model) {
+      // ⚠️ 先关掉平滑滚动。html{scroll-behavior:smooth} 下 scrollIntoView 是异步的，
+      // 量完坐标再点，页面还在滚——坐标已经过期，点会落到别处，
+      // 表现为「点编号点没反应」的假失败（拖拽测试也栽过同一个坑）。
+      await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.evaluate(() => document.querySelector('#model').scrollIntoView());
+      await page.waitForTimeout(600);
+      // ⚠️ 必须锁定到**第一个**模型：收口页的 #model 里有两个模型，
+      // 用 '#model .m3d-pin' 会把两边的编号点加在一起数（实测数出 8 个，实际各 7 个）。
+      const FOCUS_IN_PAGE = () => {
+        const root = document.querySelector('#model .m3d');
+        if (!root) return null;
+        return {
+          focus: root.classList.contains('focus'),
+          on: [...root.querySelectorAll('.m3d-p')].filter(e => e.classList.contains('on')).length,
+          scaled: [...root.querySelectorAll('.m3d-p')]
+            .filter(e => /^scale3d/.test(e.style.transform)).length,
+          pinsShown: [...root.querySelectorAll('.m3d-pin')]
+            .filter(e => !e.classList.contains('hid') && !e.classList.contains('off')).length,
+          back: !root.querySelector('.m3d-back').hidden,
+          // 聚焦时那个可见的编号点必须还在台面里（放大倍数会把锚点往外推）
+          pinInside: (() => {
+            const st = root.querySelector('.m3d-stage');
+            const pn = [...root.querySelectorAll('.m3d-pin')]
+              .find(e => !e.classList.contains('hid') && !e.classList.contains('off'));
+            if (!st || !pn) return null;
+            const a = st.getBoundingClientRect(), b = pn.getBoundingClientRect();
+            const cx = b.left + b.width / 2 - a.left, cy = b.top + b.height / 2 - a.top;
+            return cx > 10 && cx < a.width - 10 && cy > 10 && cy < a.height - 10;
+          })(),
+        };
+      };
+      const pinBox = await page.evaluate(() => {
+        const root = document.querySelector('#model .m3d');
+        const el = root && root.querySelector('.m3d-pin:not(.hid):not(.off)');
+        if (!el) return null;
+        const b = el.getBoundingClientRect();
+        return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+      });
+      if (!pinBox) {
+        bad(p, '模型没有可点的编号点', r.model);
+      } else {
+        await page.mouse.click(pinBox.x, pinBox.y);
+        await page.waitForTimeout(700);
+        const during = await page.evaluate(FOCUS_IN_PAGE);
+        if (!during || !during.focus || during.on !== 1 || during.scaled !== 1) {
+          bad(p, '点编号点没有进入聚焦', during);
+        } else if (!during.back) {
+          bad(p, '聚焦后没有显示「返回全貌」', during);
+        } else if (during.pinsShown > 1) {
+          bad(p, '聚焦后其余编号点没有收起', during);
+        } else if (during.pinInside === false) {
+          bad(p, '聚焦后编号点被放大倍数推出台面', during);
+        } else {
+          good(p, `点击放大正常（聚焦 1 个部件、编号点收到 ${during.pinsShown} 个、显示返回按钮）`);
+        }
+        await page.keyboard.press('Escape');
+        await page.waitForTimeout(700);
+        const after = await page.evaluate(FOCUS_IN_PAGE);
+        if (!after || after.focus || after.on || after.scaled || after.back) {
+          bad(p, 'Esc 没有还原成全貌', after);
+        } else {
+          good(p, 'Esc 还原成全貌');
+        }
+      }
+    }
+
     await page.close();
     console.log('');
   }
