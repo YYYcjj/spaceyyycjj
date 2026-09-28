@@ -157,4 +157,173 @@
     // 打印前也全部显示，免得打出半透明的图
     window.addEventListener('beforeprint', showAll);
   })();
+
+  /* ---------- 8. 可拖拽旋转的 3D 模型 ----------
+     渐进增强，三条底线：
+
+       · **不跑 JS 也是对的。** 编号点的 left/top 是构建期按默认角度算好写进 HTML 的，
+         所以禁用脚本、爬虫、以及**打印**看到的都是正确的一帧；JS 只负责让它能转。
+       · **打印前必须复位。** 自转是 rAF 驱动的，不拦的话会打出转到一半的样子。
+       · **编号点会互压，得自己解。** 模型转到背面时，前后两个标注必然擦肩而过——
+         这在坐标上无解。所以每帧按序号优先级把撞上的点淡出（序号小的留下），
+         阈值 20px 与 CSS 里的圆点直径一致。
+
+     投影公式与 tools/models3d.py 里的 _proj() 必须保持同一套，改一处要改两处。 */
+  (function () {
+    var roots = Array.prototype.slice.call(document.querySelectorAll('[data-m3d]'));
+    if (!roots.length) return;
+
+    var PERSP = 1500;                       // 与 .m3d-stage 的 perspective 一致
+    var RX_MIN = -52, RX_MAX = 8;           // 与 models3d.py 一致
+    var RX_DEF = -18, RY_DEF = -32;
+    var PIN_D = 20;                         // 与 .m3d-pin 的直径一致
+    var mq = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)');
+    var spin = !(mq && mq.matches);
+
+    function clamp(v) { return v < RX_MIN ? RX_MIN : (v > RX_MAX ? RX_MAX : v); }
+    function dist(ax, ay, bx, by) { return Math.sqrt((ax - bx) * (ax - bx) + (ay - by) * (ay - by)); }
+
+    roots.forEach(function (root) {
+      var stage = root.querySelector('.m3d-stage');
+      var world = root.querySelector('.m3d-world');
+      var pinBox = root.querySelector('.m3d-pins');
+      if (!stage || !world) return;
+
+      var pins = pinBox
+        ? Array.prototype.slice.call(pinBox.querySelectorAll('.m3d-pin')).map(function (el) {
+            var a = (el.getAttribute('data-a') || '0,0,0').split(',');
+            return { el: el, v: [parseFloat(a[0]), parseFloat(a[1]), parseFloat(a[2])] };
+          })
+        : [];
+
+      var rx = RX_DEF, ry = RY_DEF, vry = 0, vrx = 0;
+      var drag = null, hover = false, live = false, raf = 0;
+
+      function project(v) {
+        var a = ry * Math.PI / 180, b = rx * Math.PI / 180;
+        var x = v[0], y = v[1], z = v[2];
+        var x2 = x * Math.cos(a) + z * Math.sin(a);
+        var z2 = -x * Math.sin(a) + z * Math.cos(a);
+        var y2 = y * Math.cos(b) - z2 * Math.sin(b);
+        var z3 = y * Math.sin(b) + z2 * Math.cos(b);
+        var k = PERSP / Math.max(PERSP - z3, 1);
+        return [x2 * k, y2 * k];
+      }
+
+      function paint() {
+        world.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+        world.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        if (!pins.length) return;
+        var placed = [];
+        for (var i = 0; i < pins.length; i++) {
+          var s = project(pins[i].v);
+          var clash = false;
+          for (var j = 0; j < placed.length; j++) {
+            if (dist(s[0], s[1], placed[j][0], placed[j][1]) < PIN_D) { clash = true; break; }
+          }
+          pins[i].el.style.left = 'calc(50% + ' + s[0].toFixed(1) + 'px)';
+          pins[i].el.style.top = 'calc(50% + ' + s[1].toFixed(1) + 'px)';
+          if (clash !== pins[i].el.classList.contains('off')) {
+            pins[i].el.classList.toggle('off', clash);
+          }
+          if (!clash) placed.push(s);
+        }
+      }
+
+      function loop() {
+        raf = 0;
+        if (!live) return;
+        if (Math.abs(vry) > 0.02 || Math.abs(vrx) > 0.02) {
+          ry += vry;
+          rx = clamp(rx + vrx);
+          vry *= 0.93;
+          vrx *= 0.93;
+        } else if (spin && !drag && !hover) {
+          ry += 0.16;                       // 自转：慢到不干扰阅读，快到看得出是 3D
+        }
+        paint();
+        raf = requestAnimationFrame(loop);
+      }
+
+      function start() { if (live && !raf) raf = requestAnimationFrame(loop); }
+      function stop() { live = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } }
+
+      // 只在可见时跑动画；切走标签页也停
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            if (e.isIntersecting) { live = true; start(); }
+            else { stop(); }
+          });
+        }, { rootMargin: '120px 0px', threshold: 0 }).observe(stage);
+      } else {
+        live = true; start();
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { stop(); } else { live = true; start(); }
+      });
+
+      stage.addEventListener('mouseenter', function () { hover = true; });
+      stage.addEventListener('mouseleave', function () { hover = false; });
+      // 键盘用户聚焦时也停自转，否则一边按键一边被动画推走
+      stage.addEventListener('focus', function () { hover = true; });
+      stage.addEventListener('blur', function () { hover = false; });
+
+      stage.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        drag = { x: e.clientX, y: e.clientY, id: e.pointerId };
+        vry = 0; vrx = 0;
+        stage.classList.add('dragging');
+        if (stage.setPointerCapture) {
+          try { stage.setPointerCapture(e.pointerId); } catch (_e) { /* 忽略 */ }
+        }
+        e.preventDefault();
+      });
+      stage.addEventListener('pointermove', function (e) {
+        if (!drag || e.pointerId !== drag.id) return;
+        var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        drag.x = e.clientX; drag.y = e.clientY;
+        ry += dx * 0.45;
+        rx = clamp(rx - dy * 0.35);          // 往下拖 = 把顶面拉向自己
+        vry = dx * 0.25; vrx = -dy * 0.19;   // 松手后的惯性
+        paint();
+      });
+      function release(e) {
+        if (!drag || (e && e.pointerId !== drag.id)) return;
+        drag = null;
+        stage.classList.remove('dragging');
+      }
+      stage.addEventListener('pointerup', release);
+      stage.addEventListener('pointercancel', release);
+      stage.addEventListener('lostpointercapture', release);
+
+      stage.addEventListener('keydown', function (e) {
+        var s = e.shiftKey ? 15 : 6;
+        if (e.key === 'ArrowLeft') { ry -= s; }
+        else if (e.key === 'ArrowRight') { ry += s; }
+        else if (e.key === 'ArrowUp') { rx = clamp(rx + s); }
+        else if (e.key === 'ArrowDown') { rx = clamp(rx - s); }
+        else return;
+        e.preventDefault();
+        vry = 0; vrx = 0;
+        paint();
+      });
+
+      var reset = root.querySelector('.m3d-reset');
+      if (reset) {
+        reset.addEventListener('click', function () {
+          rx = RX_DEF; ry = RY_DEF; vry = 0; vrx = 0;
+          paint();
+        });
+      }
+
+      // 打印前回到默认视角（打印看到的必须是构建期算好的那一帧）
+      window.addEventListener('beforeprint', function () {
+        rx = RX_DEF; ry = RY_DEF; vry = 0; vrx = 0;
+        paint();
+      });
+
+      paint();
+    });
+  })();
 })();

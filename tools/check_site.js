@@ -109,7 +109,8 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
             first: secs.length > 0 && secs[0].id === 'intro',
           };
         })(),
-        // 层级路标：五层「概览栏目」（带层序号块）+ 一个「正文」分组标题。
+        // 层级路标：六层「概览栏目」（带层序号块）+ 一个「正文」分组标题。
+        // 收口页不套这个模板，只有导览与虚拟模型两层。
         // 这两个东西原来都没有——层与编号小节在视觉上完全同位，长页里找不到路标。
         layers: (() => {
           const main = document.querySelector('main') || document.body;
@@ -192,10 +193,13 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
       const L = desk.layers;
       if (L.chips !== L.count) bad(p, '每个层都要有层序号块', { chips: L.chips, layers: L.count });
       else good(p, `层级路标完整（${L.count} 层，各有层序号块）`);
-      if (L.count !== 5 && L.count !== 1) bad(p, '概览层应为 5 层（收口页只有导览 1 层）', L.count);
+      // 收口页只有 2 层（导览 + 虚拟模型），其余板块 6 层
+      if (L.count !== 6 && L.count !== 2) bad(p, '概览层应为 6 层（收口页 2 层）', L.count);
+      // 层序号在**页内**连续：收口页若沿用全局层号会显示成「层 01」「层 04」，
+      // 中间两个号根本没出现，看着像漏了。所以页内重新编号，断言也随之改成「本页连续」。
       const want = L.nums.map((_, i) => String(i + 1).padStart(2, '0')).join(',');
-      if (L.nums.join(',') !== want) bad(p, '层序号从 01 连续递增', L.nums);
-      else good(p, '层序号从 01 连续递增');
+      if (L.nums.join(',') !== want) bad(p, '层序号在页内从 01 连续递增', L.nums);
+      else good(p, '层序号在页内从 01 连续递增');
       if (L.grp !== 1) bad(p, '正文分组标题恰好 1 个', L.grp);
       else good(p, '正文分组标题恰好 1 个');
       if (L.grpOrdered === false) bad(p, '正文分组标题必须排在所有层之后', L.grpOrdered);

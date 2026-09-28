@@ -42,6 +42,8 @@ from synthfigs import SYNTH_FIGS              # noqa: E402
 from theoryfigs import THEORY_FIGS            # noqa: E402
 from introfigs import INTRO_FIGS              # noqa: E402
 from boardskin import SKINS, DEFAULT, css_vars   # noqa: E402
+from modelrigs import RIGS, legend_html, HINT   # noqa: E402
+from virtualviews import VIEWS                  # noqa: E402
 from chainfigs import CHAIN_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
 
@@ -50,8 +52,20 @@ import boardskin                               # noqa: E402
 for _row in boardskin.check():
     pass
 
+# 可旋转模型：构建期自检「几何体不出台面」与「默认角度下编号点不重叠」。
+# 默认角度那一条是硬要求——它同时是没有 JS 时的样子和打印出来的样子。
+import modelrigs                               # noqa: E402
+_MODEL_PROBS = modelrigs.check()
+assert not _MODEL_PROBS, ('模型自检不通过：\n  ' + '\n  '.join(_MODEL_PROBS))
+
 BOARDS = BOARDS_A + BOARDS_B + BOARDS_C
 assert len(BOARDS) == 10, f'板块数应为 10，实际 {len(BOARDS)}'
+
+# 十个板块各一个可旋转模型（收口页多一个整船分解图），一个都不能缺
+assert set(RIGS) == set(_b['slug'] for _b in BOARDS), \
+    f'模型应覆盖十个板块，实际 {sorted(RIGS)}'
+assert set(VIEWS) == set(_b['slug'] for _b in BOARDS), \
+    f'虚拟视图应覆盖十个板块，实际 {sorted(VIEWS)}'
 
 # 把技术链路 / 成本 / 具体设计 / 技术发展路线 / 创业者路线图挂到对应板块上（按 slug 匹配）。
 # 收口板块（layers=False）不套用这套五层模板——它回答的是「合起来该怎么设计」，
@@ -339,8 +353,8 @@ def render_chain(b):
         f'<span class="lg {k}"><i></i>{lab}</span>' for k, _cls, lab in CHAIN_STATUS)
 
     return (
-        '<section id="chain" class="layer ly-2">\n'
-        f'      {layer_h2(2, "技术链路", "Technology Chain")}\n'
+        f'<section id="chain" class="layer ly-{ln(b, 2)}">\n'
+        f'      {layer_h2(ln(b, 2), "技术链路", "Technology Chain")}\n'
         f'      <p class="lead">{rich(ch["lead"])}</p>\n'
         '\n'
         '      <div class="frontier">\n'
@@ -414,8 +428,8 @@ def render_design(b, num):
         f'        </div>' for s in d['subs'])
 
     return (
-        '<section id="design" class="layer ly-3">\n'
-        f'      {layer_h2(3, "具体设计", "Design")}\n'
+        f'<section id="design" class="layer ly-{ln(b, 3)}">\n'
+        f'      {layer_h2(ln(b, 3), "具体设计", "Design")}\n'
         f'      <p class="lead">{rich(d["headline"])}</p>\n'
         '\n'
         '      <figure class="figure">\n'
@@ -461,7 +475,24 @@ TRACK_FIELDS = (
 # 每个板块页有五层「概览栏目」（导览 / 链路 / 设计 / 技术路线 / 创业者路线图），
 # 后面才是带编号的正文小节。两者原来在视觉上完全同位，读者在近两万像素的长页里
 # 找不到路标，所以给层加序号 + 层色（--ly1..--ly5），并给正文区加分组标题。
-LAYER_NO = {'intro': 1, 'chain': 2, 'design': 3, 'techroad': 4, 'venture': 5}
+LAYER_NO = {'intro': 1, 'chain': 2, 'design': 3, 'model': 4,
+            'techroad': 5, 'venture': 6}
+
+
+def ln(b, no):
+    """本页的层号：全局层号 → 页内连续编号。
+
+    九个板块页套完整模板（层 01–06），映射是恒等。收口页不套模板，只有
+    「导览」与「虚拟模型」两层；沿用全局层号会显示成「层 01」「层 04」——
+    中间两个号在本页根本没出现，读者只会以为漏了内容。所以页内重新编号。
+    """
+    return (b.get('_lmap') or {}).get(no, no)
+
+
+def toc_of(base, b):
+    d = dict(base)
+    d['layer'] = ln(b, d['layer'])
+    return d
 
 
 def layer_h2(no, title, en):
@@ -498,8 +529,8 @@ def render_intro(b):
             f'　{rich(spec["cap"])}</figcaption>\n'
             '      </figure>')
     return (
-        '<section id="intro" class="layer ly-1">\n'
-        f'      {layer_h2(1, "先看两张图", "Start Here")}\n'
+        f'<section id="intro" class="layer ly-{ln(b, 1)}">\n'
+        f'      {layer_h2(ln(b, 1), "先看两张图", "Start Here")}\n'
         f'      <p class="lead">{INTRO_LEAD}</p>\n'
         '\n' + '\n'.join(figs) + '\n    </section>'
     )
@@ -563,8 +594,8 @@ def render_venture(b):
             f'        </li>')
 
     html = (
-        '<section id="venture" class="layer ly-5">\n'
-        f'      {layer_h2(5, "创业者路线图", "Founder Roadmap")}\n'
+        f'<section id="venture" class="layer ly-{ln(b, 6)}">\n'
+        f'      {layer_h2(ln(b, 6), "创业者路线图", "Founder Roadmap")}\n'
         f'      <p class="lead">{rich(v["lead"])}</p>\n'
         '\n'
         '      <div class="entry">\n'
@@ -673,8 +704,8 @@ def render_techroad(b):
             f'        </li>')
 
     return (
-        '<section id="techroad" class="layer ly-4">\n'
-        f'      {layer_h2(4, "技术怎么一步步做", "Technology Roadmap")}\n'
+        f'<section id="techroad" class="layer ly-{ln(b, 5)}">\n'
+        f'      {layer_h2(ln(b, 5), "技术怎么一步步做", "Technology Roadmap")}\n'
         f'      <p class="lead">{TECHROAD_LEAD}</p>\n'
         '\n'
         '      <div class="trbook">\n'
@@ -836,10 +867,58 @@ def render_figs(body, num):
     return out
 
 
+# ---------------------------------------------------------------- 虚拟模型
+# 这一层回答的是「它长什么样」：一张可拖拽旋转的 CSS 3D 模型 + 一张虚拟运行视图。
+# 放在「具体设计」之后——设计讲完参数与分解，紧接着给一个能自己转的东西，
+# 读者才知道前面那些参数长在哪个部件上。
+MODEL_LEAD = ('上面那张等轴测图是一个固定角度。这里把它做成能转的：'
+              '拖动可以旋转，方向键微调，点「重置视角」回到默认角度。'
+              '模型上的编号和下面的图例一一对应。')
+
+
+def render_model(b):
+    """渲染「虚拟模型」层：可旋转模型 + 编号图例 + 一张虚拟运行视图。"""
+    rigs = RIGS.get(b['slug'])
+    vv = VIEWS.get(b['slug'])
+    if not rigs and not vv:
+        return ''
+
+    blocks = []
+    for i, spec in enumerate(rigs or []):
+        model = spec['build']().html(legend_html(spec['legend']), HINT)
+        assert model.lstrip().startswith('<div class="m3d"'), \
+            f'板块 {b["slug"]} 的模型 {i} 没有生成 HTML'
+        assert 'm3d-stage' in model and 'm3d-lg' in model and 'm3d-hint' in model, \
+            f'板块 {b["slug"]} 的模型 {i} 结构不完整'
+        blocks.append(
+            '      <figure class="figure m3d-fig">\n'
+            f'        <div class="figtitle">{rich(spec["title"])}</div>\n'
+            f'        {model}'
+            f'        <figcaption>模型 {b["num"]}.{i + 1}　{rich(spec["caption"])}</figcaption>\n'
+            '      </figure>')
+
+    if vv:
+        svg = vv['make']().svg(vv['cap'])
+        assert svg.lstrip().startswith('<svg'), f'板块 {b["slug"]} 的虚拟视图没有生成 SVG'
+        blocks.append(
+            '      <figure class="figure m3d-fig">\n'
+            f'        <div class="fig-scroll">{svg}</div>\n'
+            f'        <figcaption>虚拟视图 {b["num"]}　{rich(vv["cap"])}</figcaption>\n'
+            '      </figure>')
+
+    return (
+        f'<section id="model" class="layer ly-{ln(b, 4)}">\n'
+        f'      {layer_h2(ln(b, 4), "虚拟模型", "Virtual Model")}\n'
+        f'      <p class="lead">{MODEL_LEAD}</p>\n'
+        '\n' + '\n\n'.join(blocks) + '\n    </section>'
+    )
+
+
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='', layer=2)
 DESIGN_TOC = dict(id='design', title='具体设计', sub=False, n='', layer=3)
-TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='', layer=4)
-VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='', layer=5)
+MODEL_TOC = dict(id='model', title='虚拟模型', sub=False, n='', layer=4)
+TECHROAD_TOC = dict(id='techroad', title='技术怎么一步步做', sub=False, n='', layer=5)
+VENTURE_TOC = dict(id='venture', title='创业者路线图', sub=False, n='', layer=6)
 
 
 def tag_th_scope(html):
@@ -855,12 +934,16 @@ def tag_th_scope(html):
 
 def build_section(b, board01):
     legacy = b.get('legacy')
+    # 页内层号映射要在任何 render_* 之前算好——它们都从 b['_lmap'] 取
+    b['_lmap'] = ({1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6} if b.get('layers', True)
+                  else {1: 1, 4: 2})
     intro = render_intro(b)
     chain = render_chain(b)
     design = render_design(b, b['num'])
+    model = render_model(b)
     techroad = render_techroad(b)
     venture = render_venture(b)
-    front = '\n\n'.join(x for x in (intro, chain, design, techroad, venture) if x)
+    front = '\n\n'.join(x for x in (intro, chain, design, model, techroad, venture) if x)
 
     if legacy:
         body = board01[0]
@@ -884,11 +967,12 @@ def build_section(b, board01):
                     for i, s in enumerate(b['subs'])]
 
     # 侧栏目录：这几项概览排在最前面（导览在最上），且不带编号
-    head = (([dict(INTRO_TOC)] if intro else [])
-            + ([dict(CHAIN_TOC)] if chain else [])
-            + ([dict(DESIGN_TOC)] if design else [])
-            + ([dict(TECHROAD_TOC)] if techroad else [])
-            + ([dict(VENTURE_TOC)] if venture else []))
+    head = (([toc_of(INTRO_TOC, b)] if intro else [])
+            + ([toc_of(CHAIN_TOC, b)] if chain else [])
+            + ([toc_of(DESIGN_TOC, b)] if design else [])
+            + ([toc_of(MODEL_TOC, b)] if model else [])
+            + ([toc_of(TECHROAD_TOC, b)] if techroad else [])
+            + ([toc_of(VENTURE_TOC, b)] if venture else []))
     b['toc'] = head + toc_subs
 
     body = render_figs(body, b['num'])

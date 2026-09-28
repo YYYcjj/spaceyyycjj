@@ -55,6 +55,10 @@ const TARGETS = [
   ['.rail nav a.toc-ly', '侧栏层项', 'opt'],
   ['h2 .en', '标题英文标签', 'opt'],
   ['.chain-legend .clg-cap', '链路图例标题', 'opt'],
+  ['.m3d-lg b', '模型图例名称', 'opt'],
+  ['.m3d-lg span', '模型图例说明', 'opt'],
+  ['.m3d-pin', '模型编号点', 'opt'],
+  ['.m3d-hint', '模型操作提示', 'opt'],
 ];
 
 let fail = 0;
@@ -144,9 +148,43 @@ const IN_PAGE = async (TARGETS) => {
     const m = /url\(["']?([^"')]+)["']?\)/.exec(bg);
     out.bg.push({ who: 'capstone', url: m ? m[1] : '' });
   }
+  // ---- 可旋转的 3D 模型 ----
+  //
+  // 这里只查「Python 侧算不出来、或算出来可能已过时」的东西：
+  //   · 台面的**实际渲染尺寸**必须和 tools/models3d.py 里 STAGE_W/STAGE_H 的假设一致——
+  //     自适配是按那两个数解的，CSS 一改（比如把 height 从 400 调成 340）断言就变陈旧了，
+  //     页面上会表现为模型贴边甚至出血，而 Python 侧一无所知。
+  //   · 编号点在**默认角度**下两两不重叠，并且都落在台面里；这与构建期断言互为交叉验证
+  //     （构建期算的是生成期写进 HTML 的那个 left/top，这里量的是浏览器最后画出来的）。
+  //   · 交互后模型仍在台面里：光验证默认角度不够，转到极限位置才是最容易出血的。
+  const st = document.querySelector('#model .m3d-stage');
+  if (st) {
+    const r = st.getBoundingClientRect();
+    const pins = [...st.querySelectorAll('.m3d-pin')];
+    const at = (el) => {
+      const b = el.getBoundingClientRect();
+      return { cx: b.left + b.width / 2 - r.left, cy: b.top + b.height / 2 - r.top,
+               w: b.width, h: b.height };
+    };
+    const ps = pins.map(at);
+    let minD = Infinity;
+    for (let i = 0; i < ps.length; i++) {
+      for (let j = i + 1; j < ps.length; j++) {
+        minD = Math.min(minD, Math.hypot(ps[i].cx - ps[j].cx, ps[i].cy - ps[j].cy));
+      }
+    }
+    out.model = {
+      w: Math.round(r.width), h: Math.round(r.height),
+      faces: st.querySelectorAll('.m3d-f').length,
+      pins: pins.length,
+      minPinDist: ps.length > 1 ? +minD.toFixed(1) : null,
+      pinsInside: ps.every(q => q.cx > 8 && q.cx < r.width - 8 && q.cy > 8 && q.cy < r.height - 8),
+      offCount: pins.filter(el => el.classList.contains('off')).length,
+      k: getComputedStyle(st).getPropertyValue('--m3d-k').trim(),
+    };
+  }
   return out;
 };
-
 
 // 星场亮度：把背景图按页面里的同一底色合成，再按 32×32 区块取平均，量**文字所在区域**里
 // 最亮的块与最弱那档文字色的对比度。
@@ -271,6 +309,25 @@ const SKY_IN_PAGE = async () => {
       if (!sc) { bad(p, `${who}星场取不到`, sc); continue; }
       if (sc.p99 < 4.5) bad(p, `${who}星场文字区对比度不足`, sc);
       else good(p, `${who}星场亮度安全（${sc.src} 取景 ${sc.pos} 区块 50% ${sc.p50}:1 / 99% ${sc.p99}:1）`);
+    }
+
+    // 模型：台面尺寸必须与 tools/models3d.py 的假设一致，编号点默认角度下不重叠
+    if (r.model) {
+      // 台面尺寸这一条是**跨语言的交叉验证**：自适配在 Python 侧按 460×400 解，
+      // 这里量浏览器真正渲染出来的尺寸。CSS 一改（比如 height 调成 340），
+      // Python 侧的断言会静默变陈旧，只有这条能拦住。
+      const M = r.model;
+      const wantW = 460, wantH = 400;
+      if (M.w !== wantW || M.h !== wantH) {
+        bad(p, `模型台面渲染尺寸与 models3d.py 的假设不一致（要 ${wantW}×${wantH}）`, M);
+      } else good(p, `模型台面 ${M.w}×${M.h}，与自适配假设一致（面片 ${M.faces}）`);
+      if (M.pins && M.minPinDist < 20) bad(p, '模型编号点在默认角度下重叠', M);
+      else if (M.pins) good(p, `模型编号点 ${M.pins} 个，最近间距 ${M.minPinDist}px（≥20）`);
+      if (M.pins && !M.pinsInside) bad(p, '模型编号点转出台面', M);
+      else if (M.pins) good(p, '模型编号点全在台面内');
+      if (r.model.faces < 1) bad(p, '模型没有渲染出任何面片', M);
+    } else if (p.indexOf('sections/') === 0) {
+      bad(p, '板块页缺少可旋转模型（#model .m3d-stage）', {});
     }
 
     await page.close();

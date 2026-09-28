@@ -25,10 +25,12 @@ from synthfigs import SYNTH_FIGS               # noqa: E402
 from theoryfigs import THEORY_FIGS             # noqa: E402
 from introfigs import INTRO_FIGS               # noqa: E402
 from chainfigs import CHAIN_FIGS               # noqa: E402
+from virtualviews import VIEWS as VIRTUAL_VIEWS   # noqa: E402
 
 # 所有图都过一遍同一套断言。新增图集时挂到这里就行，不用改下面的逻辑。
 REGISTRIES = [('tech', FIGS), ('synth', SYNTH_FIGS), ('theory', THEORY_FIGS),
-              ('intro', INTRO_FIGS), ('chain', CHAIN_FIGS)]
+              ('intro', INTRO_FIGS), ('chain', CHAIN_FIGS),
+              ('vview', VIRTUAL_VIEWS)]
 
 
 def _boxes(obj):
