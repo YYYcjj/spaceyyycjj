@@ -148,6 +148,12 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
             meta: sec.querySelectorAll('.vs-meta > span').length,
             stop: sec.querySelectorAll('.vs-st').length,
             lb: sec.querySelectorAll('.lb').length,
+            // 操作层：每一步都必须有「具体怎么做」，缺一步这条路线图对新手就是断的
+            how: sec.querySelectorAll('.vs-how').length,
+            // 通用手册：折叠块 + 十节
+            f101: sec.querySelectorAll('.f101').length,
+            f1items: sec.querySelectorAll('.f101 .f1-list > li').length,
+            f1dos: sec.querySelectorAll('.f101 .f1-do > li').length,
             figs: sec.querySelectorAll('.trs-fig').length,
             orphan,
           };
@@ -228,7 +234,15 @@ const good = (p, label) => console.log(`  PASS  [${p}] ${label}`);
       if (v.steps !== 5) bad(p, '路线图 5 个阶段', v.steps); else good(p, '路线图 5 个阶段');
       if (v.meta !== 20) bad(p, '每阶段 4 项元数据 × 5 阶段', v.meta); else good(p, '每阶段 4 项元数据 × 5 阶段');
       if (v.stop !== 5) bad(p, '5 条止损线', v.stop); else good(p, '5 条止损线');
-      if (v.lb !== 25) bad(p, '标签共 25 个（.lb）', v.lb); else good(p, '标签共 25 个（.lb）');
+      // 每阶段 6 个标签：具体怎么做 / 卖什么给谁 / 投多少 / 通过判据 / 死法 / 止损线
+      if (v.lb !== 30) bad(p, '标签共 30 个（.lb，每阶段 6 个）', v.lb);
+      else good(p, '标签共 30 个（每阶段 6 个）');
+      if (v.how !== 5) bad(p, '每阶段都要有「具体怎么做」', v.how);
+      else good(p, '五个阶段都有操作层（.vs-how）');
+      if (v.f101 !== 1) bad(p, '通用起步手册应有 1 块', v.f101);
+      else if (v.f1items !== 10) bad(p, '通用手册应为十节', v.f1items);
+      else if (v.f1dos < 40) bad(p, '通用手册的具体动作太少', v.f1dos);
+      else good(p, `通用起步手册 10 节 / ${v.f1dos} 条动作`);
       if (v.figs !== 6) bad(p, '创业者路线图 6 张理论图', v.figs); else good(p, '创业者路线图 6 张理论图（图都有 SVG）');
       if (v.orphan) bad(p, '正文加粗被渲染成块级（标签用了 <b>）', v.orphan);
       else good(p, '标签与正文加粗未混淆');

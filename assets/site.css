@@ -1607,3 +1607,113 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   .m3d-pin{box-shadow:none !important;}
   .m3d-reset{display:none !important;}
 }
+
+/* ==========================================================================
+   创业者路线图 · 操作层与通用手册
+   --------------------------------------------------------------------------
+   这一层原先只有「判断」——该不该做、卖什么给谁、判据是什么。它默认读者已经懂创业，
+   而真正的新手会卡在更前面的地方：客户名单从哪来、第一封邮件怎么写、合同谁拟、
+   股权怎么分。补进来的两块就是针对这种读者：
+
+   1. `.vs-how`（每步一块）：这一步**具体怎么做**——去哪找、见谁、说什么、备什么材料。
+      浅底 + 左侧一条**层色**竖线（`--ly` 由 `.layer.ly-N` 给出），
+      与上面的「做什么」（纯文字）在视觉上分开，扫读时能直接跳到动作。
+   2. `.f101`（整层末尾一块折页）：和方向无关的通用流程——注册、找客户、报价、
+      签合同、分股权、管现金、什么时候停。九个板块共用同一份（`tools/founder101.py`），
+      默认折叠：它有六千多字，展开会把领域内容淹掉；但完全不放又不行，
+      新人缺的恰恰是这些常识。打印时由 site.js 全部展开。
+   ========================================================================== */
+
+.vs-how{
+  margin:0 0 12px; padding:12px 15px 13px;
+  font-size:12.5px; color:var(--text-soft); line-height:1.85;
+  background:var(--bg-sunk);
+  border-left:2px solid var(--ly, var(--line-strong));
+  border-radius:0 7px 7px 0;
+}
+/* 标签要独占一行——但注意别写成 `.lb{display:block}` 那种全局规则：
+   正文里的 <b> 是另一回事，这条只作用于 .vs-how 里的标签。 */
+.vs-how .lb{
+  display:block; font-size:10.5px; letter-spacing:.7px; font-weight:600;
+  margin-bottom:3px; color:var(--ly, var(--accent));
+}
+
+.f101{
+  margin:26px 0 0; border:1px solid var(--accent-bd);
+  border-radius:var(--radius); background:var(--bg);
+}
+.f101 > summary{
+  display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 10px;
+  padding:15px 19px 16px; cursor:pointer; list-style:none;
+  background:var(--accent-bg); border-radius:var(--radius);
+}
+.f101 > summary::-webkit-details-marker{display:none;}
+.f101 > summary::after{
+  content:'展开'; margin-left:auto; font-size:11.5px; color:var(--accent); font-weight:600;
+}
+.f101[open] > summary{border-radius:var(--radius) var(--radius) 0 0;}
+.f101[open] > summary::after{content:'收起';}
+.f101 > summary:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+.f1-cap{
+  flex:0 0 auto; font-size:10px; letter-spacing:1.2px; font-weight:700; line-height:1.7;
+  color:#fff; background:var(--accent); border-radius:4px; padding:1px 6px;
+}
+.f1-sum{flex:1 1 auto; min-width:0; font-size:15px; font-weight:650; letter-spacing:-.2px;}
+.f1-hint{flex:0 0 auto; font-size:11.5px; color:var(--muted);}
+
+.f1-body{padding:2px 19px 20px;}
+.f1-dek{
+  margin:14px 0 18px; padding-bottom:14px; border-bottom:1px solid var(--line);
+  font-size:12.5px; color:var(--muted); line-height:1.85;
+}
+
+.f1-list{list-style:none; margin:0; padding:0;}
+.f1-list > li{padding-bottom:15px; margin-bottom:15px; border-bottom:1px dashed var(--line);}
+.f1-list > li:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
+
+.f1-h{display:flex; align-items:baseline; gap:9px; margin-bottom:8px;}
+.f1-n{
+  flex:0 0 auto; font-family:var(--mono); font-size:11px; font-weight:650; line-height:1.6;
+  color:var(--accent); border:1px solid var(--accent-bd); border-radius:5px;
+  padding:1px 6px; font-variant-numeric:tabular-nums;
+}
+.f1-t{flex:1 1 auto; min-width:0; font-size:14px; font-weight:650; letter-spacing:-.2px;}
+.f1-one{margin:0 0 11px; font-size:12.5px; color:var(--text-soft); line-height:1.85;}
+
+.f1-do{list-style:none; margin:0 0 11px; padding:0;}
+.f1-do > li{
+  position:relative; padding-left:16px; margin-bottom:8px;
+  font-size:12.5px; color:var(--text-soft); line-height:1.85;
+}
+.f1-do > li:last-child{margin-bottom:0;}
+.f1-do > li::before{
+  content:''; position:absolute; left:3px; top:.74em;
+  width:5px; height:5px; border-radius:50%; background:var(--accent-bd);
+}
+
+.f1-bad, .f1-num{margin:10px 0 0; font-size:12px; line-height:1.8;}
+.f1-bad{color:var(--text-soft);}
+.f1-num{color:var(--muted);}
+.f1-lab{
+  display:inline-block; margin-right:6px; font-size:10.5px; font-weight:600; line-height:1.7;
+  letter-spacing:.7px; color:var(--amber-tx); border:1px solid var(--amber-bd);
+  border-radius:4px; padding:0 5px;
+}
+
+@media (max-width:640px){
+  .vs-how{padding:11px 13px 12px;}
+  .f101 > summary{padding:13px 14px 14px;}
+  .f1-body{padding:2px 14px 18px;}
+  .f1-hint{display:none;}
+}
+
+@media print{
+  /* 折页在纸上打不开，所以打印时全部展开（site.js 的 beforeprint 兜底） */
+  .f101{border-color:var(--line);}
+  .f101 > summary{background:none; padding:12px 0; border-bottom:1px solid var(--line);}
+  .f101 > summary::after{display:none;}
+  .f1-hint{display:none;}
+  .f1-list > li{break-inside:avoid; page-break-inside:avoid;}
+  .vs-how{break-inside:avoid; page-break-inside:avoid;}
+}

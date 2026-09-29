@@ -158,6 +158,26 @@
     window.addEventListener('beforeprint', showAll);
   })();
 
+  /* ---------- 7b. 打印前展开所有折叠块 ----------
+     「零基础起步」通用手册是一块 <details>：屏幕上有折叠的理由（六千多字，
+     展开会把领域内容淹掉），但纸上没有——打出一根点不开的标题条毫无意义。
+     所以 beforeprint 全部展开、afterprint 还原用户原来的开合状态。 */
+  (function () {
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('details'));
+    if (!boxes.length) return;
+    var was = [];
+    window.addEventListener('beforeprint', function () {
+      was = boxes.map(function (d) { return d.open; });
+      boxes.forEach(function (d) { d.open = true; });
+    });
+    window.addEventListener('afterprint', function () {
+      boxes.forEach(function (d, i) {
+        if (typeof was[i] === 'boolean') d.open = was[i];
+      });
+      was = [];
+    });
+  })();
+
   /* ---------- 8. 可拖拽旋转的 3D 模型（含「点一下放大」） ----------
      渐进增强，四条底线：
 

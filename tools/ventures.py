@@ -959,3 +959,24 @@ VENTURES = {
 ),
 
 }
+
+
+# ---------------------------------------------------------------- 操作层注入
+#
+# 「具体怎么做」（how）单独放在 venture_how.py：判断层几年才动一次，
+# 动作层会随市场反复调，两者修订节奏不同，混在一个文件里改起来互相牵制。
+# 这里把它们合起来，并**逐条断言条数一致**——少一条就要当场报出来，
+# 不能让某一步静默地没有操作层（那正是新人最需要的那部分）。
+try:
+    from venture_how import HOW
+except ImportError:          # 单独导入本模块做数据检查时允许缺省
+    HOW = {}
+
+for _slug, _list in HOW.items():
+    assert _slug in VENTURES, f'venture_how 里有未知板块：{_slug}'
+    _steps = VENTURES[_slug]['steps']
+    assert len(_list) == len(_steps), \
+        f'{_slug}：how 有 {len(_list)} 条，但 steps 有 {len(_steps)} 步'
+    for _s, _h in zip(_steps, _list):
+        assert _h and _h.strip(), f'{_slug} 的某一步 how 是空的'
+        _s['how'] = _h

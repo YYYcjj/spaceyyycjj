@@ -44,6 +44,7 @@ from introfigs import INTRO_FIGS              # noqa: E402
 from boardskin import SKINS, DEFAULT, css_vars   # noqa: E402
 from modelrigs import RIGS, HINT                # noqa: E402
 from virtualviews import VIEWS                  # noqa: E402
+from founder101 import FOUNDER101                # noqa: E402
 from chainfigs import CHAIN_FIGS              # noqa: E402
 import spaceart                                # noqa: E402
 
@@ -54,6 +55,13 @@ for _row in boardskin.check():
 
 # 可旋转模型：构建期自检「几何体不出台面」与「默认角度下编号点不重叠」。
 # 默认角度那一条是硬要求——它同时是没有 JS 时的样子和打印出来的样子。
+import founder101                              # noqa: E402
+assert len(FOUNDER101['steps']) == 10, '通用手册应固定为十节'
+for _f in FOUNDER101['steps']:
+    assert _f['do'] and len(_f['do']) >= 3, f'手册 {_f["n"]} 节的具体动作太少'
+    for _k in ('n', 't', 'one', 'do', 'bad', 'num'):
+        assert _f.get(_k), f'手册 {_f["n"]} 节缺少 {_k}'
+
 import modelrigs                               # noqa: E402
 _MODEL_PROBS = modelrigs.check()
 assert not _MODEL_PROBS, ('模型自检不通过：\n  ' + '\n  '.join(_MODEL_PROBS))
@@ -558,6 +566,40 @@ def render_theory_fig(slug, part, num, indent='      '):
     )
 
 
+def render_founder101():
+    """「零基础起步」通用手册：九个板块共用同一份，默认折叠。
+
+    为什么折叠：它有六千多字，展开会把这一层真正的领域内容淹掉；
+    但完全不放又不行——新人缺的恰恰是这些和方向无关的操作常识。
+    所以做成一块显眼的折页，需要时展开。打印时会自动全部展开（见 site.js）。
+    """
+    steps = '\n'.join(
+        f'          <li>\n'
+        f'            <div class="f1-h"><span class="f1-n">{s["n"]}</span>'
+        f'<span class="f1-t">{rich(s["t"])}</span></div>\n'
+        f'            <p class="f1-one">{rich(s["one"])}</p>\n'
+        f'            <ul class="f1-do">'
+        + ''.join(f'<li>{rich(x)}</li>' for x in s['do'])
+        + '</ul>\n'
+        f'            <p class="f1-bad"><span class="f1-lab">最常见的错</span>'
+        f'{rich(s["bad"])}</p>\n'
+        f'            <p class="f1-num">{rich(s["num"])}</p>\n'
+        f'          </li>'
+        for s in FOUNDER101['steps'])
+    return (
+        '      <details class="f101">\n'
+        '        <summary>'
+        '<span class="f1-cap">通用</span>'
+        f'<span class="f1-sum">{FOUNDER101["title"]}</span>'
+        '<span class="f1-hint">十个步骤</span>'
+        '</summary>\n'
+        '        <div class="f1-body">\n'
+        f'          <p class="f1-dek">{rich(FOUNDER101["dek"])}</p>\n'
+        '          <ol class="f1-list">\n' + steps + '\n          </ol>\n'
+        '        </div>\n'
+        '      </details>\n')
+
+
 def render_venture(b):
     """把 venture 数据渲染成：切入点 → 赛道判断 → 五个阶段（八字段）→ 最该避免的事。"""
     v = b.get('venture')
@@ -571,6 +613,11 @@ def render_venture(b):
         f'        </div>'
         for key, lab in TRACK_FIELDS)
 
+    # 操作层（how）必须每一步都有。少了它，这一层就退回成「写给懂行的人」的路线图，
+    # 而新人最需要的恰恰是「这一步具体做什么」。
+    _missing = [s['p'] for s in v['steps'] if not s.get('how')]
+    assert not _missing, f'板块 {b["slug"]} 这几步缺少 how：{_missing}'
+
     items = []
     num = 1                       # 理论图在层内统一编号：赛道判断 = 1，五个阶段 = 2..6
     for i, s in enumerate(v['steps'], 1):
@@ -583,6 +630,8 @@ def render_venture(b):
             f'            <span class="vs-w">{rich(s["w"])}</span>\n'
             f'          </div>\n'
             f'          <p class="vs-do">{rich(s["do"])}</p>\n'
+            f'          <p class="vs-how"><span class="lb">具体怎么做</span>'
+            f'{rich(s["how"])}</p>\n'
             f'          <div class="vs-meta">\n'
             f'            <span class="vs-md"><span class="lb">卖什么给谁</span>{rich(s["mode"])}</span>\n'
             f'            <span class="vs-bn"><span class="lb">这一步要投多少</span>{rich(s["burn"])}</span>\n'
@@ -616,12 +665,13 @@ def render_venture(b):
         '      <div class="note info">\n'
         f'        {rich(v["note"])}\n'
         '      </div>\n'
+        + render_founder101() +
         '    </section>'
     )
     # 标签必须用 .lb，不能用 <b>：正文加粗也是 <b>，
     # 一旦给 <b> 配上 display:block，正文里的加粗就会独占一行、标点被甩下去。
     _n_lb = html.count('class="lb"')
-    _want = len(v['steps']) * 5
+    _want = len(v['steps']) * 6
     assert _n_lb == _want, \
         f'板块 {b["slug"]} 路线图的标签数应为 {_want}，实际 {_n_lb}'
     return html
