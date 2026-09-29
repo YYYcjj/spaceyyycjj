@@ -72,7 +72,8 @@ PAL = {
 # 明暗差要拉开：台面是浅色的，明暗差小的话浅色件会糊在背景里（截图看过，
 # 第一版顶面 +0.24 / 右侧 −0.15 的两档几乎分不出来）。
 LIGHT = {'fr': 0.06, 'bk': -0.30, 'rt': -0.24, 'lf': 0.15, 'tp': 0.31, 'bt': -0.44}
-EDGE = -0.55          # 描边 = 基色再压暗，保证浅色件在浅色底上也有轮廓
+EDGE = -0.47          # 描边 = 基色再压暗，保证浅色件在浅色底上也有轮廓。
+# 别压得太狠：圆柱一周十几个面片，每条边都算一条竖线，深了就是一层网格。
 
 # 圆柱侧面的光照方向（由外法线算 lambert）
 LX, LY, LZ = -0.42, 0.70, 0.58
@@ -147,31 +148,135 @@ def _proj(v, rx, ry):
 
 def _rot1(axis, deg, v):
     """单个 CSS 轴旋转（与 _rot 同样的约定），作用于向量 v。"""
+    if axis is None:
+        return v
     a = math.radians(deg)
     x, y, z = v
     if axis == 'X':
         return (x, y * math.cos(a) - z * math.sin(a), y * math.sin(a) + z * math.cos(a))
     if axis == 'Y':
         return (x * math.cos(a) + z * math.sin(a), y, -x * math.sin(a) + z * math.cos(a))
-    return (x, y, z)
+    return (x * math.cos(a) - y * math.sin(a), x * math.sin(a) + y * math.cos(a), z)
 
 
-def _rot_css(axis, deg):
-    return '' if axis is None else f'rotate{axis}({_f(deg)}deg) '
+def _rots_css(rots):
+    """[(轴, 角度)] → CSS 片段，顺序即 CSS 书写顺序（左侧先作用于最终结果）。"""
+    return ''.join(f'rotate{ax}({_f(dg)}deg) ' for ax, dg in rots if ax)
+
+
+def _rots_apply(rots, v):
+    """把同一串旋转作用到向量 v 上。
+
+    ⚠️ 必须**逆序**：CSS 的 `rotateX(a) rotateY(b)` 表示矩阵 Rx·Ry，点 p 先被 Ry 作用。
+    所以这里也要从右往左套。_emitted_bbox 用它对渲染参数做反解，顺序错了会算出
+    完全不同的朝向，而「包围盒与几何对不上」那条断言会立刻报出来。
+    """
+    for ax, dg in reversed(rots):
+        v = _rot1(ax, dg, v)
+    return v
 
 
 def _tf(face, k):
-    """把「(轴, 角度) + 距离」拼成 CSS 变换字符串。
+    """把「偏移 + 一串旋转 + 距离」拼成 CSS 变换字符串。
 
-    ⚠️ **距离必须在这里乘 k**。第一版把整串变换在 box() 里就拼好了，于是面片的长宽
-    按 k 缩放了、translateZ 的位移没有——k≈1 时看不出来（星舰 k=1.14 完全正常），
-    k=3.44 的机器人直接崩成一个十字展开图。别再把变换字符串提前拼死。
+    三个部分都要乘 k：
+      · **距离**必须乘。第一版把整串变换在 box() 里就拼好了，于是面片的长宽
+        按 k 缩放了、translateZ 的位移没有——k≈1 时看不出来（星舰 k=1.14 完全正常），
+        k=3.44 的机器人直接崩成一个十字展开图。别再把变换字符串提前拼死。
+      · **偏移**（off）是面片相对部件原点的额外位移，同样要乘——环面片段、法兰螺栓、
+        斜撑这些全靠它摆位。
+      · 偏移写在最左侧（最先作用于最终结果=最后生效），所以它是在**世界轴**上平移的，
+        不受后面旋转影响。这正是「把这一小片放到那个坐标」想要的行为。
     """
-    return f'{_rot_css(face["ax"], face["deg"])}translateZ({_f(face["z"] * k)}px)'
+    off = face.get('off')
+    pre = ''
+    if off and any(off):
+        pre = (f'translate3d({_f(off[0] * k)}px,{_f(-off[1] * k)}px,'
+               f'{_f(off[2] * k)}px) ')
+    return (f'{pre}{_rots_css(face["rots"])}'
+            f'translateZ({_f(face["z"] * k)}px)')
 
 
-def _face(axis, deg, z, w, h, col, sc, nm=''):
-    return dict(nm=nm, ax=axis, deg=deg, z=z, w=w, h=h, col=col, sc=sc)
+# ---------------------------------------------------------------- 面片纹理
+#
+# 纹理是「精细度」里最便宜的一档：不用多一个面片，只在面上叠一层 CSS 渐变，
+# 就能把「一块光板」变成「有焊缝/瓦缝/加强筋/格栅的蒙皮」。
+#
+# 两个约定：
+#   1. **周期按世界单位给，渲染时才乘 k**。否则同一个纹理在大模型上是密麻点、
+#      在小模型上是大格子，模型之间就不像一套东西了。
+#   2. 线条一律半透明黑 + 半透明白。这样纹理叠加在六面明暗之上时，仍然是
+#      「同一块材料在不同受光下」，而不是贴了一层死色。
+# 对比度刻意压得比较低：这些线是**成百上千条**叠在一起的，一条线看着不重，
+# 密起来就是一层网。第一版用 .30/.34，截图里整个箭体像贴了瓷砖。
+DKG, WHT = 'rgba(20,24,32,.19)', 'rgba(255,255,255,.24)'
+
+
+def _tex_css(name, pv, ph):
+    """返回 (background-image, background-size)。
+
+    pv / ph 是**渲染像素**周期：pv 沿面片高度（横线之间的间距），
+    ph 沿面片宽度（竖线之间的间距）。两者分开传，是因为回转体的侧面片要把周期
+    **对齐到自身的宽高**（见下面 _faces_html 里的说明），否则每张面片各自从左上角
+    起铺，相邻面片之间会错半个周期，一整圈看过去就是一片砖墙。
+    """
+    if not name:
+        return '', ''
+    p = max(3.0, pv)
+    q = max(3.0, ph)
+    if name == 'seam':
+        # 环向焊缝的**细纹**层。主要的几条环缝是几何分段做出来的（cyl 的 segs），
+        # 纹理只负责补上更细的那一层。
+        #
+        # ⚠️ 别指望纹理能当主结构线：相邻面片的倾斜角不同，屏幕上的周期就不同，
+        # 一条横线穿过十几个面片之后会累计错开好几个像素，看着像砖墙。
+        # 几何棱线没有这个问题（它是真的 3D 边），所以该用几何的地方别用纹理。
+        return (f'repeating-linear-gradient(180deg,rgba(20,24,32,.16) 0 1.4px,'
+                f'transparent 1.4px {_f(p)}px)', '')
+    if name == 'rib':           # 纵向加强筋：竖线，左侧压暗、右侧提亮
+        return (f'repeating-linear-gradient(90deg,{DKG} 0 1.4px,{WHT} 1.4px 2.8px,'
+                f'transparent 2.8px {_f(q)}px)', '')
+    if name == 'tile':          # 热盾瓦片：正交砖缝
+        return (f'repeating-linear-gradient(180deg,{DKG} 0 1.2px,transparent 1.2px '
+                f'{_f(p)}px),'
+                f'repeating-linear-gradient(90deg,{DKG} 0 1.2px,transparent 1.2px '
+                f'{_f(q * .82)}px)', '')
+    if name == 'plate':         # 蒙皮拼板：稀疏方格，缝很淡
+        return (f'repeating-linear-gradient(180deg,rgba(20,24,32,.14) 0 1px,'
+                f'transparent 1px {_f(p)}px),'
+                f'repeating-linear-gradient(90deg,rgba(20,24,32,.14) 0 1px,'
+                f'transparent 1px {_f(q * 1.35)}px)', '')
+    if name == 'grid':          # 太阳能板格栅：密格
+        return (f'repeating-linear-gradient(180deg,{DKG} 0 1px,transparent 1px '
+                f'{_f(p)}px),'
+                f'repeating-linear-gradient(90deg,{DKG} 0 1px,transparent 1px '
+                f'{_f(q)}px)', '')
+    if name == 'slat':          # 百叶散热板：单向粗条纹
+        return (f'repeating-linear-gradient(180deg,rgba(20,24,32,.18) 0 2px,'
+                f'transparent 2px {_f(p)}px)', '')
+    if name == 'tube':          # 喷管再生冷却管束：极密的竖条
+        return (f'repeating-linear-gradient(90deg,rgba(20,24,32,.24) 0 1.2px,'
+                f'transparent 1.2px {_f(q)}px)', '')
+    if name == 'dot':           # 点阵：舷窗、指示灯、螺栓环
+        return (f'radial-gradient(circle at 50% 50%,rgba(24,30,40,.32) 0 1.5px,'
+                f'transparent 2.1px)', f'{_f(q)}px {_f(p)}px')
+    if name == 'stripe':        # 斜条纹：警示/检修带
+        return (f'repeating-linear-gradient(45deg,rgba(20,24,32,.15) 0 3px,'
+                f'transparent 3px {_f(p)}px)', '')
+    return '', ''
+
+
+def _face(rots, z, w, h, col, sc, nm='', tex=None, tp=None, clip=None, off=None,
+          noedge=False):
+    """一张面片。
+
+    rots 是 [(轴, 角度)]，按 CSS 书写顺序（左起先作用于最终结果）。
+    z 是沿面片法线的位移；off 是相对部件原点的**世界轴**额外位移（环面、螺栓、斜撑用它）。
+    clip 是 clip-path 的 polygon 百分比串（把矩形裁成梯形，锥面靠它精确）。
+    tex / tp 是纹理名与周期（世界单位；渲染时乘 k）。
+    """
+    return dict(nm=nm, rots=tuple(rots), z=z, w=w, h=h, col=col, sc=sc,
+                tex=tex, tp=tp, clip=clip, off=off, noedge=noedge)
 
 
 # ---------------------------------------------------------------- 模型
@@ -190,51 +295,423 @@ class M3D:
         self._pins = []       # dict(n, at, label)
 
     # ------------------------------------------------------------ 几何体
-    def box(self, x, y, z, w, h, d, c='steel', op=None):
+    def box(self, x, y, z, w, h, d, c='steel', op=None, tex=None, tp=None):
         """轴对齐长方体，参数是**左下后角**与三边长度（y 向上）。"""
         c = PAL.get(c, c)          # 色名 → 十六进制。渲染时只认十六进制，别把色名传下去
         cx, cy, cz = x + w / 2.0, y + h / 2.0, z + d / 2.0
         hw, hh, hd = w / 2.0, h / 2.0, d / 2.0
         faces = [
-            _face(None, 0, hd, w, h, c, LIGHT['fr'], 'fr'),
-            _face('Y', 180, hd, w, h, c, LIGHT['bk'], 'bk'),
-            _face('Y', 90, hw, d, h, c, LIGHT['rt'], 'rt'),
-            _face('Y', -90, hw, d, h, c, LIGHT['lf'], 'lf'),
-            _face('X', 90, hh, w, d, c, LIGHT['tp'], 'tp'),
-            _face('X', -90, hh, w, d, c, LIGHT['bt'], 'bt'),
+            _face([], hd, w, h, c, LIGHT['fr'], 'fr', tex, tp),
+            _face([('Y', 180)], hd, w, h, c, LIGHT['bk'], 'bk', tex, tp),
+            _face([('Y', 90)], hw, d, h, c, LIGHT['rt'], 'rt', tex, tp),
+            _face([('Y', -90)], hw, d, h, c, LIGHT['lf'], 'lf', tex, tp),
+            _face([('X', 90)], hh, w, d, c, LIGHT['tp'], 'tp', tex, tp),
+            _face([('X', -90)], hh, w, d, c, LIGHT['bt'], 'bt', tex, tp),
         ]
         pts = [(cx + sx * hw, cy + sy * hh, cz + sz * hd)
                for sx in (-1, 1) for sy in (-1, 1) for sz in (-1, 1)]
         self._parts.append(dict(anchor=(cx, cy, cz), faces=faces, pts=pts, op=op))
         return self
 
-    def cyl(self, x, y0, z, r, h, c='steel', n=16, op=None):
-        """竖直圆柱。y0 是底面高度，h 是高度，轴线在 (x, z)。"""
-        c = PAL.get(c, c)          # 同上：色名在这一层就解掉
-        cy = y0 + h / 2.0
-        chord = 2 * r * math.sin(math.pi / n) * 1.08   # 弦长 ×1.08，相邻面带一点重叠，免得漏缝
+    def _cyl_side(self, c, n, r_of, y_of, segs, tex, tp):
+        """圆筒/锥筒的侧面片：分 segs 段，每段用 clip-path 裁成精确梯形。
+
+        抽出来是因为 cyl / frustum / nozzle 本质上都是「半径随高度变」的回转体，
+        只是 r(t) 不同。分开写的话，弦长系数、重叠、明暗这三处细节就有三份实现，
+        迟早会漂移。
+
+        ⚠️ `y_of(t)` 必须返回**相对部件中心**的高度，不能是绝对高度：它直接当 off 用，
+        而 off 是相对 anchor 的。传绝对高度会让整圈侧面片整体平移掉一个 anchor 的量
+        （报出来是「渲染包围盒与几何包围盒对不上，且差值很整齐」，容易误判成缩放系数问题）。
+        """
         faces = []
         for i in range(n):
             th = 360.0 * i / n
             t = math.radians(th)
             nx, nz = math.sin(t), math.cos(t)
-            lam = max(0.0, nx * LX + nz * LZ + LY * 0.0)
-            sc = min(max(-0.34 + 0.64 * lam, -0.34), 0.30)
-            faces.append(_face('Y', th, r, chord, h, c, sc, f's{i}'))
-        faces.append(_face('X', 90, h / 2, 2 * r, 2 * r, c, LIGHT['tp'], 'cap'))
-        faces.append(_face('X', -90, h / 2, 2 * r, 2 * r, c, LIGHT['bt'], 'cb'))
+            lam = max(0.0, nx * LX + nz * LZ)
+            sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+            for s in range(segs):
+                t0, t1 = s / segs, (s + 1) / segs
+                r0, r1 = r_of(t0), r_of(t1)
+                y0, y1 = y_of(t0), y_of(t1)
+                segh = abs(y1 - y0) * 1.03          # 纵向也留 3% 重叠，免得段缝露背景
+                rm = (r0 + r1) / 2.0
+                chord = 2 * rm * math.sin(math.pi / n) * 1.10
+                clip = None
+                if abs(r1 - r0) > 0.01 and r0 > 0.01:
+                    inset = (1.0 - min(r1, r0) / max(r1, r0)) * 50.0
+                    top, bot = (inset, 0.0) if r1 < r0 else (0.0, inset)
+                    clip = (f'polygon({_f(top)}% 0,{_f(100 - top)}% 0,'
+                            f'{_f(100 - bot)}% 100%,{_f(bot)}% 100%)')
+                faces.append(_face([('Y', th)], rm, chord, segh, c, sc,
+                                   f's{i}_{s}', tex, tp, clip=clip,
+                                   off=(0, (y0 + y1) / 2.0, 0), noedge=True))
+        return faces
+
+    def _tube_faces(self, c, n, r, h, axis, tex, tp, caps=True, segs=1):
+        """绕给定轴的圆筒侧面 + 两个端盖。
+
+        三种朝向都只用到**一个**轴旋转，所以 _emitted_bbox 那套单轴反解照样成立：
+          · axis='y'：法线在 x-z 平面 → rotateY(th)
+          · axis='x'：法线在 y-z 平面 → rotateX(th)
+          · axis='z'：法线在 x-y 平面 → 需要 rotateZ(th) rotateX(90deg)
+            （rotateZ 不动 z 轴，所以必须先把面片转平再绕 z 铺开）
+        三种的本地 x / y 轴落点不同，宽度与高度要跟着换位置，这个别照抄。
+        """
+        faces = []
+        for i in range(n):
+            th = 360.0 * i / n
+            t = math.radians(th)
+            if axis == 'y':
+                nx, ny, nz = math.sin(t), 0.0, math.cos(t)
+                rots = [('Y', th)]
+            elif axis == 'x':
+                nx, ny, nz = 0.0, -math.sin(t), math.cos(t)
+                rots = [('X', th)]
+            else:
+                nx, ny, nz = math.sin(t), -math.cos(t), 0.0
+                rots = [('Z', th), ('X', 90)]
+            lam = max(0.0, nx * LX + ny * LY + nz * LZ)
+            # 明暗系数别给大：一圈十几二十个面片，相邻两片法线差十几度，
+            # 系数一大就是一层竖向条纹，整根箭体看着像棱柱而不是筒。
+            # 0.46 还能看出圆，又不会把「筒」切成一瓣一瓣。
+            sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+            chord = 2 * r * math.sin(math.pi / n) * 1.10    # ×1.10 重叠，免得漏缝
+            for si in range(max(1, segs)):
+                f0, f1 = si / float(segs) - 0.5, (si + 1) / float(segs) - 0.5
+                a_mid = (f0 + f1) / 2.0 * h
+                segh = abs(f1 - f0) * h * 1.04              # 纵向也留 4% 重叠
+                # ⚠️ 面片的宽/高与轴的关系每种朝向都不同，别照抄：
+                #   axis='x'：局部 x = 轴向（宽给段高），局部 y = 切向（高给 chord）
+                #   axis='y' / 'z'：局部 x = 切向（宽给 chord），局部 y = 轴向（高给段高）
+                # 传反了不会报错、也不会崩，只是整根圆柱会变成一个「薄片十字」，
+                # 靠「渲染包围盒 == 几何包围盒」那条断言才会漏出来（cyl-z 就这么被抓到）。
+                if axis == 'x':
+                    w, hh, off = segh, chord, (a_mid, 0.0, 0.0)
+                elif axis == 'y':
+                    w, hh, off = chord, segh, (0.0, a_mid, 0.0)
+                else:
+                    w, hh, off = chord, segh, (0.0, 0.0, a_mid)
+                faces.append(_face(rots, r, w, hh, c, sc, f's{i}_{si}', tex, tp,
+                                   noedge=True, off=off))
+        if caps:
+            if axis == 'y':
+                faces.append(_face([('X', 90)], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['tp'], 'cap', tex, tp))
+                faces.append(_face([('X', -90)], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['bt'], 'cb', tex, tp))
+            elif axis == 'x':
+                faces.append(_face([('Y', 90)], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['rt'], 'cap', tex, tp))
+                faces.append(_face([('Y', -90)], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['lf'], 'cb', tex, tp))
+            else:
+                faces.append(_face([], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['fr'], 'cap', tex, tp))
+                faces.append(_face([('Y', 180)], h / 2.0, 2 * r, 2 * r, c,
+                                   LIGHT['bk'], 'cb', tex, tp))
+        return faces
+
+    def cyl(self, x, y0, z, r, h, c='steel', n=16, op=None, axis='y',
+            tex=None, tp=None, caps=True, segs=1):
+        """圆柱。默认竖直（y0 是底面高度，轴线在 (x, z)）；axis='x' / 'z' 可横放。
+
+        横放是「精细度」的必要条件：滚轮、横置贮罐、铰链轴、滚筒这些全是躺着的，
+        原先只能用竖直圆柱硬凑，看起来像钉子。
+        """
+        c = PAL.get(c, c)
+        faces = self._tube_faces(c, n, r, h, axis, tex, tp, caps, segs)
+        if axis == 'y':
+            anchor = (x, y0 + h / 2.0, z)
+            pts = [(x + r * math.sin(2 * math.pi * i / 12), yy,
+                    z + r * math.cos(2 * math.pi * i / 12))
+                   for i in range(12) for yy in (y0, y0 + h)]
+        elif axis == 'x':
+            anchor = (x, y0, z)
+            pts = [(xx, y0 + r * math.sin(2 * math.pi * i / 12),
+                    z + r * math.cos(2 * math.pi * i / 12))
+                   for i in range(12) for xx in (x - h / 2.0, x + h / 2.0)]
+        else:
+            anchor = (x, y0, z)
+            pts = [(x + r * math.cos(2 * math.pi * i / 12),
+                    y0 + r * math.sin(2 * math.pi * i / 12),
+                    zz) for i in range(12) for zz in (z - h / 2.0, z + h / 2.0)]
+        self._parts.append(dict(anchor=anchor, faces=faces, pts=pts, op=op,
+                                cap=bool(caps)))
+        return self
+
+    def frustum(self, x, y0, z, r0, r1, h, c='steel', n=16, segs=1, op=None,
+                tex=None, tp=None, cap_top=True, cap_bot=True):
+        """圆台 / 圆锥。r0 是底半径、r1 是顶半径（给 0 就是圆锥）。
+
+        鼻锥、喷管扩张段、抛物面天线、过渡段全靠它——原先这些东西都是用等径
+        圆柱硬凑的，所以看起来像个罐头。segs > 1 时半径分段线性，段缝正好
+        成了「面板拼装」的视觉线索。
+        """
+        c = PAL.get(c, c)
+        faces = self._cyl_side(c, n, lambda t: r0 + (r1 - r0) * t,
+                               lambda t: h * (t - 0.5), max(1, segs), tex, tp)
+        # 端盖**不给 off**：`rotateX(90) translateZ(h/2)` 已经把面片送到 anchor 上方 h/2，
+        # 再补一个同样大小的 off 就是叠两次，整个顶盖会飞出去一倍高度。
+        if cap_top and r1 > 0.01:
+            faces.append(_face([('X', 90)], h / 2.0, 2 * r1, 2 * r1, c,
+                               LIGHT['tp'], 'cap', tex, tp))
+        if cap_bot and r0 > 0.01:
+            faces.append(_face([('X', -90)], h / 2.0, 2 * r0, 2 * r0, c,
+                               LIGHT['bt'], 'cb', tex, tp))
+        pts = []
+        for i in range(12):
+            t = 2 * math.pi * i / 12
+            pts.append((x + r0 * math.sin(t), y0, z + r0 * math.cos(t)))
+            if r1 > 0.01:
+                pts.append((x + r1 * math.sin(t), y0 + h, z + r1 * math.cos(t)))
+        self._parts.append(dict(anchor=(x, y0 + h / 2.0, z), faces=faces, pts=pts,
+                                op=op, cap=True))
+        return self
+
+    def dome(self, x, y0, z, r, h, c='steel', n=12, segs=3, op=None,
+             tex=None, tp=None):
+        """穹顶 / 球冠。半径按 cos、高度按 sin 收口，用 segs 段圆台叠出来。
+
+        贮箱端头、球罐、观察穹顶用它。segs=3 就已经看不出折线了。
+        """
+        c = PAL.get(c, c)
+        faces = []
+        for i in range(n):
+            th = 360.0 * i / n
+            t = math.radians(th)
+            lam = max(0.0, math.sin(t) * LX + math.cos(t) * LZ)
+            for s in range(max(1, segs)):
+                f0, f1 = s / float(segs), (s + 1) / float(segs)
+                g0, g1 = math.cos(math.pi / 2 * f0), math.cos(math.pi / 2 * f1)
+                y_0, y_1 = math.sin(math.pi / 2 * f0) * h, math.sin(math.pi / 2 * f1) * h
+                sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+                rm = (r * g0 + r * g1) / 2.0
+                if rm < 0.05:
+                    continue
+                clip = None
+                if g0 > 0.01:
+                    inset = (1.0 - g1 / g0) * 50.0 if g1 < g0 else 0.0
+                    clip = (f'polygon({_f(inset)}% 0,{_f(100 - inset)}% 0,'
+                            f'100% 100%,0 100%)')
+                # off 是**相对锚点**的：锚点取穹顶的几何中心（y0+h/2），所以要减掉 h/2。
+                # 少了这一减，整顶会整体上移 h/2，而且聚焦时部件会飞出取景框
+                # （聚焦是按锚点缩放平移的，锚点不在几何中心就一定会偏）。
+                faces.append(_face([('Y', th)], rm,
+                                   2 * rm * math.sin(math.pi / n) * 1.10,
+                                   abs(y_1 - y_0) * 1.06 + 0.3, c, sc, f's{i}_{s}',
+                                   tex, tp, clip=clip,
+                                   off=(0, (y_0 + y_1) / 2.0 - h / 2.0, 0)))
         pts = []
         for i in range(12):
             t = 2 * math.pi * i / 12
             pts.append((x + r * math.sin(t), y0, z + r * math.cos(t)))
-            pts.append((x + r * math.sin(t), y0 + h, z + r * math.cos(t)))
-        self._parts.append(dict(anchor=(x, cy, z), faces=faces, pts=pts, op=op,
-                                cap=True))
+            for f in (0.5, 1.0):
+                rr = r * math.cos(math.pi / 2 * f)
+                pts.append((x + rr * math.sin(t),
+                            y0 + math.sin(math.pi / 2 * f) * h,
+                            z + rr * math.cos(t)))
+        self._parts.append(dict(anchor=(x, y0 + h / 2.0, z), faces=faces, pts=pts,
+                                op=op, cap=True))
         return self
 
-    def plate(self, x, y, z, w, d, c='blue2', t=1.6, op=None):
+    def nozzle(self, x, y0, z, rc, re, h, c='dark', n=14, segs=4, op=None,
+               tex='tube', tp=3.2):
+        """钟形喷管：从喉部 rc 扩到出口 re，半径按指数曲线走。
+
+        真实喷管不是圆锥（前段收得快、后段平缓），用 t**1.7 近似。
+        tex 默认给管束纹理——再生冷却的管束本来就是喷管最好认的特征。
+        """
+        c = PAL.get(c, c)
+        r_of = lambda t: rc + (re - rc) * (t ** 1.7)     # noqa: E731
+        faces = self._cyl_side(c, n, r_of, lambda t: h * (t - 0.5), max(1, segs), tex, tp)
+        if rc > 0.01:
+            faces.append(_face([('X', -90)], h / 2.0, 2 * rc, 2 * rc, c,
+                               LIGHT['bt'], 'cb'))
+        pts = []
+        for i in range(12):
+            t = 2 * math.pi * i / 12
+            for f in (0.0, 0.5, 1.0):
+                rr = rc + (re - rc) * (f ** 1.7)
+                pts.append((x + rr * math.sin(t), y0 + h * f, z + rr * math.cos(t)))
+        self._parts.append(dict(anchor=(x, y0 + h / 2.0, z), faces=faces, pts=pts,
+                                op=op, cap=True))
+        return self
+
+    def taper(self, x, y0, z, w0, d0, w1, d1, h, c='steel', op=None, tex=None, tp=None):
+        """四棱台（下大上小）。翼面、头锥、整流罩、渐缩过渡段用它。
+
+        四个侧面用 clip-path 裁成**精确梯形**——矩形硬拼会让翼面看起来是块砖。
+        梯形是沿面片自身的宽度方向缩的，所以段缝、斜边都跟真的一样。
+        """
+        c = PAL.get(c, c)
+        hw0, hd0, hw1, hd1 = w0 / 2.0, d0 / 2.0, w1 / 2.0, d1 / 2.0
+
+        def tri(a0, a1, w_, sc, clip_axis='w'):
+            """一张梯形侧面片：上边宽 a1、下边宽 a0（同一坐标轴上的尺寸）。"""
+            lo, hi = min(a0, a1), max(a0, a1)
+            ins = (1.0 - lo / hi) * 50.0 if hi > 0.01 else 0.0
+            top, bot = (ins, 0.0) if a1 < a0 else (0.0, ins)
+            clip = (f'polygon({_f(top)}% 0,{_f(100 - top)}% 0,'
+                    f'{_f(100 - bot)}% 100%,{_f(bot)}% 100%)')
+            return _face([], 0.0, hi, h * 1.015, c, sc, 'sd', tex, tp, clip=clip)
+
+        faces = [
+            dict(tri(w0, w1, w0, LIGHT['fr']), rots=[], off=(0, 0, (hd0 + hd1) / 2.0)),
+            dict(tri(w0, w1, w0, LIGHT['bk']), rots=[('Y', 180)],
+                 off=(0, 0, -(hd0 + hd1) / 2.0)),
+            dict(tri(d0, d1, d0, LIGHT['rt']), rots=[('Y', 90)],
+                 off=((hw0 + hw1) / 2.0, 0, 0)),
+            dict(tri(d0, d1, d0, LIGHT['lf']), rots=[('Y', -90)],
+                 off=(-(hw0 + hw1) / 2.0, 0, 0)),
+            _face([('X', 90)], h / 2.0, w1, d1, c, LIGHT['tp'], 'cap', tex, tp),
+            _face([('X', -90)], h / 2.0, w0, d0, c, LIGHT['bt'], 'cb', tex, tp),
+        ]
+        pts = []
+        for sx in (-1, 1):
+            for sz in (-1, 1):
+                pts.append((x + sx * hw0, y0, z + sz * hd0))
+                pts.append((x + sx * hw1, y0 + h, z + sz * hd1))
+        self._parts.append(dict(anchor=(x, y0 + h / 2.0, z), faces=faces, pts=pts,
+                                op=op, cap=True))
+        return self
+
+    def ring(self, x, y0, z, ro, ri, h, c='steel', n=12, op=None, tex=None, tp=None,
+             inner=True):
+        """环形箍 / 法兰 / 对接环。外壁 + 内壁 + 上环面 + 下环面。
+
+        原先的「级间段」「热分离环」都是一个实心短圆柱，转到侧面就露馅——
+        环是**中空**的，内壁那圈暗面正是它区别于圆盘的地方。
+
+        `inner=False` 只留「外壁 + 上环面」，面片数减半，用在**套在箭体外面**的箍上：
+        那种地方内壁本来就被箭体挡住，底环面也永远看不到。
+        """
+        c = PAL.get(c, c)
+        rm = (ro + ri) / 2.0
+        wann = (ro - ri)
+        faces = []
+        for i in range(n):
+            th = 360.0 * i / n
+            t = math.radians(th)
+            nx, nz = math.sin(t), math.cos(t)
+            lam = max(0.0, nx * LX + nz * LZ)
+            sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+            faces.append(_face([('Y', th)], ro, 2 * ro * math.sin(math.pi / n) * 1.10,
+                               h, c, sc, f'o{i}', tex, tp, noedge=True))
+            if inner:
+                faces.append(_face([('Y', th)], ri, wann * 0.92, h, c,
+                                   max(-0.62, sc - 0.34), f'i{i}', tex, tp,
+                                   noedge=True))
+            for s, d in (((1, h / 2.0),) if not inner else ((1, h / 2.0), (-1, h / 2.0))):
+                # 环面片：水平（法线 ±y）且切向要与 th 对齐，所以是
+                # `rotateY(th) rotateX(±90deg)`——只靠 rotateX 的话面片永远朝着世界 x 轴，
+                # 一圈环面会变成一圈互相垂直的碎片。位置交给 off（径向）与 translateZ（轴向）。
+                faces.append(_face([('Y', th), ('X', 90 * s)], s * h / 2.0,
+                                   2 * rm * math.sin(math.pi / n) * 1.10, wann * 1.06,
+                                   c, LIGHT['tp'] if s > 0 else LIGHT['bt'],
+                                   f'a{i}{s}', tex, tp,
+                                   off=(rm * nx, 0.0, rm * nz)))
+        pts = []
+        for i in range(12):
+            t = 2 * math.pi * i / 12
+            for rr in (ri, ro):
+                for yy in (y0, y0 + h):
+                    pts.append((x + rr * math.sin(t), yy, z + rr * math.cos(t)))
+        self._parts.append(dict(anchor=(x, y0 + h / 2.0, z), faces=faces, pts=pts,
+                                op=op, cap=True))
+        return self
+
+    def arc(self, x, y0, z, r, h, a0, a1, c='steel', n=6, segs=1, op=None,
+            tex=None, tp=None, cap_top=False, cap_bot=False):
+        """圆柱面上的一段**弧形贴片**（角度 a0→a1，度）。
+
+        很多细节只占圆周的一段：迎风面的热盾瓦片区、一圈舷窗带、局部蒙皮补片、
+        整流罩的半边。用整圈圆柱去凑会多出十几张永远看不见的面，用 box 去凑
+        又贴不上曲面。
+
+        ⚠️ 锚点取弧的几何中心（弦中点），所以面片的位置靠 off 给、translateZ 留 0。
+        不能用「锚点在轴心 + translateZ(r)」那套——那样锚点就不在几何中心了，
+        而锚点必须在几何中心是聚焦功能的前提（见 problems 里的断言）。
+        """
+        c = PAL.get(c, c)
+        a0, a1 = float(a0), float(a1)
+        dth = (a1 - a0) / n
+        faces, pts = [], []
+        for i in range(n):
+            th0, th1 = a0 + i * dth, a0 + (i + 1) * dth
+            thm = (th0 + th1) / 2.0
+            t = math.radians(thm)
+            nx, nz = math.sin(t), math.cos(t)
+            lam = max(0.0, nx * LX + nz * LZ)
+            sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+            chord = 2 * r * math.sin(math.radians(abs(dth)) / 2.0) * 1.10
+            faces.append(_face([('Y', thm)], 0.0, chord, h * 1.02, c, sc, f'a{i}',
+                               tex, tp, noedge=True))
+            pts.append((x + r * nx, y0, z + r * nz))
+            pts.append((x + r * nx, y0 + h, z + r * nz))
+        for th in (a0, a1):
+            t = math.radians(th)
+            pts.append((x + r * math.sin(t), y0, z + r * math.cos(t)))
+            pts.append((x + r * math.sin(t), y0 + h, z + r * math.cos(t)))
+        xs = [q[0] for q in pts]
+        ys = [q[1] for q in pts]
+        zs = [q[2] for q in pts]
+        ax, ay, az = ((min(xs) + max(xs)) / 2.0, (min(ys) + max(ys)) / 2.0,
+                      (min(zs) + max(zs)) / 2.0)
+        for i, fc in enumerate(faces):
+            thm = a0 + (i + 0.5) * dth
+            t = math.radians(thm)
+            fc['off'] = (x + r * math.sin(t) - ax, y0 + h / 2.0 - ay,
+                         z + r * math.cos(t) - az)
+        self._parts.append(dict(anchor=(ax, ay, az), faces=faces, pts=pts, op=op))
+        return self
+
+    def sphere(self, x, y, z, r, c='steel', n=10, nv=4, op=None, tex=None, tp=None):
+        """球（按纬向切带）。球罐、球形接头、关节用它；n×nv 就是面片数，别开太大。
+
+        锚点取球心——这也是「部件锚点必须落在几何中心」那条断言的来源：
+        聚焦是丢掉部件的 translate3d(锚点) 再把几何按锚点缩放，锚点一偏就飞。
+        """
+        c = PAL.get(c, c)
+        faces = []
+        for v in range(nv):
+            f0, f1 = v / float(nv), (v + 1) / float(nv)
+            g0, g1 = math.sin(math.pi * f0) * r, math.sin(math.pi * f1) * r
+            y0_, y1_ = math.cos(math.pi * f0) * r, math.cos(math.pi * f1) * r
+            for i in range(n):
+                th = 360.0 * i / n
+                t = math.radians(th)
+                lam = max(0.0, math.sin(t) * LX + math.cos(t) * LZ)
+                sc = min(max(-0.26 + 0.46 * lam, -0.30), 0.26)
+                rm = (g0 + g1) / 2.0
+                if rm < 0.05:
+                    continue
+                hi_, lo_ = max(g0, g1), min(g0, g1)
+                ins = (1.0 - lo_ / hi_) * 50.0 if hi_ > 1e-6 else 0.0
+                # 世界高处（面片的上边）对应 f 小、半径大的那一侧
+                top, bot = (0.0, ins) if g1 < g0 else (ins, 0.0)
+                clip = (f'polygon({_f(top)}% 0,{_f(100 - top)}% 0,'
+                        f'{_f(100 - bot)}% 100%,{_f(bot)}% 100%)')
+                faces.append(_face([('Y', th)], rm,
+                                   2 * rm * math.sin(math.pi / n) * 1.10,
+                                   abs(y1_ - y0_) * 1.06 + 0.3, c, sc, f's{v}_{i}',
+                                   tex, tp, clip=clip, off=(0, (y0_ + y1_) / 2.0, 0),
+                                   noedge=True))
+        pts = []
+        for i in range(8):
+            t = 2 * math.pi * i / 8
+            for v in range(nv + 1):
+                fr = v / float(nv)
+                rr = r * math.sin(math.pi * fr)
+                pts.append((x + rr * math.sin(t), y + r * math.cos(math.pi * fr),
+                            z + rr * math.cos(t)))
+        self._parts.append(dict(anchor=(x, y, z), faces=faces, pts=pts, op=op))
+        return self
+
+    def plate(self, x, y, z, w, d, c='blue2', t=1.6, op=None, tex=None, tp=None):
         """水平薄板（太阳帆板、热辐射板、光帆）。"""
-        return self.box(x - w / 2, y, z - d / 2, w, t, d, c, op)
+        return self.box(x - w / 2, y, z - d / 2, w, t, d, c, op, tex, tp)
 
     # ------------------------------------------------------------ 编号点
     def pin(self, n, x, y, z, part=None):
@@ -341,10 +818,20 @@ class M3D:
     # 聚焦参数：从生成的容器标签里反解（自检只认吐出来的文本，理由见 _emitted_bbox）
     _RE_HDR = re.compile(
         r'data-i="(\d+)" data-f="([-\d.]+)" data-c="([-\d.]+),([-\d.]+),([-\d.]+)"')
+    # 面片：宽/高/对中/（可选的偏移与一串旋转）/法线位移。
+    # ⚠️ 组 5~7 是 off、组 8 是旋转串、组 9 是 translateZ——它们与 _faces_html 里的
+    # 书写顺序一一对应。改了那边的拼接顺序，这里必须同改，否则反解会静默少认面片
+    # （后面「反解到的面片数必须等于几何定义数」那条会报出来）。
     _RE_FACE = re.compile(
         r'width:([-\d.]+)px;height:([-\d.]+)px;margin:([-\d.]+)px 0 0 ([-\d.]+)px;'
-        r'(?:border-radius:50%;)?transform:(?:rotate([XY])\(([-\d.]+)deg\) )?'
-        r'translateZ\(([-\d.]+)px\)')
+        r'(?:border-radius:50%;)?'
+        r'transform:(?:translate3d\(([-\d.]+)px,([-\d.]+)px,([-\d.]+)px\) )?'
+        r'((?:rotate[XYZ]\([-\d.]+deg\) )*)translateZ\(([-\d.]+)px\)')
+    _RE_ROT = re.compile(r'rotate([XYZ])\(([-\d.]+)deg\)')
+    # 梯形裁剪：四个百分比分别是 上左/上右/下右/下左
+    _RE_CLIP = re.compile(
+        r'clip-path:polygon\(([-\d.]+)% 0,([-\d.]+)% 0,'
+        r'([-\d.]+)% 100%,([-\d.]+)% 100%\)')
 
     def _emitted_bbox(self, k):
         """**从生成的 HTML 字符串反解**出浏览器实际会画出的包围盒。
@@ -364,7 +851,10 @@ class M3D:
         bad_center = 0
         seen = 0                     # 反解到的面片数，必须与几何定义对得上
         self._seen_focus = []        # 顺带把聚焦参数采集出来给 problems() 校验
+        self._part_bbox = []         # 每个部件自己的渲染包围盒（逐件断言用，见 problems）
+        self._gap = []               # 「渲染参数 vs 几何定义」的逐项差异
         for i, part in enumerate(self._parts):
+            p_lo, p_hi = [1e9] * 3, [-1e9] * 3
             chunk = self._faces_html(part, k, i)
             h = self._RE_HDR.search(chunk)
             if h:
@@ -373,23 +863,76 @@ class M3D:
             if not m:
                 return None, None, ['部件容器没有 translate3d']
             base = tuple(float(m.group(i)) for i in (1, 2, 3))
-            for fm in self._RE_FACE.finditer(chunk):
+            for _fi, fm in enumerate(self._RE_FACE.finditer(chunk)):
                 seen += 1
                 w, h, mt, ml = (float(fm.group(i)) for i in (1, 2, 3, 4))
-                axis, deg, z = fm.group(5), fm.group(6), float(fm.group(7))
-                deg = float(deg) if deg else 0.0
+                off = tuple(float(fm.group(i) or 0.0) for i in (5, 6, 7))
+                rots = [(r.group(1), float(r.group(2)))
+                        for r in self._RE_ROT.finditer(fm.group(8) or '')]
+                z = float(fm.group(9))
                 if abs(ml + w / 2) > 0.02 or abs(mt + h / 2) > 0.02:
                     bad_center += 1
                     continue
-                c = _rot1(axis, deg, (0.0, 0.0, z))
-                ex = _rot1(axis, deg, (w / 2, 0.0, 0.0))
-                ey = _rot1(axis, deg, (0.0, h / 2, 0.0))
-                for sx in (-1, 1):
-                    for sy in (-1, 1):
-                        v = tuple(base[i] + c[i] + sx * ex[i] + sy * ey[i] for i in range(3))
-                        for i in range(3):
-                            lo[i] = min(lo[i], v[i])
-                            hi[i] = max(hi[i], v[i])
+                # off 是**世界轴**偏移（写在变换最左侧，在旋转之外），所以直接加在容器
+                # 位移上。⚠️ 别复用 base——那会在循环里累加，越往后偏得越离谱。
+                bp = tuple(base[i] + off[i] for i in range(3))
+                c = _rots_apply(rots, (0.0, 0.0, z))
+                ex = _rots_apply(rots, (w / 2, 0.0, 0.0))
+                ey = _rots_apply(rots, (0.0, h / 2, 0.0))
+                # ⚠️ 有 clip-path（锥面/球面的梯形）时必须按**裁完的四角**算，
+                # 不能拿未裁的矩形算——圆锥顶段那个矩形的上边宽出好几倍，
+                # 会让「渲染包围盒 == 几何包围盒」这条断言误报，而真实几何是对的。
+                # ---- 逐项比对：文本里的每个数都必须等于「几何定义 × k」 ----
+                # 包围盒比较抓不到的错用这一条兜底。例：面片的宽/高忘了乘 k，
+                # 但该部件的极值恰好由位移（半径、off）主导时，包围盒几乎不变——
+                # 负向测试里这个 case 就漏过了。所以直接逐项对。
+                # 两个来源是**独立**的（一边读吐出来的文本，一边读几何定义的字段），
+                # 所以这不是「把同一份数算两遍」，改坏任何一处都会红。
+                if _fi < len(part['faces']):
+                    _fc = part['faces'][_fi]
+                    _wo = _fc.get('off') or (0.0, 0.0, 0.0)
+                    for _nm, _got, _want in (
+                            ('width', w, _fc['w'] * k),
+                            ('height', h, _fc['h'] * k),
+                            ('margin-left', ml, -_fc['w'] * k / 2.0),
+                            ('margin-top', mt, -_fc['h'] * k / 2.0),
+                            ('translateZ', z, _fc['z'] * k),
+                            ('off-x', off[0], _wo[0] * k),
+                            ('off-y', off[1], -_wo[1] * k),
+                            ('off-z', off[2], _wo[2] * k)):
+                        if abs(_got - _want) > 0.06:
+                            self._gap.append(
+                                f'{self.title}：部件 {i} 第 {_fi} 张面片的 {_nm} '
+                                f'渲染成 {_got:g}，按几何定义乘 k 应为 {_want:.2f}'
+                                f'——多半是渲染时漏乘（或多乘）了缩放系数 k')
+                            break
+                    _wrots = [(r.group(1), float(r.group(2)))
+                              for r in self._RE_ROT.finditer(fm.group(8) or '')]
+                    _drots = [tuple(t) for t in _fc['rots']]
+                    # 逐项带容差比：角度在文本里只保留两位小数，直接比 tuple 会把
+                    # 146.66666666666669 与 "146.67" 判成不同（第一版就这么误报了一堆）。
+                    if (len(_wrots) != len(_drots)
+                            or any(a[0] != b[0] or abs(a[1] - b[1]) > 0.02
+                                   for a, b in zip(_wrots, _drots))):
+                        self._gap.append(
+                            f'{self.title}：部件 {i} 第 {_fi} 张面片的旋转序列渲染成 '
+                            f'{_wrots}，与定义 {_fc["rots"]} 不一致')
+
+                cl = self._RE_CLIP.search(chunk)
+                if cl:
+                    g = [float(cl.group(i)) / 100.0 - 0.5 for i in (1, 2, 3, 4)]
+                    ux = (g[0] * 2, g[1] * 2, g[2] * 2, g[3] * 2)
+                    corners = ((-ux[0], -1), (-ux[1], -1), (ux[2], 1), (ux[3], 1))
+                else:
+                    corners = ((-1, -1), (1, -1), (1, 1), (-1, 1))
+                for ux2, uy2 in corners:
+                    v = tuple(bp[j] + c[j] + ux2 * ex[j] + uy2 * ey[j] for j in range(3))
+                    for j in range(3):
+                        lo[j] = min(lo[j], v[j])
+                        hi[j] = max(hi[j], v[j])
+                        p_lo[j] = min(p_lo[j], v[j])
+                        p_hi[j] = max(p_hi[j], v[j])
+            self._part_bbox.append((p_lo, p_hi))
         want = sum(len(p['faces']) for p in self._parts)
         err = []
         if seen != want:
@@ -426,6 +969,27 @@ class M3D:
         out = []
         if not self._parts:
             return [f'{self.title}：没有任何部件']
+
+        # ---- 锚点必须在几何中心 ----
+        # 这不是审美问题：聚焦（点一下放大）是把部件容器的 translate3d(锚点) 丢掉、
+        # 换成 scale3d(f)，也就是「几何按锚点缩放到世界原点，再把世界平移 -c」。
+        # 锚点一旦偏离几何中心，部件放大后就会整体偏出去，甚至出取景框。
+        # 图元自己算错锚点是很容易的（dome / sphere 第一版都错），所以逐件断言。
+        for _i, _p in enumerate(self._parts):
+            _xs = [q[0] for q in _p['pts']]
+            _ys = [q[1] for q in _p['pts']]
+            _zs = [q[2] for q in _p['pts']]
+            _ctr = ((min(_xs) + max(_xs)) / 2.0, (min(_ys) + max(_ys)) / 2.0,
+                    (min(_zs) + max(_zs)) / 2.0)
+            _gap = max(abs(_p['anchor'][k2] - _ctr[k2]) for k2 in range(3))
+            if _gap > 0.4:
+                out.append(
+                    f'{self.title}：部件 {_i} 的锚点 {tuple(round(v, 2) for v in _p["anchor"])} '
+                    f'偏离几何中心 {tuple(round(v, 2) for v in _ctr)} 达 {_gap:.2f}'
+                    f'——聚焦是绕锚点缩放平移的，锚点不在中心，放大后一定会偏出取景框')
+        if out:
+            return out
+
         self.k = self._fit()
         pts, pins = self._scaled()
         worst = (999.0, '', '')
@@ -433,19 +997,55 @@ class M3D:
         # 端到端：渲染参数还原出来的包围盒，必须和自适配用的几何包围盒对得上。
         # 容差给了 5% + 1.5px——圆柱是用内接多边形近似的，本来就会略小于真圆。
         elo, ehi, eerr = self._emitted_bbox(self.k)
+        _gap = self._gap
         out += eerr
         if elo is None:
             return out
+        # **逐部件**比对（不是只比整模）。
+        #
+        # ⚠️ 只比整模是不够的：十来个零件里有一个写错，它往往还落在别的零件撑开的
+        # 范围内，整模包围盒一动都不动。本轮把零件数翻了几倍之后，这类「被掩盖的错」
+        # 就成了主要风险，所以改成一件一件比。
+        #
+        # 两个方向分开定容差：
+        #   · **渲染超出几何**（外侧）严格——那是真错，面片跑到自适配没算到的地方去了。
+        #   · **几何超出渲染**（内侧）放宽——回转体是用内接多边形近似的，几何的极值点
+        #     与面片角点本来就不在同一个角度上（14 边形最接近 90° 的是 77°，半径要打
+        #     0.975 折）；弦长还乘了 1.10 的重叠系数，角点会再鼓出 4%。
+        #   两侧都要有界：只查外侧的话，「忘了乘 k」导致面片全塌到中心附近这种错就漏了。
+        for pi, (plo, phi) in enumerate(getattr(self, '_part_bbox', [])):
+            xs = [q[0] for q in self._parts[pi]['pts']]
+            ys = [q[1] for q in self._parts[pi]['pts']]
+            zs = [q[2] for q in self._parts[pi]['pts']]
+            _o = self.origin
+            gil = ((min(xs) - _o[0]) * self.k, -(max(ys) - _o[1]) * self.k,
+                   (min(zs) - _o[2]) * self.k)
+            gih = ((max(xs) - _o[0]) * self.k, -(min(ys) - _o[1]) * self.k,
+                   (max(zs) - _o[2]) * self.k)
+            for j, axis in enumerate('xyz'):
+                span = gih[j] - gil[j]
+                tol_out = span * 0.06 + 1.5
+                tol_in = span * 0.10 + 4.0
+                if plo[j] < gil[j] - tol_out or phi[j] > gih[j] + tol_out:
+                    out.append(
+                        f'{self.title}：部件 {pi} 在 {axis} 轴的渲染包围盒 '
+                        f'[{plo[j]:.1f}, {phi[j]:.1f}] 超出了它的几何范围 '
+                        f'[{gil[j]:.1f}, {gih[j]:.1f}]（容差 {tol_out:.1f}px）'
+                        f'——多半是某处忘了乘缩放系数 k，或偏移/锚点的语义搞错了')
+                elif plo[j] > gil[j] + tol_in or phi[j] < gih[j] - tol_in:
+                    out.append(
+                        f'{self.title}：部件 {pi} 在 {axis} 轴的渲染包围盒 '
+                        f'[{plo[j]:.1f}, {phi[j]:.1f}] 比它的几何范围 '
+                        f'[{gil[j]:.1f}, {gih[j]:.1f}] 小了一大截（容差 {tol_in:.1f}px）'
+                        f'——面片没铺满，多半是长宽、偏移或旋转写错')
         for i, axis in enumerate('xyz'):
             ilo = min(p[i] for p in pts)
             ihi = max(p[i] for p in pts)
-            tol = (ihi - ilo) * 0.05 + 1.5
-            if abs(elo[i] - ilo) > tol or abs(ehi[i] - ihi) > tol:
-                out.append(
-                    f'{self.title}：{axis} 轴的渲染包围盒 [{elo[i]:.1f}, {ehi[i]:.1f}] '
-                    f'与几何包围盒 [{ilo:.1f}, {ihi:.1f}] 对不上 '
-                    f'（差 {max(abs(elo[i] - ilo), abs(ehi[i] - ihi)):.1f}px，'
-                    f'容差 {tol:.1f}px）——多半是某处忘了乘缩放系数 k')
+            tol_out = (ihi - ilo) * 0.05 + 1.5
+            if elo[i] < ilo - tol_out or ehi[i] > ihi + tol_out:
+                out.append(f'{self.title}：整模 {axis} 轴的渲染包围盒 '
+                           f'[{elo[i]:.1f}, {ehi[i]:.1f}] 超出几何包围盒 '
+                           f'[{ilo:.1f}, {ihi:.1f}]（容差 {tol_out:.1f}px）')
         self.bbox_gap = max(
             max(abs(elo[i] - min(p[i] for p in pts)), abs(ehi[i] - max(p[i] for p in pts)))
             for i in range(3))
@@ -490,6 +1090,10 @@ class M3D:
                 if over > 0:
                     out.append(f'{self.title}：放大部件 {i} 后转出台面 {over:.1f}px'
                                f'（倍数 {f:.2f} 太大，或该部件本身就装不下）')
+        out += _gap[:6]
+        if len(_gap) > 6:
+            out.append(f'{self.title}：另有 {len(_gap) - 6} 处渲染参数与几何定义不一致'
+                       f'（同类问题，未逐条列出）')
         self.focus_zoom = [float(x[1]) for x in seen] if seen else []
         self.pin_parts = self._pin_parts()
 
@@ -543,16 +1147,41 @@ class M3D:
         for fc in part['faces']:
             w, h = fc['w'] * k, fc['h'] * k
             bg = _alpha(shade(fc['col'], fc['sc']), op) if op else shade(fc['col'], fc['sc'])
-            bd = _alpha(shade(fc['col'], EDGE), min(1.0, op * 1.6) if op else 1)
+            # noedge：回转体的侧面片不要硬棱线。一周十几个面片，每条边都算一条竖线，
+            # 叠起来就是一层网格，会把横向的环焊缝彻底盖掉。改成几乎同色的描边——
+            # 只起「防止相邻面片之间漏出背景」的作用，看不出是条线。
+            _e = -0.09 if fc.get('noedge') else EDGE
+            bd = _alpha(shade(fc['col'], _e), min(1.0, op * 1.6) if op else 1)
             # ⚠️ 结尾的分号不能少。少了它，整条内联样式会变成
             # `border-radius:50%transform:rotateX(...)`——border-radius 吃掉了整个
             # 非法值，**后面的 transform 声明整条丢失**，端盖就变成贴在部件原点的方块。
             # 这个错是「反解 HTML 数面片」那条断言抓出来的（几何 52 张、只反解到 48 张）。
             r = 'border-radius:50%;' if part.get('cap') and fc['nm'] in ('cap', 'cb') else ''
-            out.append(
-                f'<span class="m3d-f" style="width:{_f(w)}px;height:{_f(h)}px;'
-                f'margin:{_f(-h / 2)}px 0 0 {_f(-w / 2)}px;{r}'
-                f'transform:{_tf(fc, k)};background:{bg};border-color:{bd}"></span>')
+            # ⚠️ `width;height;margin;[border-radius;]transform` 这一串必须**连续且同序**：
+            # _RE_FACE 就是按这个顺序反解的。纹理与裁剪要加在后面，不能插进中间。
+            css = (f'width:{_f(w)}px;height:{_f(h)}px;'
+                   f'margin:{_f(-h / 2)}px 0 0 {_f(-w / 2)}px;{r}'
+                   f'transform:{_tf(fc, k)};background-color:{bg};border-color:{bd}')
+            # 纹理周期：先把世界周期换成像素，再**对齐到面片自身的宽高**。
+            # 为什么必须对齐：每张面片的渐变都是从它自己的左上角起铺的，如果周期
+            # 除不尽面片高度，相邻面片就会错开半个周期——一整圈看过去是「砖墙」
+            # 而不是一圈环焊缝（第一版就是这样）。对齐之后，同一圈里所有面片
+            # 尺寸相同、图案也完全相同，接缝处自然连成一条线。
+            _tp = (fc.get('tp') or 8.0) * k
+            _pv = _ph = _tp
+            if fc.get('noedge'):
+                _nv = max(2.0, round(h / _tp)) if h > 1 else 1.0
+                _nh = max(2.0, round(w / _tp)) if w > 1 else 1.0
+                _pv = h / _nv if h > 1 else _tp
+                _ph = w / _nh if w > 1 else _tp
+            tex_img, tex_size = _tex_css(fc.get('tex'), _pv, _ph)
+            if tex_img:
+                css += f';background-image:{tex_img}'
+                if tex_size:
+                    css += f';background-size:{tex_size}'
+            if fc.get('clip'):
+                css += f';clip-path:{fc["clip"]}'
+            out.append(f'<span class="m3d-f" style="{css}"></span>')
         out.append('</span>')
         return ''.join(out)
 
