@@ -91,13 +91,15 @@ def scene_engine():
     g.frustum(0, -21, 0, 7.6, 8.6, 6, 'dark', n=14, segs=1,
               tex='tube', tp=2.6)                                       # ② 喉部
     g.cyl(0, -15, 0, 8.8, 31, 'steel', n=14, tex='seam', tp=4.2, segs=4)  # ③ 主燃烧室
-    g.cyl(0, 16, 0, 10.0, 5.5, 'gray', n=14, tex='dot', tp=3.4)          # ④ 喷注器与顶盖
+    g.cyl(0, 16, 0, 10.0, 5.5, 'gray', n=14, tex='dot', tp=2.2)          # ④ 喷注器与顶盖
     for sgn in (-1, 1):
         tag = '氧' if sgn < 0 else '甲烷'
         g.cyl(sgn * 33, 21, 0, 8.0, 18, 'amber', n=10, tex='seam', tp=4.5)   # 预燃室
-        g.dome(sgn * 33, 39, 0, 8.0, 7, 'amber', n=8, segs=2, tex='seam', tp=4)
+        # ⚠️ dome 的 n 必须与它下面那个 cyl 的 n 一致：两者半径相同，
+        # 但弦长按各自的分瓣数算，n 不一样时接缝处会露出一圈锯齿边。
+        g.dome(sgn * 33, 39, 0, 8.0, 7, 'amber', n=10, segs=2, tex='seam', tp=4)
         g.cyl(sgn * 55, -7, 0, 9.0, 18, 'blue2', n=10, tex='seam', tp=4.5)   # 涡轮泵
-        g.dome(sgn * 55, 11, 0, 9.0, 7.5, 'blue2', n=8, segs=2, tex='seam', tp=4)
+        g.dome(sgn * 55, 11, 0, 9.0, 7.5, 'blue2', n=10, segs=2, tex='seam', tp=4)
         # 泵—预燃室高压管路：三段小圆筒凑一根折管，比一根直筒像管路
         g.cyl(sgn * 44, 24, 0, 2.0, 12, 'gray', n=5, axis='x', tex='seam', tp=2.4)
         g.cyl(sgn * 44, 34, 0, 2.0, 11, 'gray', n=5, tex='seam', tp=2.4)
@@ -153,7 +155,7 @@ def scene_starship():
     # 逐片微差让深浅不匀，这正是真实热盾的样子。
     g.arc(0, 141, 0, R + 0.55, 80, 20, 150, 'ink', n=11, tex='tile', tp=3.0,
           jitter=0.055, flat=True)
-    g.dome(0, 223, 0, R, 24, 'white', n=12, segs=3, tex='seam', tp=6)   # ⑤ 鼻锥
+    g.dome(0, 223, 0, R, 24, 'white', n=14, segs=3, tex='seam', tp=6)   # ⑤ 鼻锥
     # 四片气动翼：梯形（四棱台），根部厚、翼尖薄，这才像翼面而不是砖
     for i in (0, 1):
         sgn = -1 if i == 0 else 1
@@ -188,7 +190,7 @@ def scene_biosphere():
     g.arc(0, 66, 0, R + 0.45, 12, 150, 210, 'steel', n=5, tex='dot', tp=3.0)
     g.ring(0, 86, 0, R + 0.6, R - 1.2, 3.0, 'steel', n=12, inner=False)
     g.cyl(0, 89, 0, R, 16, 'steel', n=14, tex='plate', tp=7)            # ④ 节点与气闸
-    g.dome(0, 105, 0, R, 11, 'steel', n=12, segs=3, tex='seam', tp=6)   # ⑤ 前端穹顶
+    g.dome(0, 105, 0, R, 11, 'steel', n=14, segs=3, tex='seam', tp=6)   # ⑤ 前端穹顶
     # 气闸舱门与对接口：节点舱侧面唯一一个「能出去」的地方
     g.cyl(0, 92, -(R + 2.4), 3.6, 10, 'gray', n=10, axis='z', tex='seam', tp=4)
     g.ring(0, 92, -(R + 5.2), 4.6, 3.2, 2.4, 'dark', n=10, inner=False)
@@ -487,7 +489,7 @@ def _ship_body(g, gap=0.0):
                   n=5, tex='dot', tp=3.2)
         y += h + gap
         tops.append(y)
-    g.dome(0, y, 0, R, 13, 'steel', n=12, segs=3, tex='seam', tp=5.4)    # 前端穹顶
+    g.dome(0, y, 0, R, 13, 'steel', n=14, segs=3, tex='seam', tp=5.4)    # 前端穹顶
     g.ring(0, y + 12.0, 0, 10.4, 8.0, 3.2, 'dark', n=10, inner=False)    # 对接口
     # 太阳能帆板 ×2（格栅 + 边框 + 根部铰链）
     for sx in (-1, 1):

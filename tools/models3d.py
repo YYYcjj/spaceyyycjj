@@ -603,15 +603,23 @@ class M3D:
         整顶会变成一层层带缺口的「婚礼蛋糕」（第一版就是这样）。
         """
         c = PAL.get(c, c)
-        # φ: 0（根部）→ π/2（顶点）；锚点在穹顶的几何中心 y0+h/2，所以高度要减 h/2
+        # 顶点**不收到 0**：收到 0 的话 n 个三角形的尖端会在同一点汇聚，再叠上
+        # 斜边那 1.5% 的重叠，顶点周围会翘出一圈小星芒（截图里看得很清楚）。
+        # 所以轮廓停在 φ=π/2·(1−EPS)，留一个很小的半径，再用一张小圆盖收口。
+        eps = 0.075
+        k = 1.0 - eps
         faces = self._cyl_side(c, n,
-                               lambda t: r * math.cos(math.pi / 2 * t),
-                               lambda t: h * math.sin(math.pi / 2 * t) - h / 2.0,
+                               lambda t: r * math.cos(math.pi / 2 * t * k),
+                               lambda t: h * math.sin(math.pi / 2 * t * k) - h / 2.0,
                                max(1, segs), tex, tp)
+        r_top = r * math.cos(math.pi / 2 * k)
+        y_top = h * math.sin(math.pi / 2 * k) - h / 2.0
+        faces.append(_face([('X', 90)], y_top, 2 * r_top, 2 * r_top, c,
+                           LIGHT['tp'], 'cap', tex, tp))
         pts = []
         for i in range(12):
             t = 2 * math.pi * i / 12
-            for f in (0.0, 0.5, 1.0):
+            for f in (0.0, 0.5 * k, k):
                 rr = r * math.cos(math.pi / 2 * f)
                 pts.append((x + rr * math.sin(t),
                             y0 + math.sin(math.pi / 2 * f) * h,
