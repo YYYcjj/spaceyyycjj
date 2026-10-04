@@ -173,9 +173,26 @@ const IN_PAGE = async (TARGETS) => {
         minD = Math.min(minD, Math.hypot(ps[i].cx - ps[j].cx, ps[i].cy - ps[j].cy));
       }
     }
+    const faces = [...st.querySelectorAll('.m3d-f')];
+    // 平滑着色的覆盖率：带 linear-gradient 的面片占比。
+    // 「圆柱看起来是圆的」靠的就是它，而它失效时几何、包围盒、面片数全都不变——
+    // 只有截图能看出来。所以在浏览器这一侧也量一次（构建期那条断言查的是 HTML 文本，
+    // 这里查的是**真的生效的**计算样式，能顺带挡住 CSS 覆盖一类的问题）。
+    const gradN = faces.filter(f => /linear-gradient/.test(getComputedStyle(f).backgroundImage)).length;
+    // background-origin 必须是 border-box：默认的 padding-box 会让渐变只铺到内容区，
+    // 最外那 1px 露出平色的 background-color，十个像素宽的面片上就是一条清楚的竖线，
+    // 一圈下来正好把连续曲面又切回棱柱。它写在 CSS 里，只有这里能验。
+    const origins = new Set(faces.map(f => getComputedStyle(f).backgroundOrigin));
+    const sh = st.querySelector('.m3d-shadow i');
+    const shb = sh ? sh.getBoundingClientRect() : null;
     out.model = {
       w: Math.round(r.width), h: Math.round(r.height),
-      faces: st.querySelectorAll('.m3d-f').length,
+      faces: faces.length,
+      gradN,
+      origins: [...origins],
+      shadow: shb ? { w: Math.round(shb.width), h: Math.round(shb.height),
+                      cx: Math.round(shb.left + shb.width / 2 - r.left),
+                      cy: Math.round(shb.top + shb.height / 2 - r.top) } : null,
       pins: pins.length,
       minPinDist: ps.length > 1 ? +minD.toFixed(1) : null,
       pinsInside: ps.every(q => q.cx > 8 && q.cx < r.width - 8 && q.cy > 8 && q.cy < r.height - 8),
@@ -326,6 +343,32 @@ const SKY_IN_PAGE = async () => {
       if (M.pins && !M.pinsInside) bad(p, '模型编号点转出台面', M);
       else if (M.pins) good(p, '模型编号点全在台面内');
       if (r.model.faces < 1) bad(p, '模型没有渲染出任何面片', M);
+      // 平滑着色：至少六成面片要带渐变（六面体零件的面片没有渐变，所以不是 100%）
+      if (M.faces >= 20 && M.gradN / M.faces < 0.6) {
+        bad(p, `带平滑着色的面片只有 ${M.gradN}/${M.faces}（应 ≥60%）——`
+               + '平滑着色失效了，圆柱会变回棱柱', M);
+      } else if (M.faces >= 20) {
+        good(p, `平滑着色覆盖 ${M.gradN}/${M.faces} 张面片`);
+      }
+      // ⚠️ background-origin 在**多层背景**下会返回逗号分隔的多值
+      //（「纹理层, 渐变层」→ "border-box, border-box"），所以不能直接比字符串等值。
+      const originOK = M.origins.every(v => v.split(',').every(x => x.trim() === 'border-box'));
+      if (!originOK) {
+        bad(p, '面片的 background-origin 不是 border-box（渐变铺不满，面片之间会出竖线）',
+            M.origins);
+      } else {
+        good(p, '面片 background-origin:border-box（渐变铺满整个面片）');
+      }
+      // 接地影：尺寸与位置都要按模型投影算，不能跑到台面外
+      if (!M.shadow) {
+        bad(p, '模型缺少接地影（.m3d-shadow）', M);
+      } else if (M.shadow.w < 12 || M.shadow.h < 8) {
+        bad(p, '接地影太小', M.shadow);
+      } else if (M.shadow.cx < 0 || M.shadow.cx > M.w || M.shadow.cy < 0 || M.shadow.cy > M.h) {
+        bad(p, '接地影的中心跑到台面外', M.shadow);
+      } else {
+        good(p, `接地影 ${M.shadow.w}×${M.shadow.h} @(${M.shadow.cx},${M.shadow.cy})`);
+      }
     } else if (p.indexOf('sections/') === 0) {
       bad(p, '板块页缺少可旋转模型（#model .m3d-stage）', {});
     }

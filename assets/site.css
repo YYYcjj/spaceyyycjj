@@ -1494,6 +1494,13 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   border:1px solid transparent; border-radius:2px;
   cursor:zoom-in;                 /* 悬停在模型上就说明「这里可以点开看」 */
   transition:opacity .32s;
+  /* ⚠️ 这一行是**平滑着色的成败所在**，别删。
+     background-origin 默认是 padding-box，而 background-clip 默认是 border-box：
+     于是「按 100% 尺寸铺的渐变」只铺到内容区，最外那 1px 边框环露出的是平色
+     background-color。单个面片只有十来像素宽，这 1px 就是一条清楚的竖线——
+     一圈面片十几条线，正好把刚做好的连续曲面又切回棱柱。
+     改成 border-box 后渐变铺满整个元素，面片之间才真正接得上。 */
+  background-origin:border-box;
 }
 .m3d-stage.dragging .m3d-f{cursor:grabbing;}
 /* 聚焦时把其它部件压暗当背景板。
@@ -1716,4 +1723,33 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   .f1-hint{display:none;}
   .f1-list > li{break-inside:avoid; page-break-inside:avoid;}
   .vs-how{break-inside:avoid; page-break-inside:avoid;}
+}
+
+/* --------------------------------------------------------------------------
+   接地影
+   --------------------------------------------------------------------------
+   尺寸与位置由生成期按**默认视角的投影**算好（tools/models3d.py 的 shadow_css），
+   随 `--m3d-k` 一起缩放，所以窄屏不会拖出一截。
+
+   单独做一层而不是画在 .m3d-stage 的背景上：背景没法跟着 --m3d-k 缩。
+   它和 .m3d-pins 是同一个套路——子元素用「50% + 设计像素」定位，
+   外层整体 scale，于是只有像素部分被乘 k，中心对齐不受影响。
+   -------------------------------------------------------------------------- */
+.m3d-shadow{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  transform:scale(var(--m3d-k, 1)); transform-origin:50% 50%;
+}
+.m3d-shadow i{
+  position:absolute; display:block;
+  background:radial-gradient(closest-side,
+    rgba(30,38,50,.26), rgba(30,38,50,.13) 46%, rgba(30,38,50,0) 100%);
+  filter:blur(2px);
+}
+/* 聚焦某个部件时模型会放大到台面中央，原来那块影子就不对了——压淡它 */
+.m3d.focus .m3d-shadow{opacity:.28;}
+.m3d-shadow{transition:opacity .4s;}
+
+@media print{
+  .m3d-shadow i{background:radial-gradient(closest-side,
+    rgba(30,38,50,.18), rgba(30,38,50,.08) 46%, rgba(30,38,50,0) 100%);}
 }
