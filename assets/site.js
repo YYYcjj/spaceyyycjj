@@ -231,8 +231,158 @@
         : []).map(function (el) {
           var a = (el.getAttribute('data-a') || '0,0,0').split(',');
           return { el: el, v: [num(a[0], 0), num(a[1], 0), num(a[2], 0)],
-                   part: num(el.getAttribute('data-part'), 0), show: true };
+                   part: num(el.getAttribute('data-part'), 0), show: true, vis: true };
         });
+
+      // ---------------- 3D 演示路线图 ----------------
+      // 里程碑条：第 i 步显示「前 i 步涉及的分组」。分组名写死在构建期（每个
+      // .m3d-p 上的 data-g），运行期只做查表——不在这里做任何几何推算，
+      // 所以「哪一步出现哪些零件」这件事只有一个来源，不会和构建期说的不一样。
+      var road = root.querySelector('[data-road]');
+      var stepBtns = road ? Array.prototype.slice.call(road.querySelectorAll('.m3d-rs')) : [];
+      var allBtn = road ? road.querySelector('.m3d-road-all') : null;
+      var playBtn = road ? road.querySelector('.m3d-road-play') : null;
+      var strip = root.querySelector('[data-strip]');
+      var stepGroups = stepBtns.map(function (b) {
+        return (b.getAttribute('data-g') || '').split('|');
+      });
+      // 每个部件属于第几步。-1 = 不属于任何一步；没有路线图的模型会全是 -1，
+      // 那时 visibleAt() 永远返回 true，整套过滤等于不发生。
+      var stepOf = parts.map(function (el) {
+        var g = el.getAttribute('data-g') || '';
+        for (var s = 0; s < stepGroups.length; s++) {
+          if (stepGroups[s].indexOf(g) >= 0) return s;
+        }
+        return -1;
+      });
+      var step = -1;                        // -1 = 全貌
+      var playT = 0;
+      var miniWorlds = [];
+      var built = false;
+
+      function visibleAt(j, i) {
+        return i < 0 || (stepOf[j] >= 0 && stepOf[j] <= i);
+      }
+
+      function stopPlay() {
+        if (playT) { clearInterval(playT); playT = 0; }
+        if (playBtn) playBtn.setAttribute('aria-pressed', 'false');
+      }
+
+      function applyStep(i, animate) {
+        if (!stepBtns.length) return;
+        step = (i >= 0 && i < stepBtns.length) ? i : -1;
+        var newly = [];
+        parts.forEach(function (el, j) {
+          var vis = visibleAt(j, step);
+          el.classList.toggle('off', !vis);
+          el.classList.remove('new');
+          if (animate && step >= 0 && stepOf[j] === step) newly.push(el);
+        });
+        // 新增的那一批错开一帧再加 .new：同一帧里「加类 + 起动画」在有些浏览器上
+        // 不会重新开始动画（元素还带着上一轮的样式缓存），差一帧最省事。
+        if (newly.length) {
+          requestAnimationFrame(function () {
+            newly.forEach(function (el) { el.classList.add('new'); });
+          });
+        }
+        stepBtns.forEach(function (b, k) {
+          b.setAttribute('aria-pressed', k === step ? 'true' : 'false');
+        });
+        if (allBtn) allBtn.setAttribute('aria-pressed', step < 0 ? 'true' : 'false');
+        // 图例项要跟着禁用：点一个还没装上的部件的图例，会「放大」到一个看不见的东西
+        links.forEach(function (b) {
+          var vis = visibleAt(num(b.getAttribute('data-part'), 0), step);
+          b.disabled = !vis;
+        });
+        pins.forEach(function (p) { p.vis = visibleAt(p.part, step); });
+        // 正在放大的那个部件如果被这一步藏起来了，退回全貌——不然会卡在空台面上
+        if (idx >= 0 && !visibleAt(idx, step)) setFocus(-1);
+        paint();
+      }
+
+      // 各步快照：**从主模型的 world 克隆**，按步过滤。默认 hidden（没有 JS 时
+      // 只是一排空台面），第一次进入视口或打印前才建。
+      function buildStrip() {
+        if (built || !strip || !stepBtns.length) return;
+        built = true;
+        var shadow = stage.querySelector('.m3d-shadow');
+        Array.prototype.slice.call(strip.querySelectorAll('.m3d-mini'))
+          .forEach(function (mini) {
+            var si = num(mini.getAttribute('data-snap'), 0);
+            var w = world.cloneNode(true);
+            // 角度与缩放交回 CSS：--rx/--ry 落回 var() 的默认值，--m3d-k 取 .m3d-mini 的那一档
+            w.removeAttribute('style');
+            Array.prototype.slice.call(w.querySelectorAll('.m3d-p'))
+              .forEach(function (el, j) {
+                el.className = 'm3d-p';
+                el.removeAttribute('data-f');
+                el.removeAttribute('data-c');
+                // ⚠️ transform 取 focus[j].base，不能抄 el.style.transform ——
+                // 克隆时主模型可能正停在「放大某个部件」的状态上，那个部件的
+                // transform 已经被换成 scale3d 了，照抄会让快照里少一个部件的形状。
+                el.style.transform = (focus[j] && focus[j].base) || '';
+                if (!visibleAt(j, si)) el.parentNode.removeChild(el);
+              });
+            if (shadow) mini.appendChild(shadow.cloneNode(true));
+            mini.appendChild(w);
+            miniWorlds.push(w);
+            bindSpin(mini);
+          });
+        strip.removeAttribute('hidden');
+      }
+
+      // 拖动任意一个快照 = 转所有快照 + 转主模型：角度是同一份状态，
+      // 只是 paint() 把它广播给每一个 world。
+      function bindSpin(el) {
+        var d = null;
+        el.addEventListener('pointerdown', function (e) {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          d = { x: e.clientX, y: e.clientY, id: e.pointerId };
+          vry = 0; vrx = 0;
+          el.classList.add('dragging');
+          if (el.setPointerCapture) {
+            try { el.setPointerCapture(e.pointerId); } catch (_e) { /* 忽略 */ }
+          }
+        });
+        el.addEventListener('pointermove', function (e) {
+          if (!d || e.pointerId !== d.id) return;
+          ry += (e.clientX - d.x) * 0.45;
+          rx = clamp(rx - (e.clientY - d.y) * 0.35);
+          d.x = e.clientX;
+          d.y = e.clientY;
+          paint();
+        });
+        function up(e) {
+          if (!d || (e && e.pointerId !== d.id)) return;
+          d = null;
+          el.classList.remove('dragging');
+        }
+        el.addEventListener('pointerup', up);
+        el.addEventListener('pointercancel', up);
+        el.addEventListener('lostpointercapture', up);
+      }
+
+      stepBtns.forEach(function (b, k) {
+        b.addEventListener('click', function () {
+          stopPlay();
+          applyStep(step === k ? -1 : k, true);
+        });
+      });
+      if (allBtn) allBtn.addEventListener('click', function () { stopPlay(); applyStep(-1, false); });
+      if (playBtn) {
+        playBtn.addEventListener('click', function () {
+          if (playT) { stopPlay(); return; }
+          playBtn.setAttribute('aria-pressed', 'true');
+          var n = 0;
+          applyStep(0, true);
+          playT = setInterval(function () {
+            n += 1;
+            if (n >= stepBtns.length) { stopPlay(); return; }
+            applyStep(n, true);
+          }, 1600);
+        });
+      }
 
       var rx = RX_DEF, ry = RY_DEF, vry = 0, vrx = 0;
       var drag = null, hover = false, live = false, raf = 0;
@@ -261,6 +411,11 @@
       function paint() {
         world.style.setProperty('--rx', rx.toFixed(2) + 'deg');
         world.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        // 快照跟着一起转：角度只有这一份，广播出去，所以「拖任意一个，全都同步」
+        for (var m = 0; m < miniWorlds.length; m++) {
+          miniWorlds[m].style.setProperty('--rx', rx.toFixed(2) + 'deg');
+          miniWorlds[m].style.setProperty('--ry', ry.toFixed(2) + 'deg');
+        }
         if (!pins.length) return;
         var placed = [];
         // 聚焦时编号点也会跟着放大倍数往外推：小部件（采掘头、栅格舵）的放大倍数被
@@ -270,24 +425,26 @@
           ? Math.min(stage.clientWidth, stage.clientHeight) / 2 - 26 : 0;
         for (var i = 0; i < pins.length; i++) {
           var p = pins[i];
-          var s = p.show ? project(p.v) : [0, 0];
+          // show 是「聚焦过滤」，vis 是「路线图过滤」——两个条件都成立才画出来
+          var ok = p.show && p.vis;
+          var s = ok ? project(p.v) : [0, 0];
           if (maxR > 0) {
             var rr = Math.sqrt(s[0] * s[0] + s[1] * s[1]);
             if (rr > maxR) { s = [s[0] * maxR / rr, s[1] * maxR / rr]; }
           }
           var clash = false;
-          if (p.show) {
+          if (ok) {
             for (var j = 0; j < placed.length; j++) {
               if (dist(s[0], s[1], placed[j][0], placed[j][1]) < PIN_D) { clash = true; break; }
             }
           }
           p.el.style.left = 'calc(50% + ' + s[0].toFixed(1) + 'px)';
           p.el.style.top = 'calc(50% + ' + s[1].toFixed(1) + 'px)';
-          p.el.classList.toggle('hid', !p.show);
-          p.el.classList.toggle('off', p.show && clash);
+          p.el.classList.toggle('hid', !ok);
+          p.el.classList.toggle('off', ok && clash);
           // 收起来的点必须退出 Tab 序列，否则键盘用户会 Tab 到一个看不见的按钮上
-          p.el.tabIndex = (p.show && !clash) ? 0 : -1;
-          if (p.show && !clash) placed.push(s);
+          p.el.tabIndex = (ok && !clash) ? 0 : -1;
+          if (ok && !clash) placed.push(s);
         }
       }
 
@@ -348,6 +505,21 @@
         }, { rootMargin: '120px 0px', threshold: 0 }).observe(stage);
       } else {
         live = true; start();
+      }
+      // 快照那一层懒建：要克隆五个模型的全部面片，放在首屏会白白拖慢加载。
+      // ⚠️ 观察的是 root 而不是 strip —— strip 默认 hidden，hidden 的元素没有盒子，
+      // 观察它永远不会触发（IntersectionObserver 对 display:none 的目标不报交集）。
+      if (strip && stepBtns.length) {
+        if ('IntersectionObserver' in window) {
+          var ioStrip = new IntersectionObserver(function (es) {
+            es.forEach(function (e) {
+              if (e.isIntersecting) { buildStrip(); ioStrip.disconnect(); }
+            });
+          }, { rootMargin: '320px 0px', threshold: 0 });
+          ioStrip.observe(root);
+        } else {
+          buildStrip();
+        }
       }
       document.addEventListener('visibilitychange', function () {
         if (document.hidden) { stop(); } else { live = true; start(); }
@@ -450,8 +622,10 @@
         });
       }
 
-      // 打印前回到默认视角（打印看到的必须是构建期算好的那一帧）
+      // 打印前回到默认视角（打印看到的必须是构建期算好的那一帧），
+      // 并把默认藏着的快照条补出来——否则打出来少一整块内容
       window.addEventListener('beforeprint', function () {
+        buildStrip();
         rx = RX_DEF; ry = RY_DEF; vry = 0; vrx = 0;
         paint();
       });

@@ -200,6 +200,21 @@ const IN_PAGE = async (TARGETS) => {
       k: getComputedStyle(st).getPropertyValue('--m3d-k').trim(),
     };
   }
+  const road = document.querySelector('#model .m3d-road');
+  if (road) {
+    // ⚠️ 一切都锁到**第一个** #model .m3d 里。收口页有两个模型，
+    // 不锁的话部件分组会被两边的加在一起（实测 54 个），快照也会数成 10 张。
+    const mroot = document.querySelector('#model .m3d');
+    const steps = [...road.querySelectorAll('.m3d-rs')];
+    const parts = [...mroot.querySelectorAll('.m3d-stage:not(.m3d-mini) .m3d-p')];
+    out.road = {
+      steps: steps.length,
+      groups: parts.map(e => e.getAttribute('data-g') || ''),
+      claimed: steps.map(b => (b.getAttribute('data-g') || '').split('|').filter(Boolean)),
+      minis: mroot.querySelectorAll('.m3d-mini').length,
+      hasStrip: !!mroot.querySelector('.m3d-strip'),
+    };
+  }
   return out;
 };
 
@@ -441,6 +456,186 @@ const SKY_IN_PAGE = async () => {
           bad(p, 'Esc 没有还原成全貌', after);
         } else {
           good(p, 'Esc 还原成全貌');
+        }
+      }
+    }
+
+    // ---- 3D 演示路线图 ----
+    // 构建期已经断言过「分组不遗漏、不重复、渲染出来的文本里分组和部件对得上」。
+    // 这里补的是**只有浏览器才知道的事**：懒建的快照有没有真的建出来、
+    // 点某一步到底藏掉了哪些零件、快照里的模型有没有出框、拖动会不会带动主模型。
+    if (r.road) {
+      const R = r.road;
+      const live = [...new Set(R.groups.filter(Boolean))];
+      const flat = R.claimed.reduce((a, b) => a.concat(b), []);
+      const miss = live.filter(g => flat.indexOf(g) < 0);
+      const extra = flat.filter(g => live.indexOf(g) < 0);
+      const dup = [...new Set(flat.filter((g, i) => flat.indexOf(g) !== i))];
+      if (R.steps < 3) bad(p, `演示路线图只有 ${R.steps} 步（至少 3 步）`, R);
+      else if (miss.length) bad(p, `这些部件分组不属于任何一步：${miss.join('、')}`, R);
+      else if (extra.length) bad(p, `路线图认领了模型里不存在的分组：${extra.join('、')}`, R);
+      else if (dup.length) bad(p, `有分组被两步同时认领：${dup.join('、')}`, R);
+      else if (R.minis !== R.steps) bad(p, `快照 ${R.minis} 张、里程碑 ${R.steps} 步，对不上`, R);
+      else if (!R.hasStrip) bad(p, '有里程碑条却没有快照条', R);
+      else good(p, `演示路线图 ${R.steps} 步 / ${live.length} 个部件分组 / ${R.minis} 张快照`);
+
+      const ROAD_IN_PAGE = () => {
+        const root = document.querySelector('#model .m3d');
+        if (!root) return null;
+        const strip = root.querySelector('.m3d-strip');
+        const minis = [...root.querySelectorAll('.m3d-mini')];
+        const shown = (el) => !el.classList.contains('off') && !el.classList.contains('hid')
+                             && getComputedStyle(el).visibility !== 'hidden';
+        const parts = [...root.querySelectorAll('.m3d-stage:not(.m3d-mini) .m3d-p')];
+        // 快照里的模型不许出框：逐张比外接矩形与台面
+        let outMax = 0, minW = 1e9;
+        const counts = [];
+        minis.forEach(m => {
+          const b = m.getBoundingClientRect();
+          counts.push(m.querySelectorAll('.m3d-p').length);
+          minW = Math.min(minW, b.width);
+          let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+          m.querySelectorAll('.m3d-f').forEach(f => {
+            const q = f.getBoundingClientRect();
+            x0 = Math.min(x0, q.left); x1 = Math.max(x1, q.right);
+            y0 = Math.min(y0, q.top); y1 = Math.max(y1, q.bottom);
+          });
+          if (x0 < 1e8) outMax = Math.max(outMax, b.left - x0, x1 - b.right, b.top - y0, y1 - b.bottom);
+        });
+        const snaps = root.querySelector('.m3d-snaps');
+        const mainWorld = root.querySelector('.m3d-world');
+        const ry = mainWorld ? mainWorld.style.getPropertyValue('--ry') : '';
+        // 图例项只有编号点对应的那几个（几十个部件里只有 4~7 个有图例），
+        // 所以「禁用了几项」不能拿来跟「藏掉几个部件」比，只能比「该禁的禁了没有」
+        const hiddenIdx = new Set(parts.filter(e => !shown(e)).map(e => e.getAttribute('data-i')));
+        const legend = [...root.querySelectorAll('.m3d-lb')];
+        const worlds = minis.map(m => m.querySelector('.m3d-world'));
+        return {
+          // ⚠️ 「建好了」要连台面里的 world 一起看：strip 不 hidden 只说明克隆跑过了，
+          // 而下面每一处都要读 mini 里的 world，拿到 null 会在页面里直接抛异常
+          // （表现为整条校验中断，而不是一条 FAIL）。
+          built: !!(strip && !strip.hidden && worlds.length && worlds.every(Boolean)),
+          steps: root.querySelectorAll('.m3d-rs').length,
+          parts: parts.length,
+          visibleParts: parts.filter(shown).length,
+          visiblePins: [...root.querySelectorAll('.m3d-pin')].filter(shown).length,
+          legendDisabled: legend.filter(b => b.disabled).length,
+          legendShouldDisable: legend.filter(b => hiddenIdx.has(b.getAttribute('data-part'))).length,
+          miniCounts: counts,
+          miniOut: Math.round(outMax),
+          miniW: Math.round(minW),
+          snapsOverflow: snaps ? snaps.scrollWidth - snaps.clientWidth : -1,
+          ry,
+          miniRy: worlds.map(w => (w ? w.style.getPropertyValue('--ry') : null)),
+          // 这一层不许比它的容器宽。⚠️ **不能改成量整页横向溢出**：
+          // 页面外层有裁剪，`.m3d-road` 涨到 790px 时 documentElement.scrollWidth
+          // 仍然等于视口宽（实测过），量整页永远量不到。直接比宽度才有区分度。
+          roadOver: Math.round(root.querySelector('.m3d-road').getBoundingClientRect().width
+                               - root.getBoundingClientRect().width),
+        };
+      };
+
+      // 先关掉平滑滚动：scrollIntoView 是异步的，量完坐标页面还在滚，量到的是过期值
+      await page.addStyleTag({ content: 'html{scroll-behavior:auto!important}' });
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.evaluate(() => document.querySelector('#model .m3d-road').scrollIntoView());
+      // 快照是懒建的（IntersectionObserver 触发才克隆），要等**克隆真的填进去**再量。
+      // 固定 sleep 不够：页面大小不同、面片数差一倍，跑得快慢不一样。
+      await page.waitForFunction(() => {
+        const s = document.querySelector('#model .m3d .m3d-strip');
+        return !!(s && !s.hidden && s.querySelector('.m3d-mini .m3d-world'));
+      }, { timeout: 10000 }).catch(() => { /* 超时留给下面那条断言报出来 */ });
+      await page.evaluate(() => window.scrollBy(0, 240));
+      await page.waitForTimeout(500);
+
+      const r0 = await page.evaluate(ROAD_IN_PAGE);
+      if (!r0 || !r0.built) {
+        bad(p, '快照条没有建出来（懒建的 IntersectionObserver 没触发）', r0);
+      } else {
+        if (r0.snapsOverflow > 1) {
+          bad(p, `快照条横向溢出 ${r0.snapsOverflow}px（这一步应当排满一行）`, r0);
+        }
+        if (r0.miniCounts.some(n => !n)) {
+          bad(p, '有快照台面是空的（克隆没填进去）', r0.miniCounts);
+        } else if (r0.visibleParts !== r0.parts) {
+          bad(p, `初始状态就藏掉了 ${r0.parts - r0.visibleParts} 个部件`, r0);
+        } else {
+          // 点中间那一步：主模型上可见的部件数必须正好等于第 k 张快照里克隆下来的部件数。
+          // 这是**两条独立路径的交叉验证**——一边是运行期按 data-g 过滤 .off，
+          // 一边是构建期按同一步切出来的面片集合，两边算错了就会对不上。
+          const mid = Math.floor(r0.steps / 2);
+          await page.evaluate((i) => {
+            document.querySelectorAll('#model .m3d .m3d-rs')[i].click();
+          }, mid);
+          await page.waitForTimeout(800);
+          const rk = await page.evaluate(ROAD_IN_PAGE);
+          const want = rk.miniCounts[mid];
+          if (rk.visibleParts !== want) {
+            bad(p, `点第 ${mid + 1} 步后应显示 ${want} 个部件，实际 ${rk.visibleParts}`,
+                { want, rk });
+          } else if (rk.visibleParts >= rk.parts) {
+            bad(p, `点第 ${mid + 1} 步没有藏掉任何部件（逐步装配没生效）`, rk);
+          } else {
+            good(p, `逐步装配正常（第 ${mid + 1} 步 ${rk.visibleParts}/${rk.parts} 个部件，`
+                    + `编号点收至 ${rk.visiblePins} 个、图例禁用 ${rk.legendDisabled} 项）`);
+          }
+          if (rk.legendDisabled !== rk.legendShouldDisable) {
+            bad(p, `图例禁用项数不对：该禁 ${rk.legendShouldDisable} 项、实际禁了 `
+                   + `${rk.legendDisabled} 项（藏起来的部件的图例必须一起禁用，`
+                   + '否则点它会「放大」到一个看不见的东西）', rk);
+          }
+          if (rk.miniOut > 2) bad(p, `快照里的模型出框 ${rk.miniOut}px`, rk);
+          else good(p, `快照模型全在台面内（最小台面宽 ${rk.miniW}px、出框 ${rk.miniOut}px）`);
+          if (!rk.miniRy.length || !rk.miniRy.every(v => v === rk.ry)) {
+            bad(p, '快照的视角没有跟主模型同步', rk);
+          } else {
+            good(p, `快照视角与主模型同步（--ry ${rk.ry}）`);
+          }
+          await page.evaluate(() => document.querySelector('#model .m3d .m3d-road-all').click());
+          await page.waitForTimeout(500);
+          const ra = await page.evaluate(ROAD_IN_PAGE);
+          if (ra.visibleParts !== ra.parts) bad(p, '点「全貌」没有把部件全恢复', ra);
+          else good(p, '「全貌」恢复全部部件');
+
+          // 拖动任意一张快照，所有快照与主模型一起转
+          const miniBox = await page.evaluate(() => {
+            const m = document.querySelector('#model .m3d-mini');
+            if (!m) return null;
+            const b = m.getBoundingClientRect();
+            return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+          });
+          if (miniBox) {
+            const before = (await page.evaluate(ROAD_IN_PAGE)).ry;
+            await page.mouse.move(miniBox.x, miniBox.y);
+            await page.mouse.down();
+            await page.mouse.move(miniBox.x + 70, miniBox.y, { steps: 6 });
+            await page.mouse.up();
+            await page.waitForTimeout(400);
+            const after = await page.evaluate(ROAD_IN_PAGE);
+            if (after.ry === before) bad(p, '拖动快照没有带动主模型旋转', after);
+            else if (!after.miniRy.every(v => v === after.ry)) {
+              bad(p, '拖动之后快照与主模型的视角不一致', after);
+            } else {
+              good(p, `拖动快照同步旋转（--ry ${before} → ${after.ry}）`);
+            }
+          }
+
+          // 窄屏：快照条建完之后，路线图与快照条都不许比容器宽
+          //（快照本身在 .m3d-snaps 里横滚，那是设计好的）
+          for (const w of [390, 700]) {
+            await page.setViewportSize({ width: w, height: 844 });
+            await page.evaluate(() => document.querySelector('#model .m3d-road')
+              .scrollIntoView({ block: 'start' }));
+            await page.waitForTimeout(400);
+            const rn = await page.evaluate(ROAD_IN_PAGE);
+            if (rn.roadOver > 1) {
+              bad(p, `${w}px 下路线图比容器宽 ${rn.roadOver}px`
+                     + '（快照条必须能缩到容器宽，横向滚动交给它自己的 overflow-x——'
+                     + '少了 min-width:0 时这里会是 790px 量级的差）', rn);
+            } else {
+              good(p, `${w}px 下路线图与快照条都没涨出容器`);
+            }
+          }
         }
       }
     }

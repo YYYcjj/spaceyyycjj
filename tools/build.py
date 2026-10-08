@@ -43,6 +43,7 @@ from theoryfigs import THEORY_FIGS            # noqa: E402
 from introfigs import INTRO_FIGS              # noqa: E402
 from boardskin import SKINS, DEFAULT, css_vars   # noqa: E402
 from modelrigs import RIGS, HINT                # noqa: E402
+from models3d import road_block, snap_block      # noqa: E402
 from virtualviews import VIEWS                  # noqa: E402
 from founder101 import FOUNDER101                # noqa: E402
 from chainfigs import CHAIN_FIGS              # noqa: E402
@@ -923,11 +924,27 @@ def render_figs(body, num):
 # 读者才知道前面那些参数长在哪个部件上。
 MODEL_LEAD = ('上面那张等轴测图是一个固定角度。这里把它做成能转的：'
               '拖动可以旋转，方向键微调，点「重置视角」回到默认角度。'
-              '模型上的编号和下面的图例一一对应。')
+              '模型上的编号和下面的图例一一对应。'
+              '模型下面还跟着一条**演示路线图**——按这套东西真实的装配顺序分成几步，'
+              '点某一步，上面的模型就长到那一步为止；再往下是各步并排的快照。')
+
+
+def road_text(road):
+    """路线图的文案统一过一遍行内标记（`**强调**` → `<b>`）。
+
+    数据文件里写 **强调** 比写 <b> 干净，但这一层的文字是 models3d.py 直接拼进 HTML 的，
+    不经过 build.py 的 rich()——第一版就漏了这一步，页面上把 `**回收必需的那几件都在后半段**`
+    连同星号一起原样显示了出来。在这里转一次，models3d.py 仍旧只认纯文本。
+    """
+    if not road:
+        return None
+    return dict(road,
+                lead=rich(road.get('lead', '')),
+                steps=[dict(s, t=rich(s['t']), k=rich(s['k'])) for s in road['steps']])
 
 
 def render_model(b):
-    """渲染「虚拟模型」层：可旋转模型 + 编号图例 + 一张虚拟运行视图。"""
+    """渲染「虚拟模型」层：可旋转模型 + 3D 演示路线图 + 各步快照 + 编号图例 + 虚拟运行视图。"""
     rigs = RIGS.get(b['slug'])
     vv = VIEWS.get(b['slug'])
     if not rigs and not vv:
@@ -937,21 +954,45 @@ def render_model(b):
     for i, spec in enumerate(rigs or []):
         # 图例由模型对象自己生成：它才知道每个编号指向哪个部件（点图例要聚焦到那个部件）
         g = spec['build']()
-        model = g.html(g.legend(spec['legend']), HINT)
-        assert model.lstrip().startswith('<div class="m3d"'), \
+        road = road_text(spec.get('road'))
+        body = g.html(g.legend(spec['legend']), HINT)
+        assert body.lstrip().startswith('<div class="m3d-model"'), \
             f'板块 {b["slug"]} 的模型 {i} 没有生成 HTML'
         for _k in ('m3d-stage', 'm3d-lg', 'm3d-hint', 'm3d-pins', 'm3d-back',
-                   'data-part=', 'data-f=', 'data-c='):
-            assert _k in model, f'板块 {b["slug"]} 的模型 {i} 缺少 {_k}'
+                   'data-part=', 'data-f=', 'data-c=', 'data-g='):
+            assert _k in body, f'板块 {b["slug"]} 的模型 {i} 缺少 {_k}'
         # 编号点与图例项必须一一对应（点图例 = 点编号点，两边靠 data-part 对上）
-        assert model.count('class="m3d-lb"') == model.count('class="m3d-pin"'), \
+        assert body.count('class="m3d-lb"') == body.count('class="m3d-pin"'), \
             f'板块 {b["slug"]} 的模型 {i}：图例项与编号点数量不一致'
+
+        # 路线图与快照**另起一张卡片**。合成一张会在纸上高过一页，
+        # `figure{break-inside:avoid}` 对高过一页的块无效，卡片底会被页边切开
+        # （见 models3d.M3D.html 的说明）。两张卡片外面套一个 [data-m3d]，
+        # 交互（拖动、点步、快照克隆）仍然当作同一个模型处理。
+        extra = (road_block(road) + '\n' + snap_block(road)) if road else ''
+        if road:
+            bad = model_check_road(b['slug'], i, body + extra, road)
+            assert not bad, '；'.join(bad)
+
+        road_fig = ''
+        if road:
+            road_fig = (
+                '        <figure class="figure m3d-fig m3d-roadfig">\n'
+                '          <div class="figtitle">装配路线图 · 让模型自己走一遍</div>\n'
+                f'          <div class="m3d-roadbox">\n{extra}      </div>\n'
+                f'          <figcaption>路线图 {b["num"]}.{i + 1}　'
+                f'{rich(spec["title"])}的逐步装配过程：点某一步，模型只长到那一步为止。</figcaption>\n'
+                '        </figure>')
+
         blocks.append(
-            '      <figure class="figure m3d-fig">\n'
-            f'        <div class="figtitle">{rich(spec["title"])}</div>\n'
-            f'        {model}'
-            f'        <figcaption>模型 {b["num"]}.{i + 1}　{rich(spec["caption"])}</figcaption>\n'
-            '      </figure>')
+            '      <div class="m3d" data-m3d>\n'
+            '        <figure class="figure m3d-fig">\n'
+            f'          <div class="figtitle">{rich(spec["title"])}</div>\n'
+            f'          {body}'
+            f'          <figcaption>模型 {b["num"]}.{i + 1}　{rich(spec["caption"])}</figcaption>\n'
+            '        </figure>\n'
+            + (road_fig + '\n' if road_fig else '') +
+            '      </div>')
 
     if vv:
         svg = vv['make']().svg(vv['cap'])
@@ -965,9 +1006,47 @@ def render_model(b):
     return (
         f'<section id="model" class="layer ly-{ln(b, 4)}">\n'
         f'      {layer_h2(ln(b, 4), "虚拟模型", "Virtual Model")}\n'
-        f'      <p class="lead">{MODEL_LEAD}</p>\n'
+        f'      <p class="lead">{rich(MODEL_LEAD)}</p>\n'
         '\n' + '\n\n'.join(blocks) + '\n    </section>'
     )
+
+
+# 反解生成的 HTML：部件上挂了哪些分组、路线图每一步认领了哪些分组。# 这是**端到端**断言——只认真正吐出来的文本，所以「_part_groups 算错一格」
+# 这种不会让页面报错、只会让演示悄悄少一块的错，在这里就会现形。
+_RE_PART_G = re.compile(r'class="m3d-p" [^>]*data-g="([^"]*)"')
+_RE_STEP_G = re.compile(r'class="m3d-rs" data-step="(\d+)" data-g="([^"]*)"')
+
+
+def model_check_road(slug, i, model, road):
+    """路线图在**渲染结果**上的自检。"""
+    out = []
+    if 'data-road' not in model or 'data-strip' not in model:
+        return [f'板块 {slug} 的模型 {i}：标了路线图却没有渲染出里程碑条或快照条']
+    part_g = [g for g in _RE_PART_G.findall(model)]
+    steps = _RE_STEP_G.findall(model)
+    if len(steps) != len(road['steps']):
+        out.append(f'板块 {slug} 的模型 {i}：里程碑按钮 {len(steps)} 个，'
+                   f'但路线图数据有 {len(road["steps"])} 步')
+    if not part_g:
+        out.append(f'板块 {slug} 的模型 {i}：没有任何部件带 data-g，逐步装配会全亮或全灭')
+        return out
+    live = [g for g in part_g if g]
+    claimed = []
+    for _no, gs in steps:
+        claimed += [x for x in gs.split('|') if x]
+    if sorted(set(live)) != sorted(set(claimed)):
+        out.append(f'板块 {slug} 的模型 {i}：部件上的分组与路线图认领的分组对不上——'
+                   f'部件有 {"、".join(sorted(set(live)))}，'
+                   f'路线图有 {"、".join(sorted(set(claimed)))}')
+    dup = [g for g in set(claimed) if claimed.count(g) > 1]
+    if dup:
+        out.append(f'板块 {slug} 的模型 {i}：这些分组被两步同时认领：{"、".join(sorted(dup))}')
+    if len(claimed) != len(set(claimed)):
+        out.append(f'板块 {slug} 的模型 {i}：路线图里有分组重复出现')
+    # 快照条的快照数必须与步数一致，否则最后几个快照会是空台面
+    if model.count('class="m3d-stage m3d-mini"') != len(road['steps']):
+        out.append(f'板块 {slug} 的模型 {i}：快照台面数量与路线图步数不一致')
+    return out
 
 
 CHAIN_TOC = dict(id='chain', title='技术链路', sub=False, n='', layer=2)

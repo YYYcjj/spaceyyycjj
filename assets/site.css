@@ -1435,11 +1435,16 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
       world 的兄弟节点，挂在 world 上它就取不到，窄屏下模型缩小、标注不缩，会错位。
    ========================================================================== */
 
-.m3d{margin:4px 0 0; display:grid; gap:14px 26px;}
+/* .m3d 只是「同一个模型的交互范围」的外壳，里面是**两张卡片**：模型本体 / 装配路线图。
+   拆成两张是被打印逼出来的——合成一张在纸上比一页高，`figure{break-inside:avoid}`
+   对高过一页的块无效，卡片底会被页边切开（见 models3d.M3D.html 的说明）。
+   真正的两栏网格因此挂在 .m3d-model 上，不在 .m3d 上。 */
+.m3d{margin:4px 0 0;}
+.m3d-model{display:grid; gap:14px 26px;}
 /* 桌面：台面在左、图例在右。不收成两栏的话，模型只有 460px 宽，
    右边会留出整整一半的空白——图例挪过去正好用满，也更像一张产品说明。 */
 @media (min-width:1000px){
-  .m3d{grid-template-columns:minmax(0,460px) minmax(0,1fr); grid-template-rows:auto auto;}
+  .m3d-model{grid-template-columns:minmax(0,460px) minmax(0,1fr); grid-template-rows:auto auto;}
   .m3d-stage{grid-column:1; grid-row:1;}
   .m3d-hint{grid-column:1; grid-row:2;}
   .m3d-lg{grid-column:2; grid-row:1 / 3; align-self:center; grid-template-columns:1fr;}
@@ -1505,9 +1510,11 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
 .m3d-stage.dragging .m3d-f{cursor:grabbing;}
 /* 聚焦时把其它部件压暗当背景板。
    ⚠️ 只能压**面片**的不透明度，不能压 .m3d-p —— opacity 是 grouping property，
-   会给部件建一个 stacking context 并把它那棵 preserve-3d 子树**压平**，整个部件会塌掉。 */
-.m3d.focus .m3d-p:not(.on) .m3d-f{opacity:.13;}
-@media print{ .m3d.focus .m3d-p:not(.on) .m3d-f{opacity:.2;} }
+   会给部件建一个 stacking context 并把它那棵 preserve-3d 子树**压平**，整个部件会塌掉。
+   ⚠️ 还要把 .m3d-mini 排除掉：快照台面是主模型的兄弟节点、又在 .m3d 里面，
+   不排除的话主模型一聚焦，整条快照都会跟着压暗。 */
+.m3d.focus .m3d-stage:not(.m3d-mini) .m3d-p:not(.on) .m3d-f{opacity:.13;}
+@media print{ .m3d.focus .m3d-stage:not(.m3d-mini) .m3d-p:not(.on) .m3d-f{opacity:.2;} }
 
 .m3d-pins{
   position:absolute; inset:0; z-index:2; pointer-events:none;
@@ -1557,6 +1564,10 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
 }
 .m3d-lb:hover{background:var(--bg-sunk); border-color:var(--line);}
 .m3d-lb[aria-pressed="true"]{background:var(--accent-bg); border-color:var(--accent-bd);}
+/* 演示路线图走到某一步时，还没装上的部件的图例项会被禁用——
+   点它只会「放大」到一个看不见的东西。 */
+.m3d-lb:disabled{opacity:.4; cursor:default;}
+.m3d-lb:disabled:hover{background:none; border-color:transparent;}
 .m3d-lb:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
 .m3d-lb i{
   grid-column:1; grid-row:1/3; width:20px; height:20px;
@@ -1606,13 +1617,158 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   .m3d-pin{transition:none;}
 }
 
+/* ==========================================================================
+   3D 演示路线图：按装配顺序把模型一段一段点亮 + 各步并排快照
+   --------------------------------------------------------------------------
+   「虚拟模型」那一层给的是一个**成品**——能转、能点开看部件。
+   这一层换一个问题：它是**怎么由这些零件凑出来的**，先有哪一段、后有哪一段。
+   于是模型本身成了演示装置：点某一步，它只长到那一步为止。
+
+   两条硬规矩：
+
+   1. **隐藏部件只能压面片的不透明度，`.m3d-p` 上只挂 visibility。**
+      opacity 是 grouping property，挂在 `.m3d-p` 上会给它建层叠上下文、
+      把那棵 preserve-3d 子树**压平**，整个部件塌成一团——这条坑在
+      「点一下放大」那一版已经踩过一次，这里的形态不同、机制完全一样。
+      visibility 则会正常继承（面片不写 visibility，跟着父级走），
+      又不建立层叠上下文，3D 位置照旧。
+      隐藏还要**延迟**到淡出结束（`transition:visibility 0s .32s`），
+      元素才来得及先淡出、再消失；显示则必须立刻（延迟 0s），否则会有半秒空白。
+
+   2. **快照不自带面片，运行期从主模型的 world 克隆。**
+      五个快照各渲染一份面片，这一页会平白多出四五倍 HTML；而两者本来就必须长得
+      一模一样——克隆天然保证一致，也省掉一份迟早会漂移的数据。
+      整条默认 hidden（服务端只给骨架），克隆完才显示：
+      没有 JS 时它只是一排空台面，不如不显示。
+   ========================================================================== */
+
+.m3d-road, .m3d-strip{margin:18px 0 0;}
+/* ⚠️ `min-width:0` 不能省。.m3d 是网格容器，网格项的自动最小尺寸是「内容最小宽度」，
+   而快照条里那 5 个 minmax(150px,…) 轨道的内容最小宽度接近 790px——
+   于是窄屏下这一层会顶着整页横向溢出（里程碑条一起被撑到 790px，手机上直接滑不动）。
+   给了 min-width:0，这一层才能缩到容器宽度，横向滚动交给 .m3d-snaps 自己的 overflow-x。 */
+.m3d-road, .m3d-strip{min-width:0;}
+
+.m3d-road-hd{
+  display:flex; flex-wrap:wrap; align-items:center; gap:7px 10px; margin:0 0 11px;
+}
+.m3d-road-hd p{
+  flex:1 1 240px; margin:0; font-size:12px; line-height:1.75; color:var(--muted);
+}
+.m3d-tag{
+  flex:none; font-family:var(--mono); font-size:10.5px; letter-spacing:.04em;
+  padding:2px 9px; border-radius:999px; white-space:nowrap;
+  color:var(--accent); background:var(--accent-bg); border:1px solid var(--accent-bd);
+}
+.m3d-road-play, .m3d-road-all{
+  appearance:none; font:inherit; font-size:11.5px; padding:4px 12px;
+  border-radius:999px; cursor:pointer; white-space:nowrap;
+  color:var(--accent); background:var(--accent-bg); border:1px solid var(--accent-bd);
+}
+.m3d-road-play:hover, .m3d-road-all:hover{background:var(--bg);}
+.m3d-road-play:focus-visible, .m3d-road-all:focus-visible{
+  outline:2px solid var(--accent); outline-offset:2px;
+}
+.m3d-road-play[aria-pressed="true"],
+.m3d-road-all[aria-pressed="true"]{color:#fff; background:var(--accent); border-color:var(--accent);}
+
+/* 里程碑条：每一步一块，横排。用 flex 而不是 auto-fit 网格——
+   网格的列数由容器宽度除最小列宽决定，5 步会被断成 4+1（最后一块孤零零占一行）；
+   flex 的 `flex:1 1 120px` 让一行能塞几个就塞几个、并等分剩余宽度，
+   所以 4~6 步都是一行排满，窄屏才折行。 */
+.m3d-road-ls{
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+.m3d-road-ls li{flex:1 1 120px; min-width:0;}
+.m3d-rs{
+  display:grid; grid-template-columns:22px 1fr; column-gap:8px; row-gap:3px;
+  width:100%; height:100%; text-align:left; cursor:pointer;
+  appearance:none; font:inherit; padding:8px 10px 9px;
+  border:1px solid var(--line); border-radius:9px; background:var(--bg); color:inherit;
+  transition:background-color .16s, border-color .16s;
+}
+.m3d-rs:hover{background:var(--bg-sunk);}
+.m3d-rs[aria-pressed="true"]{background:var(--accent-bg); border-color:var(--accent-bd);}
+.m3d-rs:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+.m3d-rs i{
+  grid-column:1; grid-row:1 / 3; width:22px; height:22px;
+  display:grid; place-items:center; border-radius:50%;
+  font-family:var(--mono); font-size:11px; font-weight:600; font-style:normal;
+  color:#fff; background:var(--bd-ink, #3e6283);
+}
+.m3d-rs[aria-pressed="true"] i{background:var(--accent);}
+.m3d-rs b{grid-column:2; font-size:12.5px; font-weight:650; color:var(--text);}
+.m3d-rs span{grid-column:2; font-size:11.5px; line-height:1.62; color:var(--muted);}
+
+/* 还没装上的部件：先淡出再收起来。
+   ⚠️ 顺序不能反。`visibility` 立刻生效会让部件「啪」地消失，没有过渡。
+   反过来的 `transition:visibility 0s 0s` 是**显示**时要用的：立刻可见。 */
+.m3d-p.off .m3d-f{opacity:0; pointer-events:none;}
+.m3d-p.off{visibility:hidden; transition:visibility 0s .32s;}
+.m3d-p:not(.off){transition:visibility 0s 0s;}
+/* 这一步刚装上的部件：淡入一次，让「新增了什么」一眼看出来。
+   用 opacity 动画而不是 filter —— filter 也是 grouping property，
+   挂在被 3D 变换的面片上会让它在 preserve-3d 里被单独拍平，明暗会跳。 */
+@keyframes m3dNew{from{opacity:.10}to{opacity:1}}
+.m3d-p.new .m3d-f{animation:m3dNew .52s ease-out both;}
+
+/* 各步快照：并排摆开，一眼看出每步差在哪。窄了横向滚动，不折行——
+   折行会让「一条时间轴」变成一堆卡片，逐步的对比就断了。 */
+.m3d-strip[hidden]{display:none;}
+.m3d-snaps{
+  list-style:none; margin:0; padding:0 0 6px;
+  display:grid; grid-auto-flow:column; grid-auto-columns:minmax(150px,1fr);
+  gap:10px; overflow-x:auto; overscroll-behavior-x:contain;
+}
+.m3d-snaps li{
+  margin:0; padding:8px 9px 10px;
+  border:1px solid var(--line); border-radius:10px; background:var(--bg-sunk);
+}
+.m3d-snap-hd{display:flex; align-items:center; gap:7px; margin:0 0 6px;}
+.m3d-snap-hd i{
+  flex:none; width:19px; height:19px; display:grid; place-items:center;
+  border-radius:50%; font-family:var(--mono); font-size:10.5px; font-weight:600;
+  font-style:normal; color:#fff; background:var(--bd-ink, #3e6283);
+}
+.m3d-snap-hd b{font-size:12px; font-weight:650; color:var(--text);}
+.m3d-snap-k{margin:7px 0 0; font-size:11px; line-height:1.62; color:var(--muted);}
+
+/* 快照台面：比主模型小一圈。
+   ⚠️ 这一条必须写在窄屏那两条 `--m3d-k` 之后。同权重下后写的胜出，
+   否则手机上快照会跟主模型一样大（.86），一条时间轴立刻撑爆。
+   模型的自适配是按 k=1 解的（FIT 400×350）。实测 11 个模型在 .42 下投影最宽
+   118px（采矿船）、最高 129px（分解图），所以 150px × 170px 一定装得下。 */
+.m3d-mini{
+  --m3d-k:.42;
+  max-width:none; min-width:0; height:170px; margin:0; border-radius:7px; cursor:grab;
+}
+.m3d-mini .m3d-f{cursor:grab;}
+
 /* 打印：@page 的分页规则在文件前面那条 @media print 里，这里只补模型专属的几条。
-   角度由 site.js 的 beforeprint 复位到默认视角——否则会打出转到一半的样子。 */
+   角度由 site.js 的 beforeprint 复位到默认视角——否则会打出转到一半的样子。
+   路线图与快照也要一并处理：快照默认 hidden，打印前由 site.js 克隆并展开。
+
+   ⚠️ 这一块在纸上**必须分成两张卡片**（模型 / 路线图），
+   而且每张都要装得下一页。原因：打印样式里 `figure{break-inside:avoid}`，
+   但浏览器对「高过一页的块」直接忽略这条规则——模型 + 路线图 + 快照合成一张时实测 1773px，
+   一页只有 1017px，于是卡片底与边框被页边切开，`check_print.py` 判成「图形被页边切断」。
+   拆开之后两张各约 610px / 500px，规则才真正生效。见 models3d.M3D.html 的说明。 */
 @media print{
   .m3d-stage{height:380px !important; background:none !important;}
+  .m3d-mini{height:132px !important; --m3d-k:.34;}
   .m3d-hint{display:none !important;}
   .m3d-pin{box-shadow:none !important;}
   .m3d-reset{display:none !important;}
+  .m3d-road-play, .m3d-road-all{display:none !important;}
+  /* 路线图那张卡片也要装得下一页：五个快照**横排成一行**。
+     屏幕上窄了就横滚，纸上是固定的 A4 宽——排成一行才是「一条时间轴」该有的样子；
+     排成两列三行会让这张卡片长到 976px，逼近一页的 1017px，太冒险。 */
+  .m3d-snaps{overflow:visible !important; grid-auto-flow:column !important;
+             grid-auto-columns:minmax(0,1fr) !important; gap:6px !important;}
+  .m3d-road-ls{gap:6px !important;}
+  .m3d-road-hd, .m3d-road-ls li, .m3d-snaps li, .m3d-snaps li > p,
+  .m3d-lg li{break-inside:avoid;}
 }
 
 /* ==========================================================================
@@ -1753,3 +1909,5 @@ section.layer > h2{font-size:24px; border-left-color:var(--ly);}
   .m3d-shadow i{background:radial-gradient(closest-side,
     rgba(30,38,50,.18), rgba(30,38,50,.08) 46%, rgba(30,38,50,0) 100%);}
 }
+
+/* 临时诊断 */

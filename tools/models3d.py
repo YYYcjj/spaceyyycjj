@@ -364,6 +364,7 @@ class M3D:
         self.aria = aria
         self._parts = []      # dict(anchor, faces, pts, op)
         self._pins = []       # dict(n, at, label)
+        self._marks = []      # (分组名, 记到第几个部件为止)——「3D 演示路线图」用
 
     # ------------------------------------------------------------ 几何体
     def box(self, x, y, z, w, h, d, c='steel', op=None, tex=None, tp=None):
@@ -853,6 +854,81 @@ class M3D:
         """
         self._pins.append(dict(n=n, at=(x, y, z), part=part))
         return self
+
+    # ------------------------------------------------------------ 分组（演示路线图用）
+    def mark(self, name):
+        """给「接下来新增的几何」打一个分组标签。
+
+        「3D 演示路线图」的逐步装配就是按这个分组点亮部件的：第 i 步只显示
+        前 i 步涉及的分组，于是模型按建造顺序一段一段长出来。
+
+        为什么不给每个图元加参数：几何方法有十来个，逐个传 tag 要改十几处调用点，
+        漏一个就少一个部件——而且漏掉的那个在渲染上完全看不出来，只有路线图会悄悄缺一块。
+        在 scene 里按建造顺序插几行 mark() 只要改一处，也天然保证「顺序 = 建模顺序」。
+
+        ⚠️ 分组必须**自下而上、按真实建造顺序**排列。顺序错了不会报错，
+        但逐步装配时会出现「零件凭空长在悬空的位置」。
+        """
+        assert name, f'{self.title}：分组名不能为空'
+        assert name not in [n for n, _ in self._marks], \
+            f'{self.title}：分组名重复「{name}」'
+        # 校验的是**上一个**分组非空：mark() 是「开始一个新分组」，
+        # 当前分组的几何还没建出来，这时候当然一个都没有。
+        if self._marks:
+            _prev, _end = self._marks[-1]
+            assert len(self._parts) > _end, \
+                f'{self.title}：分组「{_prev}」一个几何体都没有'
+        self._marks.append((name, len(self._parts)))
+        return self
+
+    def _part_groups(self):
+        """每个部件所属的分组名，顺序与 _parts 一致；没打过标的部件返回空串。"""
+        if not self._marks:
+            return [''] * len(self._parts)
+        out = []
+        for k, (_name, _end) in enumerate(self._marks):
+            _nx = self._marks[k + 1][1] if k + 1 < len(self._marks) else len(self._parts)
+            out += [_name] * (_nx - _end)
+        return out
+
+    def road_problems(self, road):
+        """路线图数据的自检。
+
+        最要紧的一条是**覆盖性**：每一步新增的分组加起来必须正好等于模型的全部分组。
+        少了，那部分部件在任何一步都不出现，最后一步也不是完整模型；
+        多了（重复），同一步会被点亮两次，「新增了什么」就说不清。
+        这两种错都不会让页面报错，只会让演示悄悄不对，所以必须在这里拦下。
+        """
+        out = []
+        groups = [g for g in self._part_groups() if g]
+        if not groups:
+            return [f'{self.title}：标了路线图，但没有任何部件分组（scene 里没调用 mark()）']
+        steps = road.get('steps') or []
+        if len(steps) < 3:
+            out.append(f'{self.title}：路线图只有 {len(steps)} 步，至少要 3 步')
+        seen, dup = [], []
+        for i, s in enumerate(steps, 1):
+            add = list(s.get('g') or [])
+            if not add:
+                out.append(f'{self.title}：第 {i} 步没有新增任何分组')
+            if not (s.get('t') or '').strip():
+                out.append(f'{self.title}：第 {i} 步没有标题')
+            if not (s.get('k') or '').strip():
+                out.append(f'{self.title}：第 {i} 步没有一句话说明')
+            for g in add:
+                if g not in groups:
+                    out.append(f'{self.title}：第 {i} 步的分组「{g}」不属于这个模型'
+                               f'（可用的分组：{"、".join(groups)}）')
+                elif g in seen:
+                    dup.append(g)
+            seen += add
+        if dup:
+            out.append(f'{self.title}：这些分组被两步同时认领：{"、".join(sorted(set(dup)))}')
+        miss = [g for g in groups if g not in seen]
+        if miss:
+            out.append(f'{self.title}：这些分组不属于任何一步，逐步装配到最后也长不出来：'
+                       f'{"、".join(miss)}')
+        return out
 
     # ------------------------------------------------------------ 聚焦
     def _nearest_part(self, at):
@@ -1424,16 +1500,20 @@ class M3D:
         return out
 
     # ------------------------------------------------------------ 渲染
-    def _faces_html(self, part, k, idx=0):
+    def _faces_html(self, part, k, idx=0, group=''):
         o = self.origin
         ax = (part['anchor'][0] - o[0]) * k
         ay = -(part['anchor'][1] - o[1]) * k
         az = (part['anchor'][2] - o[2]) * k
         # data-f / data-c 是「点一下放大」要用的：放大倍数与「把部件中心平移到台面中心」
         # 需要的位移。都由生成期按旋转范围采样解出来，运行期只读不算。
+        # data-g 是「演示路线图」的分组名：第 i 步只显示前 i 步的分组。
+        # ⚠️ data-g 必须排在 data-f / data-c **后面**：_RE_HDR 是按
+        # 「data-i → data-f → data-c」这个顺序写的，插在中间会让自检反解不到部件
+        # （而且它会静默地一条都匹配不上，只在「反解数 ≠ 几何数」时才报出来）。
         c, f = self._focus(idx, k)
         out = [f'<span class="m3d-p" data-i="{idx}" data-f="{_f(f)}" '
-               f'data-c="{_f(c[0])},{_f(c[1])},{_f(c[2])}" '
+               f'data-c="{_f(c[0])},{_f(c[1])},{_f(c[2])}" data-g="{group}" '
                f'style="transform:translate3d('
                f'{_f(ax)}px,{_f(ay)}px,{_f(az)}px)">']
         op = part['op']
@@ -1547,16 +1627,25 @@ class M3D:
         return '\n'.join(out)
 
     def html(self, legend='', hint=''):
-        """产出模型 + 图例 + 拖拽提示。
+        """产出**模型本体**：台面 + 编号图例 + 拖拽提示。
 
-        DOM 顺序是「台面 → 图例 → 提示」，桌面端靠 grid 把图例摆到右栏、提示留在台面下；
-        窄屏时退回单列，顺序正好是「模型 → 图例 → 提示」——这也是手机上更顺的读法。
+        ⚠️ 路线图与各步快照**不在**这里（另有 road_block / snap_block，
+        由 build.py 放进同一页的第二张卡片）。这条拆分是被打印逼出来的：
+        打印样式里 `figure{break-inside:avoid}`，但浏览器对「高过一页的块」会直接忽略这条规则——
+        模型 + 路线图 + 快照合起来必然超过一页（实测 1773px，一页只有 1017px），
+        于是卡片底与边框被页边切开、`check_print.py` 判为「图形被页边切断」。
+        拆成两张卡片后每张都装得下一页，break-inside:avoid 才真正生效。
+
+        台面、图例、提示三者的 DOM 顺序不变：窄屏退回单列时正好是
+        「模型 → 图例 → 提示」，也是手机上更顺的读法。
         """
         k = self.k = self._fit()
-        body = ''.join(self._faces_html(p, k, i) for i, p in enumerate(self._parts))
+        groups = self._part_groups()
+        body = ''.join(self._faces_html(p, k, i, groups[i])
+                       for i, p in enumerate(self._parts))
         pins = self._pins_html(k)
         return (
-            f'<div class="m3d" data-m3d>\n'
+            f'<div class="m3d-model">\n'
             # role=group 而不是 img：里面有编号点按钮，role=img 会把它整棵子树当图片读掉
             f'  <div class="m3d-stage" role="group" aria-label="{self.aria}" tabindex="0">\n'
             f'    {self._shadow_html(k)}\n'
@@ -1568,6 +1657,62 @@ class M3D:
             f'  {legend}\n'
             f'  {hint}\n'
             f'</div>\n')
+
+
+def road_block(road):
+    """「3D 演示路线图」的里程碑条：点一步，模型就长到那一步。
+
+    做成一条按钮列表而不是滑块：每一步都带标题与一句话，读得出来「这一步在干什么」；
+    滑块只有一个数字，读者得自己猜。
+    """
+    steps = road['steps']
+    lis = []
+    for i, s in enumerate(steps):
+        add = '|'.join(s['g'])
+        lis.append(
+            f'    <li><button type="button" class="m3d-rs" data-step="{i}" data-g="{add}" '
+            f'aria-pressed="false"><i>{i + 1}</i><b>{s["t"]}</b>'
+            f'<span>{s["k"]}</span></button></li>')
+    return (
+        '<div class="m3d-road" data-road>\n'
+        '  <div class="m3d-road-hd">\n'
+        f'    <span class="m3d-tag">{road.get("axis", "逐步装配")}</span>\n'
+        f'    <p>{road.get("lead", "")}</p>\n'
+        '    <button type="button" class="m3d-road-play" aria-pressed="false">自动演示</button>\n'
+        '    <button type="button" class="m3d-road-all" aria-pressed="true">全貌</button>\n'
+        '  </div>\n'
+        '  <ol class="m3d-road-ls">\n' + '\n'.join(lis) + '\n  </ol>\n'
+        '</div>')
+
+
+def snap_block(road):
+    """各步快照：并排摆开，一眼看出每步差在哪。
+
+    面片由 site.js 从主模型的 world 克隆后按步过滤——这里只给一个**空台面**。
+    ⚠️ 不要在这里放一个占位的 `.m3d-world`：克隆时是 appendChild，
+    原先那个空壳会留在最前面，`mini.querySelector('.m3d-world')` 就永远拿到空壳——
+    「快照跟着主模型转」这条会静默失效（--ry 写在第二个 world 上），
+    而画面上完全看不出来。
+
+    默认 hidden，克隆完成才显示：没有 JS 时它是一排空台面，不如不显示。
+    """
+    lis = []
+    for i, s in enumerate(road['steps']):
+        lis.append(
+            f'    <li>\n'
+            f'      <p class="m3d-snap-hd"><i>{i + 1}</i><b>{s["t"]}</b></p>\n'
+            f'      <div class="m3d-stage m3d-mini" data-snap="{i}" '
+            f'aria-hidden="true"></div>\n'
+            f'      <p class="m3d-snap-k">{s["k"]}</p>\n'
+            f'    </li>')
+    return (
+        '<div class="m3d-strip" data-strip hidden>\n'
+        '  <div class="m3d-road-hd">\n'
+        '    <span class="m3d-tag">各步快照</span>\n'
+        '    <p>并排看每一步的差别。拖动任意一个，所有快照一起转。</p>\n'
+        '  </div>\n'
+        '  <ol class="m3d-snaps">\n' + '\n'.join(lis) + '\n  </ol>\n'
+        '</div>')
 
 
 def legend_html(items):
